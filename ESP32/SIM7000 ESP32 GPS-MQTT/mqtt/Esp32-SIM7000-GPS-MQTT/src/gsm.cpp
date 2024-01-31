@@ -10,7 +10,7 @@ const char* mqtt_pass = "BBFF-KlzMyMgB7jnNEgxnrFVIUkHKJ0hVan";
 const char* topicPulsador  = "/v1.6/devices/asaa/pulsador/lv";
 const char* topicInit      = "/v2.0/devices/asaa/pote";
 
-TinyGsm modem(SerialAT);
+
 TinyGsmClient client(modem);
 PubSubClient mqtt(client);
 
@@ -34,19 +34,20 @@ Gsm::Gsm()
 void Gsm::init()
 {
   SerialMon.println("Initializing modem...");
-  modem.restart();
+  modemMannager::restart();
 
-  String modemInfo = modem.getModemInfo();
+  String modemInfo = modemMannager::getInfo();
   SerialMon.print("Modem Info: ");
   SerialMon.println(modemInfo);
 
   #if TINY_GSM_USE_GPRS
     // Unlock your SIM card with a PIN if needed
-    if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
+    //if (GSM_PIN && modem.getSimStatus() != 3) { modemMannager::simUnlock(GSM_PIN); }
+    if (GSM_PIN && modemMannager::getSimStatus() != 3) { modemMannager::simUnlock(GSM_PIN); }
   #endif
 
   SerialMon.print("Waiting for network...");
-  if (!modem.waitForNetwork()) 
+  if (!modemMannager::waitForNetwork()) 
   {
     SerialMon.println(" fail");
     delay(10000);
@@ -54,14 +55,14 @@ void Gsm::init()
   }
   SerialMon.println(" success");
 
-  if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
+  if (modemMannager::isNetworkConnected()) { SerialMon.println("Network connected"); }
 
   #if TINY_GSM_USE_GPRS
     // GPRS connection parameters are usually set after network registration
     SerialMon.print(F("Connecting to "));
     SerialMon.print(apn);
     
-    if (!modem.gprsConnect(apn, gprsUser, gprsPass))
+    if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
     {
       SerialMon.println(" fail");
       delay(10000);
@@ -69,7 +70,7 @@ void Gsm::init()
     }
     SerialMon.println(" success");
 
-    if (modem.isGprsConnected()) { SerialMon.println("GPRS connected"); }
+    if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS connected"); }
   #endif
 
   // MQTT Broker setup
@@ -164,34 +165,34 @@ boolean Gsm:: checkLastMessage()
 boolean Gsm::checkGsmConnected()
 {
 // Make sure we're still registered on the network
-  if (!modem.isNetworkConnected()) 
+  if (!modemMannager::isNetworkConnected()) 
   {
     SerialMon.println("Network disconnected");
-    if (!modem.waitForNetwork(180000L, true)) 
+    if (!modemMannager::waitForNetwork(180000L, true)) 
     {
       SerialMon.println(" fail");
       delay(10000);
       return false;
     }
-    if (modem.isNetworkConnected()) 
+    if (modemMannager::isNetworkConnected()) 
     {
       SerialMon.println("Network re-connected");
     }
 
    #if TINY_GSM_USE_GPRS
       // and make sure GPRS/EPS is still connected
-      if (!modem.isGprsConnected())
+      if (!modemMannager::isGprsConnected())
       {
         SerialMon.println("GPRS disconnected!");
         SerialMon.print(F("Connecting to "));
         SerialMon.print(apn);
-        if (!modem.gprsConnect(apn, gprsUser, gprsPass))
+        if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
         {
           SerialMon.println(" fail");
           delay(10000);
           return false;
         }
-        if (modem.isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
+        if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
       }
   #endif
   }

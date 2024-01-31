@@ -1,15 +1,15 @@
 #include <ArduinoJson.h>
 #include <events.h>
-
+#include <modemMannager.h>
+#include <PubSubClient.h>
 
 extern enum Event event;
 
 #define SerialMon Serial
-#define TINY_GSM_MODEM_SIM7000
+
 #define TINY_GSM_USE_GPRS true
 #define TINY_GSM_USE_WIFI false
 #define TINY_GSM_DEBUG SerialMon
-#define SerialAT Serial1
 #define GSM_PIN ""
 
 
@@ -27,11 +27,10 @@ extern enum Event event;
 #define TINY_GSM_USE_WIFI false
 #endif
 
-#include <TinyGsmClient.h>
-#include <PubSubClient.h>
-
 #define MSG_JSON_MAX_SIZE   240
 
+extern TinyGsmClient client;
+extern PubSubClient mqtt;
 
 class Gsm
 {
