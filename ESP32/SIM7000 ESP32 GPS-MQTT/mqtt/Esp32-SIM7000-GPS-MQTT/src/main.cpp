@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include <gsm.h>
+#include <gps.h>
 
+Gps gps = Gps();
 Gsm gsmManager = Gsm();
+
 enum Event event;
 
 void setup()
@@ -12,17 +15,14 @@ void setup()
 
   SerialMon.println("Wait...");
 
-  pinMode(4,OUTPUT);
-  digitalWrite(4, LOW);
-  delay(100);
-  digitalWrite(4, HIGH);
-  
-
-  // Set GSM module baud rate and UART pins
-  SerialAT.begin(9600, SERIAL_8N1,  26, 27);
-  delay(3000);
+  if(!modemMannager::init())
+  {
+    return;
+  }
 
   gsmManager.init();
+  gps.init();
+
 
 }
 
@@ -30,7 +30,9 @@ void GenerateEvent()
 {
   gsmManager.checkMqtt();
 
-  if(gsmManager.checkLastMessage())
+  if(gsmManager.checkLastMessage()||gps.checkGps())
+  //if(gsmManager.checkLastMessage())
+  //if(gps.checkGps())
   {
     return;
   }
@@ -47,4 +49,11 @@ void loop()
     String json=gsmManager.generateJson();
     gsmManager.sendMessageBrokerTest(json);
   }
+  if (event==Event::CoordenadasGPS)
+  {
+    //  gps.getGpsValue();   
+  }
+
+  delay(1000);
+
 }

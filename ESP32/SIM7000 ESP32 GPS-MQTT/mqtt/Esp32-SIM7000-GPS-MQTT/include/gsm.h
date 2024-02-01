@@ -1,3 +1,6 @@
+#ifndef GSM_H
+#define GSM_H
+
 #include <ArduinoJson.h>
 #include <events.h>
 #include <modemMannager.h>
@@ -55,5 +58,5 @@ class Gsm
         
 };
 
-
+#endif
 

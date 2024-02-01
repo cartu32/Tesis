@@ -6,14 +6,16 @@
 enum Event
 {
     Continue,
-    PersonaFueraDeArea
+    PersonaFueraDeArea,
+    CoordenadasGPS
 };
 
 const String events_s[] = {
     "Continue",
     "Persona Fuera De Area"
+    "Se obtuvo coordenadas de GPS"
   };
 
-#define MAX_EVENTS 1
+#define MAX_EVENTS 3
 
 #endif
