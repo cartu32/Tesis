@@ -20,6 +20,8 @@ class modemMannager
     public:
         modemMannager();
 
+        
+
         static bool init();
 
         static void modemPowerOn();
@@ -35,6 +37,7 @@ class modemMannager
         static bool waitForNetwork(uint32_t timeout_ms, bool check_signal);
         static bool isNetworkConnected();
         static bool gprsConnect(const char *apn, const char *gprsUser,const char *gprsPass);
+        static bool gprsDisconnect();
         static bool isGprsConnected();
         static void sendAT(const char *command);
         static int8_t waitResponse(uint32_t timeout_ms);

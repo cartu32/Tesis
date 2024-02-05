@@ -20,6 +20,8 @@
 #define SD_CS               13
 #define LED_PIN             12
 
+#define UMBRAL_DIFERENCIA_TIMEOUT 10000
+
 class Gps
 {
     public:
@@ -38,8 +40,16 @@ class Gps
         void enableGPS();
         void disableGPS();
         bool checkGps();
-        JsonDocument getGpsValue(); 
+        JsonDocument getGpsValue();
         
+        void activateTimerGps();
+        void initTimer();
+        bool checkTimeoutGps();
+
+    private:
+        long last_current_time = 0;
+        bool timeout = false; //Indica si se cumplio el Timeout (tiempo del timer)
+        bool activatedTimer=false; //Indica si se activo e inicializo el timer
 
 };
 #endif

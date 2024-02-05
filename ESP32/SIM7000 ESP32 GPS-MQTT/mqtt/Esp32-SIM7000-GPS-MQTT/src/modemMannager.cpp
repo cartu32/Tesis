@@ -8,6 +8,11 @@ modemMannager::modemMannager()
 
 }
 
+bool modemMannager::gprsDisconnect()
+{
+    return modem.gprsDisconnect();
+}
+
 bool modemMannager::init()
 {
 

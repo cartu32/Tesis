@@ -43,8 +43,11 @@ class Gsm
         void checkMqtt();
         boolean checkLastMessage();
         boolean sendMessageBrokerTest(String json);
-
+        bool gsmDisconnect();
+        bool gsmReconnect();
+        
         String generateJson();
+
 
     private:
         uint32_t lastReconnectAttempt = 0;   

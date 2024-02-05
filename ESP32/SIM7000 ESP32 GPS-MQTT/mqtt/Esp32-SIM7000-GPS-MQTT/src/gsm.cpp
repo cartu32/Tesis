@@ -57,21 +57,10 @@ void Gsm::init()
 
   if (modemMannager::isNetworkConnected()) { SerialMon.println("Network connected"); }
 
-  #if TINY_GSM_USE_GPRS
-    // GPRS connection parameters are usually set after network registration
-    SerialMon.print(F("Connecting to "));
-    SerialMon.print(apn);
-    
-    if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
-    {
-      SerialMon.println(" fail");
-      delay(10000);
-      return;
-    }
-    SerialMon.println(" success");
-
-    if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS connected"); }
-  #endif
+  if(!gsmReconnect())
+  {
+    return;
+  }
 
   // MQTT Broker setup
   mqtt.setServer(broker, 1883);
@@ -152,7 +141,7 @@ boolean Gsm:: checkLastMessage()
   {
     lastTopic   = "";
     lastMessage = "";
-    event = Event::PersonaFueraDeArea;
+    event = Event::EV_Person_out_area;
     
     /*json=generateJson();
     sendMessageBrokerTest(json);*/
@@ -161,6 +150,11 @@ boolean Gsm:: checkLastMessage()
   return false;
 }
 
+bool Gsm::gsmDisconnect()
+{
+  modemMannager::gprsDisconnect();
+  return modemMannager::isGprsConnected();
+}
 
 boolean Gsm::checkGsmConnected()
 {
@@ -174,33 +168,54 @@ boolean Gsm::checkGsmConnected()
       delay(10000);
       return false;
     }
+    if(!gsmReconnect())
+    {
+      return false;
+    }
+
+    SerialMon.println(" Aca!!");
     if (modemMannager::isNetworkConnected()) 
     {
       SerialMon.println("Network re-connected");
     }
 
-   #if TINY_GSM_USE_GPRS
-      // and make sure GPRS/EPS is still connected
-      if (!modemMannager::isGprsConnected())
-      {
-        SerialMon.println("GPRS disconnected!");
-        SerialMon.print(F("Connecting to "));
-        SerialMon.print(apn);
-        if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
-        {
-          SerialMon.println(" fail");
-          delay(10000);
-          return false;
-        }
-        if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
-      }
-  #endif
   }
 
 
   return true;
 }
 
+
+bool Gsm::gsmReconnect()
+{
+    
+    if (!modemMannager::isGprsConnected())
+    {
+      SerialMon.println("GPRS disconnected!");
+      SerialMon.print(F("Connecting to "));
+      SerialMon.print(apn);
+      if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
+      {
+        SerialMon.println(" fail");
+        delay(10000);
+        return false;
+      }
+      if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
+    }
+    SerialMon.println("¡¡GSM Ya esta conectado!!");
+
+    // MQTT Broker setup
+    mqtt.setServer(broker, 1883);
+
+    //Genero una funcion Lambda y dentro dentro de ella llamo al metodo mqttcallback
+    mqtt.setCallback([this](char* topic, uint8_t* payload, unsigned int length) 
+    {
+      this->mqttCallback(topic, payload, length);
+    });
+
+    return true;
+
+}
 void Gsm::mqttReconnect()
 {
   SerialMon.println("=== MQTT NOT CONNECTED ===");
