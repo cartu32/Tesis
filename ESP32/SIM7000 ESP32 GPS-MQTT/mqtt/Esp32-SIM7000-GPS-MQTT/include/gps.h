@@ -30,9 +30,9 @@ class Gps
         int day = 0;
         int hour = 0;
         int minutes = 0;
-        float lat = 0;
-        float lon = 0;
-        float msl_alt = 0;
+        String lat = "";
+        String lon = "";
+        String msl_alt = "";
         int gps_satellites_used       = 0;
 
         Gps();
@@ -40,7 +40,7 @@ class Gps
         void enableGPS();
         void disableGPS();
         bool checkGps();
-        JsonDocument getGpsValue();
+        JsonDocument readSavedGpsValues();
         
         void activateTimerGps();
         void initTimer();

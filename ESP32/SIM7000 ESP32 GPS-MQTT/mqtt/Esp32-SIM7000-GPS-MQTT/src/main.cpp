@@ -17,8 +17,14 @@ typedef void (*transition)();
 
 void activateGps()
 {
+  //activo el GPS
+  gps.enableGPS();
+    
+  state=State::ST_Reading_Gps;
+  Serial.println("GPS Habilitados");
+  
   //desconecto el GSM
-  if(!gsmManager.gsmDisconnect())
+  /*if(!gsmManager.gsmDisconnect())
   {
      Serial.println("GPRS disconnected");
 
@@ -32,18 +38,20 @@ void activateGps()
   else
   {
     Serial.println("GPRS disconnect: Failed.");
-  }
+  }*/
 
   
 }
 
 void desactivateGps()
 {
+    JsonDocument json;
     //desactivo el GPS
     gps.disableGPS();
     //vuelvo a activar el GSM
-    gsmManager.gsmReconnect();
+    //gsmManager.gsmReconnect();
 
+    delay(1000);
     //inicializo el timer para volver activar el GPS
     gps.initTimer();
 
@@ -51,15 +59,19 @@ void desactivateGps()
 
     Serial.println("GPS desactivado");
     
-    gps.getGpsValue();  
+    Serial.println("valor leidos de GPS...");
     
+    json=gps.readSavedGpsValues();  
+
+    gsmManager.sendMessageBroker(TOPIC_GPS,json);   
 
 }
 
 void alertOldPeople()
 {
-   String json=gsmManager.generateJson();
-   gsmManager.sendMessageBrokerTest(json);
+  
+   JsonDocument json=gsmManager.generateJson();
+   gsmManager.sendMessageBroker(TOPIC_POTENCIOMETRO,json);
 
    state=State::ST_Doing_control;
 }

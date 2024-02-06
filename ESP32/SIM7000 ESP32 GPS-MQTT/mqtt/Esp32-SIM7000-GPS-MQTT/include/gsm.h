@@ -32,6 +32,12 @@ extern enum Event event;
 
 #define MSG_JSON_MAX_SIZE   240
 
+#define TOPIC_PULSADOR          "/v1.6/devices/asaa/pulsador/lv"
+#define TOPIC_POTENCIOMETRO     "/v2.0/devices/asaa/pote"
+#define TOPIC_GPS               "/V2.0/devices/dispositivo1"
+
+
+
 extern TinyGsmClient client;
 extern PubSubClient mqtt;
 
@@ -41,12 +47,12 @@ class Gsm
         Gsm();
         void init();
         void checkMqtt();
-        boolean checkLastMessage();
-        boolean sendMessageBrokerTest(String json);
+        bool checkLastMessage();
+        bool sendMessageBroker(String topic, JsonDocument json);
         bool gsmDisconnect();
         bool gsmReconnect();
         
-        String generateJson();
+        JsonDocument generateJson();
 
 
     private:
@@ -57,8 +63,7 @@ class Gsm
         boolean mqttConnect();
         boolean checkGsmConnected();
         void mqttReconnect();
-        void mqttCallback(char* topic, byte* payload, unsigned int len);
-        
+        void mqttCallback(char *topic, byte *payload, unsigned int len);
 };
 
 #endif

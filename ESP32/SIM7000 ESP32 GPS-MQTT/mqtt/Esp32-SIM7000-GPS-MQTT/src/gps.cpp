@@ -56,19 +56,21 @@ bool Gps::checkGps()
       day = date.substring(6, 8).toInt();
       hour = date.substring(8, 10).toInt();
 
-      lat = splitter(gps_raw, ',', 3).toFloat();//±dd.dddddd
-      lon = splitter(gps_raw, ',', 4).toFloat();//±ddd.dddddd
-      msl_alt = splitter(gps_raw, ',', 5).toFloat();//meters
+      lat = splitter(gps_raw, ',', 3);//±dd.dddddd
+      lon = splitter(gps_raw, ',', 4);//±ddd.dddddd
+      msl_alt = splitter(gps_raw, ',', 5);//meters
       gps_satellites_used = splitter(gps_raw, ',', 15).toInt();
 
       
       if((lat!=0) && (lon!=0))
       {
+
         ("----------------------------------");
-        Serial.println("Latitude:"); Serial.println(lat, 6);
-        Serial.print("Longitude:"); Serial.println(lon, 6);
-        Serial.print("MSL Altitude:"); Serial.println(msl_alt, 6);
+        Serial.println("Latitude:"); Serial.println(lat);
+        Serial.print("Longitude:"); Serial.println(lon);
+        Serial.print("MSL Altitude:"); Serial.println(msl_alt);
         Serial.print("GPS Satellites Used:"); Serial.println(gps_satellites_used);
+        
 
         event = Event::EV_Gps_coordinates;  
 
@@ -79,11 +81,23 @@ bool Gps::checkGps()
   return false;
 }
 
-JsonDocument Gps::getGpsValue()
+JsonDocument Gps::readSavedGpsValues()
 {
+    
+    // Crear el JsonDocument
     JsonDocument doc;
 
-    
+    // Añadir los valores al documento
+    doc["position"]["latitude"] = lat;
+    doc["position"]["longitude"] = lon;
+   // doc["position"]["altitude"] = msl_alt;
+
+    // Serializar el JsonDocument a una cadena JSON
+    String jsonString;
+    serializeJson(doc, jsonString);
+
+    // Imprimir la cadena JSON
+    Serial.println(jsonString);
     return doc;
 }
 

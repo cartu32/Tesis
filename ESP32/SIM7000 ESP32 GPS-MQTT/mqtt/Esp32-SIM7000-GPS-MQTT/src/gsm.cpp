@@ -7,25 +7,20 @@ const char* broker = "industrial.api.ubidots.com";
 const char* mqtt_user = "BBFF-KlzMyMgB7jnNEgxnrFVIUkHKJ0hVan";
 const char* mqtt_pass = "BBFF-KlzMyMgB7jnNEgxnrFVIUkHKJ0hVan";
 
-const char* topicPulsador  = "/v1.6/devices/asaa/pulsador/lv";
-const char* topicInit      = "/v2.0/devices/asaa/pote";
-
 
 TinyGsmClient client(modem);
 PubSubClient mqtt(client);
 
-String Gsm::generateJson()
+JsonDocument Gsm::generateJson()
 {
     JsonDocument doc;
-    String json;
     
-    json="";
-
     doc["value"]=String(random(100));   
-    serializeJson(doc,json) ;           
+    
 
-    return json;
+    return doc;
 }
+
 Gsm::Gsm()
 {
 
@@ -70,6 +65,9 @@ void Gsm::init()
   {
      this->mqttCallback(topic, payload, length);
   });
+
+  // Espera un poco antes de publicar nuevamente
+  delay(5000);
 }
 
 
@@ -87,27 +85,29 @@ boolean Gsm::mqttConnect()
   }
 
   SerialMon.println(" success");
-  mqtt.subscribe(topicPulsador);
+  mqtt.subscribe(TOPIC_PULSADOR);
   
   return mqtt.connected();
 }
 
-boolean Gsm::sendMessageBrokerTest(String json)
-{
-  if(json.length()>MSG_JSON_MAX_SIZE)
-  {
-     SerialMon.println("\n****ERROR!!!!Tamano superado del msg al Broker.\n");
-     return false;
-  }
 
-  char charMsgToSend[MSG_JSON_MAX_SIZE+1];
-   
-  json.toCharArray(charMsgToSend, json.length()+1);
+
+bool Gsm::sendMessageBroker(String topic, JsonDocument json)
+{
+
+  bool resp=false;
+  char jsonCharArray[256];
   
+  serializeJson(json, jsonCharArray);
+
   Serial.println("Enviando a broker..");
-  Serial.println(charMsgToSend);
+  Serial.println(jsonCharArray);
+    
+  resp=mqtt.publish(topic.c_str(),jsonCharArray);
   
-  mqtt.publish(topicInit, (const char *)charMsgToSend);
+  Serial.println("respuesta publish: ");
+  Serial.print( resp);
+  
   return true;
 }
 
@@ -137,14 +137,12 @@ boolean Gsm:: checkLastMessage()
     return false;
 
   // Only proceed if incoming message's topic matches
-  if (lastTopic == topicPulsador) 
+  if (lastTopic == TOPIC_PULSADOR) 
   {
     lastTopic   = "";
     lastMessage = "";
     event = Event::EV_Person_out_area;
     
-    /*json=generateJson();
-    sendMessageBrokerTest(json);*/
     return true;
   }
   return false;
@@ -188,6 +186,7 @@ boolean Gsm::checkGsmConnected()
 
 bool Gsm::gsmReconnect()
 {
+  
     
     if (!modemMannager::isGprsConnected())
     {
