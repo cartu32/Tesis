@@ -16,7 +16,7 @@ void Gps::init()
     DebugPrint("The blue indicator light flashes to indicate positioning.");
 
     this->enableGPS();
-    this->initTimer();
+    this->initTimerToActivateGPs();
 }
 
 
@@ -87,58 +87,116 @@ JsonDocument Gps::readSavedGpsValues()
     // Crear el JsonDocument
     JsonDocument doc;
 
-    // Añadir los valores al documento
-    doc["position"]["latitude"] = lat;
-    doc["position"]["longitude"] = lon;
-   // doc["position"]["altitude"] = msl_alt;
+    if ((lat!=0)&&(lon!=0))
+    {      
+        // Añadir los valores al documento
+        doc["position"]["latitude"] = lat;
+        doc["position"]["longitude"] = lon;
+      // doc["position"]["altitude"] = msl_alt;
 
-    // Serializar el JsonDocument a una cadena JSON
-    String jsonString;
-    serializeJson(doc, jsonString);
+        // Serializar el JsonDocument a una cadena JSON
+        String jsonString;
+        serializeJson(doc, jsonString);
 
-    // Imprimir la cadena JSON
-    Serial.println(jsonString);
+        // Imprimir la cadena JSON
+        Serial.println(jsonString);
+
+    }
     return doc;
 }
 
-void Gps::initTimer()
+void Gps::initTimerToActivateGPs()
 {
     //se activa el timer
-    timeout = false;
-    activatedTimer=true;
+    timeout1 = false;
+    activatedTimer1=true;
 
     //se inicializa el contado de tiempo
-    last_current_time = millis();
+    last_current_time1 = millis();
+
+    //se descativa el timer de lectura de GPS, ya que no deben ejecutarse los dos al mismo tiempo
+    desactivateTimerToReadGps();
     
-    DebugPrint("Se activo el Timer GPS!!");
+    DebugPrint("Se activo el Timer de activacion del GPS!!");
 }
 
-bool Gps::checkTimeoutGps()
+bool Gps::checkTimeoutToActivateGps()
 {
 
   bool resp=false;
 
   //sale si no se activo el timer al llamar initTimer()
-  if(!activatedTimer)
+  if(!activatedTimer1)
     return resp;
 
   //Si se activo el timer se ejecuta
   long current_time = millis();
-  int diff = current_time - last_current_time;
-  timeout = (diff > UMBRAL_DIFERENCIA_TIMEOUT) ? true : false;
+  int diff = current_time - last_current_time1;
+  timeout1 = (diff > UMBRAL_TIMEOUT_TO_ACTIVATE_GPS) ? true : false;
 
   //si se cumplio el tiempo del timer
-  if (timeout)
-  {
-    DebugPrint("****Se cumplio Timeout!!");
-    
+  if (timeout1)
+  {    
     resp=true;
-    timeout = false;
-    activatedTimer=false;
+    timeout1 = false;
+    activatedTimer1=false;
 
-    event=Event::EV_Gps_activate_timeout;
+    event=Event::EV_Gps_timeout_to_activate;
   }
   
   return resp;
 
+}
+
+
+void Gps::initTimerToReadGPs()
+{
+    //se activa el timer
+    timeout2 = false;
+    activatedTimer2=true;
+
+    //se inicializa el contado de tiempo
+    last_current_time2 = millis();
+    
+    DebugPrint("Se activo el Timer  de lectura del GPS!!");
+}
+
+bool Gps::checkTimeoutToReadGps()
+{
+
+  bool resp=false;
+
+  //sale si no se activo el timer al llamar initTimer()
+  if(!activatedTimer2)
+    return resp;
+
+  //Si se activo el timer se ejecuta
+  long current_time = millis();
+  int diff = current_time - last_current_time2;
+  timeout2 = (diff > UMBRAL_TIMEOUT_TO_READ_GPS) ? true : false;
+
+  //si se cumplio el tiempo del timer
+  if (timeout2)
+  {    
+    resp=true;
+    timeout2 = false;
+    activatedTimer2=false;
+    DebugPrint("******Se cumplio timer lectura GPS");
+
+    event=Event::EV_Gps_timeout_to_read;
+  }
+  
+  return resp;
+
+}
+
+//Esta metodo sirve para cuando ocurre el evento EV_Gps_coordinates y en lugar de  EV_Gps_timeout_to_read,
+//como ambos eventos transicionan al esto ST_doing_control. Ya que al suceder el evento EV_Gps_coordinates, 
+//el timer2 va a serguir activado entonces hay que desacitivarlo, para que no siga corriendo.
+
+void Gps::desactivateTimerToReadGps()
+{
+    timeout2 = false;
+    activatedTimer2=false;
+    DebugPrint("Se desactivo el Timer  de lectura del GPS!!");
 }

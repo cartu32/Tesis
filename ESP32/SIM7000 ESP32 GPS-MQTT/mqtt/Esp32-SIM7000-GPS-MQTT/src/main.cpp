@@ -17,9 +17,11 @@ typedef void (*transition)();
 
 void activateGps()
 {
-  //activo el GPS
+  //activo el GPS 
   gps.enableGPS();
-    
+  //activo el timer que me indica hasta cuando se puede leer el gps.
+  gps.initTimerToReadGPs();
+
   state=State::ST_Reading_Gps;
   Serial.println("GPS Habilitados");
   
@@ -53,7 +55,7 @@ void desactivateGps()
 
     delay(1000);
     //inicializo el timer para volver activar el GPS
-    gps.initTimer();
+    gps.initTimerToActivateGPs();
 
     state=State::ST_Doing_control;
 
@@ -63,7 +65,14 @@ void desactivateGps()
     
     json=gps.readSavedGpsValues();  
 
-    gsmManager.sendMessageBroker(TOPIC_GPS,json);   
+    if(json.size()!=0)
+    {
+      gsmManager.sendMessageBroker(TOPIC_GPS,json);   
+    }
+    else
+    {
+      DebugPrint("No se envia coordenadas, ya que estan vacias")
+    }
 
 }
 
@@ -103,9 +112,9 @@ void none()
 
 transition state_table[MAX_STATES][MAX_EVENTS] =
 {
-      {contControl  , alertOldPeople      ,  none            ,  activateGps         , sendMessage       },//ST_Doing_control
-      {none         , none                ,  desactivateGps  ,  none                , none              },//ST_Readin_Gps
-      //EV_CONTINUE EV_Person_out_area    EV_Gps_coordinates  EV_Gps_activate_timeout EV_Notifiy_broker
+      {contControl  , alertOldPeople      ,  none            ,  activateGps         , none                       },//ST_Doing_control
+      {none         , none                ,  desactivateGps  ,  none                , desactivateGps             },//ST_Readin_Gps
+      //EV_CONTINUE EV_Person_out_area    EV_Gps_coordinates  EV_Gps_timeout_to_activate EV_Gps_timeout_to_read
 };
 
 
@@ -134,13 +143,15 @@ void setup()
 void GenerateEvent()
 {
 
-  if(gsmManager.checkLastMessage()||gps.checkTimeoutGps()||gps.checkGps())
+  if(gsmManager.checkLastMessage()||
+    gps.checkTimeoutToActivateGps()||
+    gps.checkTimeoutToReadGps()||
+    gps.checkGps())
   {
     return;
   }
 
-  Serial.println("****************CONTINUE!!!************");
-  event=Event::EV_Continue;
+   event=Event::EV_Continue;
 }
 
 void StateMachine()
