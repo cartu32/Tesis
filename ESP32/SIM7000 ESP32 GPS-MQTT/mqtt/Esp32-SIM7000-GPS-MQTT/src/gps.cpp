@@ -69,7 +69,7 @@ bool Gps::checkGps()
         DebugPrint("Latitude:"+lat);
         DebugPrint("Longitude"+lon);
         DebugPrint("Altitude"+msl_alt);
-        DebugPrint("GPS Satellites Used:"+gps_satellites_used);
+        DebugPrint("GPS Satellites Used:"+String(gps_satellites_used));
         
 
         event = Event::EV_Gps_coordinates;  

@@ -2,10 +2,12 @@
 #include <gsm.h>
 #include <gps.h>
 #include <states.h>
-#include <config.h>
+#include <battery.h>
+
 
 Gps gps = Gps();
 Gsm gsmManager = Gsm();
+Battery battery = Battery();
 
 enum Event event;
 enum State state;
@@ -93,6 +95,10 @@ void contControl()
   event=Event::EV_Continue;
 }
 
+void alertBattery()
+{
+  DebugPrint("********NIVEL DE BATERIA BAJO");
+}
 
 void sendMessage()
 {
@@ -111,20 +117,18 @@ void none()
 
 transition state_table[MAX_STATES][MAX_EVENTS] =
 {
-      {contControl  , alertOldPeople      ,  none            ,  activateGps         , none                       },//ST_Doing_control
-      {none         , none                ,  desactivateGps  ,  none                , desactivateGps             },//ST_Readin_Gps
-      //EV_CONTINUE EV_Person_out_area    EV_Gps_coordinates  EV_Gps_timeout_to_activate EV_Gps_timeout_to_read
+      {contControl  , alertOldPeople      ,  none            ,  activateGps         , none                     , alertBattery      },//ST_Doing_control
+      {none         , none                ,  desactivateGps  ,  none                , desactivateGps           , none              },//ST_Readin_Gps
+      //EV_CONTINUE EV_Person_out_area    EV_Gps_coordinates  EV_Gps_timeout_to_activate EV_Gps_timeout_to_read EV_Battery_low
 };
 
 
 void setup()
 {
-  // Set console baud rate
-  Serial.begin(115200);
-  delay(10);
+  
+  initDebug();
 
   DebugPrint("Wait...");
-
 
   if(!modemMannager::init())
   {
@@ -145,7 +149,8 @@ void GenerateEvent()
   if(gsmManager.checkLastMessage()||
     gps.checkTimeoutToActivateGps()||
     gps.checkTimeoutToReadGps()||
-    gps.checkGps())
+    gps.checkGps()||
+    battery.checkBattery())
   {
     return;
   }

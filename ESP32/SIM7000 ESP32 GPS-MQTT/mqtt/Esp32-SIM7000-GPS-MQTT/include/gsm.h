@@ -58,8 +58,9 @@ class Gsm
 
     private:
         uint32_t lastReconnectAttempt = 0;   
-        String lastMessage= "";
-        String lastTopic  = "";
+        String lastMessage     = "";
+        String previousMessage = "";
+        String lastTopic       = "";
 
         boolean mqttConnect();
         boolean checkGsmConnected();

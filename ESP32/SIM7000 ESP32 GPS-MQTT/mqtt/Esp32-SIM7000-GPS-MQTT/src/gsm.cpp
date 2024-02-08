@@ -138,8 +138,13 @@ boolean Gsm:: checkLastMessage()
   // Only proceed if incoming message's topic matches
   if (lastTopic == TOPIC_PULSADOR) 
   {
+    if(lastMessage==previousMessage)
+      return false;
+    
+    previousMessage=lastMessage;
     lastTopic   = "";
     lastMessage = "";
+    
     event = Event::EV_Person_out_area;
     
     return true;

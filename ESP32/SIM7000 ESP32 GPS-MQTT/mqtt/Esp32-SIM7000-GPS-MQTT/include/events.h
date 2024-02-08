@@ -9,7 +9,8 @@ enum Event
     EV_Person_out_area,
     EV_Gps_coordinates,
     EV_Gps_timeout_to_activate,
-    EV_Gps_timeout_to_read
+    EV_Gps_timeout_to_read,
+    EV_Battery_low
 };
 
 const String events_s[] = {
@@ -17,10 +18,11 @@ const String events_s[] = {
     "Persona Fuera De Area",
     "Se leyo coordenadas de GPS",
     "Timeout para activar el GPS",
-    "Timeout para leer el GPS"
+    "Timeout para leer el GPS",
+    "Nivel de Bateria Baja"
 
   };
 
-#define MAX_EVENTS 5
+#define MAX_EVENTS 6
 
 #endif
