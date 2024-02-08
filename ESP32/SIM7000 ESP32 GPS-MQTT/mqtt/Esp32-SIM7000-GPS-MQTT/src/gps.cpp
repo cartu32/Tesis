@@ -65,11 +65,11 @@ bool Gps::checkGps()
       if((lat!=0) && (lon!=0))
       {
 
-        ("----------------------------------");
-        Serial.println("Latitude:"); Serial.println(lat);
-        Serial.print("Longitude:"); Serial.println(lon);
-        Serial.print("MSL Altitude:"); Serial.println(msl_alt);
-        Serial.print("GPS Satellites Used:"); Serial.println(gps_satellites_used);
+        DebugPrint("----------------------------------");
+        DebugPrint("Latitude:"+lat);
+        DebugPrint("Longitude"+lon);
+        DebugPrint("Altitude"+msl_alt);
+        DebugPrint("GPS Satellites Used:"+gps_satellites_used);
         
 
         event = Event::EV_Gps_coordinates;  
@@ -99,7 +99,7 @@ JsonDocument Gps::readSavedGpsValues()
         serializeJson(doc, jsonString);
 
         // Imprimir la cadena JSON
-        Serial.println(jsonString);
+        DebugPrint(jsonString);
 
     }
     return doc;

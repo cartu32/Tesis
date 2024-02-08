@@ -5,14 +5,15 @@
 #include <events.h>
 #include <modemMannager.h>
 #include <PubSubClient.h>
+#include <config.h>
 
 extern enum Event event;
 
-#define SerialMon Serial
+
 
 #define TINY_GSM_USE_GPRS true
 #define TINY_GSM_USE_WIFI false
-#define TINY_GSM_DEBUG SerialMon
+#define TINY_GSM_DEBUG Serial
 #define GSM_PIN ""
 
 

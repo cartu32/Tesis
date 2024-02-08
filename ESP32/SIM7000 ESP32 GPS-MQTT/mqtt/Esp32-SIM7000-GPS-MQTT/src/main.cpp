@@ -23,23 +23,23 @@ void activateGps()
   gps.initTimerToReadGPs();
 
   state=State::ST_Reading_Gps;
-  Serial.println("GPS Habilitados");
+  DebugPrint("GPS Habilitados");
   
   //desconecto el GSM
   /*if(!gsmManager.gsmDisconnect())
   {
-     Serial.println("GPRS disconnected");
+     DebugPrint("GPRS disconnected");
 
      //activo el GPS
      gps.enableGPS();
     
     state=State::ST_Reading_Gps;
 
-     Serial.println("GPS Habilitados");
+     DebugPrint("GPS Habilitados");
   } 
   else
   {
-    Serial.println("GPRS disconnect: Failed.");
+    DebugPrint("GPRS disconnect: Failed.");
   }*/
 
   
@@ -59,9 +59,9 @@ void desactivateGps()
 
     state=State::ST_Doing_control;
 
-    Serial.println("GPS desactivado");
+    DebugPrint("GPS desactivado");
     
-    Serial.println("valor leidos de GPS...");
+    DebugPrint("valor leidos de GPS...");
     
     json=gps.readSavedGpsValues();  
 
@@ -89,7 +89,6 @@ void alertOldPeople()
 void contControl()
 {
   gsmManager.checkMqtt();
-  Serial.println("Control");
   
   event=Event::EV_Continue;
 }
@@ -107,7 +106,7 @@ void error()
 
 void none()
 {
-  Serial.println("none");
+  
 }
 
 transition state_table[MAX_STATES][MAX_EVENTS] =
@@ -121,10 +120,10 @@ transition state_table[MAX_STATES][MAX_EVENTS] =
 void setup()
 {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
-  SerialMon.println("Wait...");
+  DebugPrint("Wait...");
 
 
   if(!modemMannager::init())

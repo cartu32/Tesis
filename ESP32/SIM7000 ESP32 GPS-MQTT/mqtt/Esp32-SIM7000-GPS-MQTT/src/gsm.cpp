@@ -28,12 +28,12 @@ Gsm::Gsm()
 
 void Gsm::init()
 {
-  SerialMon.println("Initializing modem...");
+  DebugPrint("Initializing modem...");
   modemMannager::restart();
 
   String modemInfo = modemMannager::getInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
+  DebugPrint("Modem Info: "+modemInfo);
+  
 
   #if TINY_GSM_USE_GPRS
     // Unlock your SIM card with a PIN if needed
@@ -41,16 +41,16 @@ void Gsm::init()
     if (GSM_PIN && modemMannager::getSimStatus() != 3) { modemMannager::simUnlock(GSM_PIN); }
   #endif
 
-  SerialMon.print("Waiting for network...");
+  DebugPrint("Waiting for network...");
   if (!modemMannager::waitForNetwork()) 
   {
-    SerialMon.println(" fail");
+    DebugPrint(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  DebugPrint(" success");
 
-  if (modemMannager::isNetworkConnected()) { SerialMon.println("Network connected"); }
+  if (modemMannager::isNetworkConnected()) { DebugPrint("Network connected"); }
 
   if(!gsmReconnect())
   {
@@ -74,17 +74,17 @@ void Gsm::init()
 boolean Gsm::mqttConnect()
 {
 
-  SerialMon.print("Connecting to ");
-  SerialMon.print(broker);
+  Serial.print("Connecting to ");
+  Serial.print(broker);
   
   boolean status = mqtt.connect(broker, mqtt_user, mqtt_pass);
 
   if (status == false) {
-    SerialMon.println(" fail");
+    DebugPrint(" fail");
     return false;
   }
 
-  SerialMon.println(" success");
+  DebugPrint(" success");
   mqtt.subscribe(TOPIC_PULSADOR);
   
   return mqtt.connected();
@@ -96,17 +96,20 @@ bool Gsm::sendMessageBroker(String topic, JsonDocument json)
 {
 
   bool resp=false;
+  String resultado;
+
   char jsonCharArray[256];
   
   serializeJson(json, jsonCharArray);
 
-  Serial.println("Enviando a broker..");
-  Serial.println(jsonCharArray);
+  DebugPrint("Enviando a broker..");
+  DebugPrint(jsonCharArray);
     
   resp=mqtt.publish(topic.c_str(),jsonCharArray);
+  resultado = (resp) ? "true" : "false";
   
-  Serial.println("respuesta publish: ");
-  Serial.print( resp);
+  DebugPrint("respuesta publish: "+ resultado);
+  
   
   return true;
 }
@@ -122,11 +125,7 @@ void Gsm:: mqttCallback(char* topic, byte* payload, unsigned int len)
   lastMessage = stMessage;
   lastTopic = topic;
 
-  SerialMon.print("Message arrived [");
-  SerialMon.print(lastTopic);
-  SerialMon.print("]: ");
-  SerialMon.print(lastMessage);
-  SerialMon.println();
+  DebugPrint("Message arrived ["+lastTopic+"]: "+lastMessage+"\n");
 
 }
 
@@ -159,10 +158,10 @@ boolean Gsm::checkGsmConnected()
 // Make sure we're still registered on the network
   if (!modemMannager::isNetworkConnected()) 
   {
-    SerialMon.println("Network disconnected");
+    DebugPrint("Network disconnected");
     if (!modemMannager::waitForNetwork(180000L, true)) 
     {
-      SerialMon.println(" fail");
+      DebugPrint(" fail");
       delay(10000);
       return false;
     }
@@ -171,10 +170,9 @@ boolean Gsm::checkGsmConnected()
       return false;
     }
 
-    SerialMon.println(" Aca!!");
     if (modemMannager::isNetworkConnected()) 
     {
-      SerialMon.println("Network re-connected");
+     DebugPrint("Network re-connected");
     }
 
   }
@@ -190,18 +188,18 @@ bool Gsm::gsmReconnect()
     
     if (!modemMannager::isGprsConnected())
     {
-      SerialMon.println("GPRS disconnected!");
-      SerialMon.print(F("Connecting to "));
-      SerialMon.print(apn);
+      DebugPrint("GPRS disconnected!");
+      DebugPrint("Connecting to "+String(apn));
+      
       if (!modemMannager::gprsConnect(apn, gprsUser, gprsPass))
       {
-        SerialMon.println(" fail");
+        DebugPrint(" fail");
         delay(10000);
         return false;
       }
-      if (modemMannager::isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
+      if (modemMannager::isGprsConnected()) { DebugPrint("GPRS reconnected"); }
     }
-    SerialMon.println("¡¡GSM Ya esta conectado!!");
+    DebugPrint("¡¡GSM Ya esta conectado!!");
 
     // MQTT Broker setup
     mqtt.setServer(broker, 1883);
@@ -217,7 +215,7 @@ bool Gsm::gsmReconnect()
 }
 void Gsm::mqttReconnect()
 {
-  SerialMon.println("=== MQTT NOT CONNECTED ===");
+  DebugPrint("=== MQTT NOT CONNECTED ===");
   // Reconnect every 10 seconds
   uint32_t t = millis();
   if (t - lastReconnectAttempt > 10000L) 

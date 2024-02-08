@@ -21,7 +21,7 @@
 #define LED_PIN             12
 
 #define UMBRAL_TIMEOUT_TO_ACTIVATE_GPS 10000 //cada tanto mseg se activa el GPS
-#define UMBRAL_TIMEOUT_TO_READ_GPS     40000 //se usa para saber cuando se debe dejar de leer el gps
+#define UMBRAL_TIMEOUT_TO_READ_GPS     60000 //se usa para saber cuando se debe dejar de leer el gps
 
 class Gps
 {

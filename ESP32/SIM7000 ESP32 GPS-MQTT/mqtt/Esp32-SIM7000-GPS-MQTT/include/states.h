@@ -11,7 +11,7 @@ enum State
 
 const String states_s[] = {
   "Realizar Control",
-  "Leyengdo GPS"
+  "Leyendo GPS"
 };
 
 #define MAX_STATES 2
