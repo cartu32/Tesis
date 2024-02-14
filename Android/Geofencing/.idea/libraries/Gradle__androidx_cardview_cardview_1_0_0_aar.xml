@@ -1,13 +1,13 @@
 <component name="libraryTable">
-  <library name="Gradle: androidx.cardview:cardview:1.0.0@aar">
+  <library name="Gradle: androidx.cardview:cardview:1.0.0@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/ae69826ff88a15fd94dfc8cfc94451f7/cardview-1.0.0/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/ae69826ff88a15fd94dfc8cfc94451f7/cardview-1.0.0/res" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/ae69826ff88a15fd94dfc8cfc94451f7/cardview-1.0.0/AndroidManifest.xml" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/59cf86b0e95c42c757877b47490fe1ff/transformed/cardview-1.0.0/res" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/59cf86b0e95c42c757877b47490fe1ff/transformed/cardview-1.0.0/AndroidManifest.xml" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/59cf86b0e95c42c757877b47490fe1ff/transformed/cardview-1.0.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.cardview/cardview/1.0.0/c9f3ce7ca74ad2c978230f4094ba6804c5166f9c/cardview-1.0.0-sources.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.cardview/cardview/1.0.0/c9f3ce7ca74ad2c978230f4094ba6804c5166f9c/cardview-1.0.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

@@ -52,7 +52,7 @@ public class GeofenceHelper extends ContextWrapper {
         }
         Intent intent = new Intent(this, GeofenceTransitionService.class);
         intent.putExtra("Operation", Tools.GEOFENCE_TRANSITION);
-        pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_MUTABLE);
 
 
         return pendingIntent;

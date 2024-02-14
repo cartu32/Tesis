@@ -1,16 +1,14 @@
 <component name="libraryTable">
-  <library name="Gradle: androidx.test.espresso:espresso-core:3.2.0@aar">
+  <library name="Gradle: androidx.test.espresso:espresso-core:3.2.0@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/566bf8aeaca015f08e44aabd9c6db6c5/espresso-core-3.2.0/res" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/566bf8aeaca015f08e44aabd9c6db6c5/espresso-core-3.2.0/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/566bf8aeaca015f08e44aabd9c6db6c5/espresso-core-3.2.0/AndroidManifest.xml" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/566bf8aeaca015f08e44aabd9c6db6c5/espresso-core-3.2.0/res" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/b10617029610ad118faa594187411e89/transformed/espresso-core-3.2.0/AndroidManifest.xml" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/b10617029610ad118faa594187411e89/transformed/espresso-core-3.2.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.test.espresso/espresso-core/3.2.0/4dd88178a28883ac149f76e4908942486e756b72/espresso-core-3.2.0-javadoc.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.test.espresso/espresso-core/3.2.0/4dd88178a28883ac149f76e4908942486e756b72/espresso-core-3.2.0-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.test.espresso/espresso-core/3.2.0/5d1b7f5b3c2877929324f5c846da358995c9af6d/espresso-core-3.2.0-sources.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.test.espresso/espresso-core/3.2.0/5d1b7f5b3c2877929324f5c846da358995c9af6d/espresso-core-3.2.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

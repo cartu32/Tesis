@@ -1,16 +1,16 @@
 <component name="libraryTable">
-  <library name="Gradle: androidx.core:core:1.5.0@aar">
+  <library name="Gradle: androidx.core:core:1.5.0@aar" external-system-id="GRADLE">
     <ANNOTATIONS>
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/57910c6d0117760b9eb56c9d9cc963f1/core-1.5.0/annotations.zip!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/1035666427f5cc9e4bda0c70cf467273/transformed/core-1.5.0/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/57910c6d0117760b9eb56c9d9cc963f1/core-1.5.0/AndroidManifest.xml" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/57910c6d0117760b9eb56c9d9cc963f1/core-1.5.0/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/57910c6d0117760b9eb56c9d9cc963f1/core-1.5.0/res" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/1035666427f5cc9e4bda0c70cf467273/transformed/core-1.5.0/res" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/1035666427f5cc9e4bda0c70cf467273/transformed/core-1.5.0/jars/classes.jar!/" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/1035666427f5cc9e4bda0c70cf467273/transformed/core-1.5.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.core/core/1.5.0/b59df19e06f42e39b6d6ee97b2a1e42fd7c88204/core-1.5.0-sources.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.core/core/1.5.0/b59df19e06f42e39b6d6ee97b2a1e42fd7c88204/core-1.5.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

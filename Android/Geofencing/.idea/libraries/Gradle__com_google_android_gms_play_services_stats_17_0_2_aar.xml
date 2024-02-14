@@ -1,13 +1,11 @@
 <component name="libraryTable">
-  <library name="Gradle: com.google.android.gms:play-services-stats:17.0.2@aar">
+  <library name="Gradle: com.google.android.gms:play-services-stats:17.0.2@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/27ad089fc3737bd396b3c747ff4b7ca1/jetified-play-services-stats-17.0.2/res" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/27ad089fc3737bd396b3c747ff4b7ca1/jetified-play-services-stats-17.0.2/AndroidManifest.xml" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/27ad089fc3737bd396b3c747ff4b7ca1/jetified-play-services-stats-17.0.2/res" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/27ad089fc3737bd396b3c747ff4b7ca1/jetified-play-services-stats-17.0.2/jars/classes.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/4e9f00f833a2e697540c1453858002b1/transformed/jetified-play-services-stats-17.0.2/jars/classes.jar!/" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/4e9f00f833a2e697540c1453858002b1/transformed/jetified-play-services-stats-17.0.2/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/com.google.android.gms/play-services-stats/17.0.2/c0d58b8efa926b2c607984c54fb3d274490badd1/play-services-stats-17.0.2-javadoc.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/com.google.android.gms/play-services-stats/17.0.2/c0d58b8efa926b2c607984c54fb3d274490badd1/play-services-stats-17.0.2-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES />
   </library>

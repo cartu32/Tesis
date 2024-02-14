@@ -1,16 +1,14 @@
 <component name="libraryTable">
-  <library name="Gradle: androidx.test:core:1.2.0@aar">
+  <library name="Gradle: androidx.test:core:1.2.0@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/ee441628bbfa2325b1c36567075ca631/jetified-core-1.2.0/res" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/ee441628bbfa2325b1c36567075ca631/jetified-core-1.2.0/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/ee441628bbfa2325b1c36567075ca631/jetified-core-1.2.0/AndroidManifest.xml" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/ee441628bbfa2325b1c36567075ca631/jetified-core-1.2.0/res" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/8b3d06d6d49039bedcc5013f99ff734f/transformed/jetified-core-1.2.0/jars/classes.jar!/" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/8b3d06d6d49039bedcc5013f99ff734f/transformed/jetified-core-1.2.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.test/core/1.2.0/ed921186cfb809317daf41ccf8e6acc5dcea0e06/core-1.2.0-javadoc.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.test/core/1.2.0/ed921186cfb809317daf41ccf8e6acc5dcea0e06/core-1.2.0-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.test/core/1.2.0/4c4174bc50358d65632faeb0bb392ef76aa74c39/core-1.2.0-sources.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.test/core/1.2.0/4c4174bc50358d65632faeb0bb392ef76aa74c39/core-1.2.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

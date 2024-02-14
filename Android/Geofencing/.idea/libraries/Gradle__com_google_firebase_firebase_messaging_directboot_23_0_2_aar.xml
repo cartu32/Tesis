@@ -1,13 +1,11 @@
 <component name="libraryTable">
-  <library name="Gradle: com.google.firebase:firebase-messaging-directboot:23.0.2@aar">
+  <library name="Gradle: com.google.firebase:firebase-messaging-directboot:23.0.2@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/1c60e781d01476299dff487b111f2645/jetified-firebase-messaging-directboot-23.0.2/res" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/1c60e781d01476299dff487b111f2645/jetified-firebase-messaging-directboot-23.0.2/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/1c60e781d01476299dff487b111f2645/jetified-firebase-messaging-directboot-23.0.2/res" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/1c60e781d01476299dff487b111f2645/jetified-firebase-messaging-directboot-23.0.2/AndroidManifest.xml" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/437143182d3a545f90a41a9ed2219ff0/transformed/jetified-firebase-messaging-directboot-23.0.2/AndroidManifest.xml" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/437143182d3a545f90a41a9ed2219ff0/transformed/jetified-firebase-messaging-directboot-23.0.2/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/com.google.firebase/firebase-messaging-directboot/23.0.2/b8c68da58a9e22c1794f1e22867341ed84368f7e/firebase-messaging-directboot-23.0.2-javadoc.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/com.google.firebase/firebase-messaging-directboot/23.0.2/b8c68da58a9e22c1794f1e22867341ed84368f7e/firebase-messaging-directboot-23.0.2-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES />
   </library>

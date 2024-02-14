@@ -1,14 +1,12 @@
 <component name="libraryTable">
-  <library name="Gradle: androidx.dynamicanimation:dynamicanimation:1.0.0@aar">
+  <library name="Gradle: androidx.dynamicanimation:dynamicanimation:1.0.0@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/6beccb5c49cad6f9a89623781a950e5c/dynamicanimation-1.0.0/res" />
-      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/6beccb5c49cad6f9a89623781a950e5c/dynamicanimation-1.0.0/jars/classes.jar!/" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/6beccb5c49cad6f9a89623781a950e5c/dynamicanimation-1.0.0/res" />
-      <root url="file://D:/gradle/caches/transforms-2/files-2.1/6beccb5c49cad6f9a89623781a950e5c/dynamicanimation-1.0.0/AndroidManifest.xml" />
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/abd7aaeb79eae65c1bd1e0e024975ffc/transformed/dynamicanimation-1.0.0/AndroidManifest.xml" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/abd7aaeb79eae65c1bd1e0e024975ffc/transformed/dynamicanimation-1.0.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/androidx.dynamicanimation/dynamicanimation/1.0.0/5c050e29af5033ff5e2d58ccf657ae92fdfbda4a/dynamicanimation-1.0.0-sources.jar!/" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/androidx.dynamicanimation/dynamicanimation/1.0.0/5c050e29af5033ff5e2d58ccf657ae92fdfbda4a/dynamicanimation-1.0.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
