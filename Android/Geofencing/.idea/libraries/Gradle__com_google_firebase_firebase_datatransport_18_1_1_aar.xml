@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.google.firebase:firebase-datatransport:18.1.1@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/transforms-2/files-2.1/105a6080338aa0d07c6a3bc4678dc9b2/jetified-firebase-datatransport-18.1.1/res" />
+      <root url="file://D:/gradle/caches/transforms-2/files-2.1/105a6080338aa0d07c6a3bc4678dc9b2/jetified-firebase-datatransport-18.1.1/AndroidManifest.xml" />
+      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/105a6080338aa0d07c6a3bc4678dc9b2/jetified-firebase-datatransport-18.1.1/jars/classes.jar!/" />
+      <root url="file://D:/gradle/caches/transforms-2/files-2.1/105a6080338aa0d07c6a3bc4678dc9b2/jetified-firebase-datatransport-18.1.1/res" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/com.google.firebase/firebase-datatransport/18.1.1/13e48b0622f76b1a70f5c26598d336fe31d4fa54/firebase-datatransport-18.1.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/com.google.firebase/firebase-datatransport/18.1.1/92b6ff89725adfdbdfd039e1965d0acd9bee91c3/firebase-datatransport-18.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

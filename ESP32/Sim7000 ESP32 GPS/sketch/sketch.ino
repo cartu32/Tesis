@@ -158,7 +158,7 @@ void loop()
     day = date.substring(6, 8).toInt();
     hour = date.substring(8, 10).toInt();
     minutes = date.substring(10, 12).toInt();
-    secondWithSS = date.substring(12, 18).toFloat();
+    secondWithSS = date.substring(12, 18).toFloat(); 
     lat = splitter(gps_raw, ',', 3).toFloat();//±dd.dddddd
     lon = splitter(gps_raw, ',', 4).toFloat();//±ddd.dddddd
     msl_alt = splitter(gps_raw, ',', 5).toFloat();//meters
@@ -182,6 +182,7 @@ void loop()
     Serial.print("Latitude:"); Serial.println(lat, 6);
     Serial.print("Longitude:"); Serial.println(lon, 6);
     Serial.print("MSL Altitude:"); Serial.println(msl_alt, 6);
+    Serial.print("GPS Satellites Used:"); Serial.println(gps_satellites_used);
 
     /*Serial.print("GNSS Run Status:"); Serial.println(gnss_run_status);
     Serial.print("Fix Status:"); Serial.println(gnss_run_status);

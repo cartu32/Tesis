@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.google.android.material:material:1.4.0@aar">
+    <ANNOTATIONS>
+      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/f15b97c268bee0ba97fd430c5d1f4c3e/material-1.4.0/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://D:/gradle/caches/transforms-2/files-2.1/f15b97c268bee0ba97fd430c5d1f4c3e/material-1.4.0/jars/classes.jar!/" />
+      <root url="file://D:/gradle/caches/transforms-2/files-2.1/f15b97c268bee0ba97fd430c5d1f4c3e/material-1.4.0/res" />
+      <root url="file://D:/gradle/caches/transforms-2/files-2.1/f15b97c268bee0ba97fd430c5d1f4c3e/material-1.4.0/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Desktop/2doCuat 2021/TP2/Martes/Grupo 1/HelperCapacity/TP2-CODIGO/aplicacionmobileSOA/caches/modules-2/files-2.1/com.google.android.material/material/1.4.0/51035a8f6342c20d4d8f242d100e6f25e0c271ac/material-1.4.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

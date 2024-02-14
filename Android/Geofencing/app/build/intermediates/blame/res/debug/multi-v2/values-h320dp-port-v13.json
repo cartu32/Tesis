@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "C:\\Tesis\\Android\\Geofencing\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\User\\Desktop\\2doCuat 2021\\TP2\\Martes\\Grupo 1\\HelperCapacity\\TP2-CODIGO\\aplicacionmobileSOA\\caches\\transforms-2\\files-2.1\\f15b97c268bee0ba97fd430c5d1f4c3e\\material-1.4.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "75",
+                        "endOffsets": "126"
+                    }
+                }
+            ]
+        }
+    ]
+}
