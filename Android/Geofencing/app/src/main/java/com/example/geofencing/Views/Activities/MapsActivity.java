@@ -215,7 +215,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onDestroy() {
         super.onDestroy();
 
-        mapsActivtyPresenter.clearGeofenceMaps();
+        mapsActivtyPresenter.closeActivity();
 
         if (alert != null) {
             alert.dismiss();

@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.util.Log;
@@ -17,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.geofencing.Connection.MqttHandler;
 import com.example.geofencing.Model.Route;
 import com.example.geofencing.Model.SharedPreferencesRoutes;
 import com.example.geofencing.Notification.FirebaseId;
@@ -36,24 +36,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivtyPresenter {
-    //private final String NAME_SHARED_PREFERENCE="File_Routes";
-
+public class MapsActivtyPresenter
+{
     private final int MULTIPLE_PERMISSON_REQUEST_CODE = 10003;
     public static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 15; //metros
     public static final long MIN_TIME_BW_UPDATES = 1000 * 30;       //segundos
     private GeofenceHelper geofenceHelper;
     private GeofencingClient geofencingClient;
 
-    private int cantGeofences=0;
 
+    private int cantGeofences=0;
     private static final String TAG = "MapsActivityPresenter";
     private HashMap<String, Integer> hashMapId = new HashMap<String, Integer>();
     /*Se declara una variable de tipo LocationManager encargada de proporcionar acceso al servicio de localización del sistema.*/
     private LocationManager locationManager;
     /*Se declara una variable de tipo Location que accederá a la última posición conocida proporcionada por el proveedor.*/
     private Location location;
-    private Boolean isGPSEnabled=false,isNetworkEnabled=false;
+
 
     MapsActivity activity;
 
@@ -68,11 +67,13 @@ public class MapsActivtyPresenter {
     private fragment_config_geofence frag = null;
     private MapsRoute mapsRoute;
     List<LatLng> waypointsActiveRoute = null;
-
-    public IntentFilter filtro;
+    private MqttHandler mqttHandler;
     public IntentFilter filtroExterno;
-    private ReceptorOperation receiver = new ReceptorOperation();
+    public IntentFilter filterReceive;
+    public IntentFilter filterConncetionLost;
     private ReceptorNotificacion receiverExtern = new ReceptorNotificacion();
+    private ReceptorOperacion receiver =new ReceptorOperacion();
+    private ConnectionLost connectionLost =new ConnectionLost();
 
 
     //Array que contiene las areas de Geofencing agregadas manualmente por el usuario
@@ -86,11 +87,39 @@ public class MapsActivtyPresenter {
         geofencingClient = LocationServices.getGeofencingClient(activity);
         mapsRoute = new MapsRoute(activity);
 
+        mqttHandler = new MqttHandler(activity.getApplicationContext());
+        connect();
+
         configureBroadcastReciever();
 
         FirebaseId.logToken();
 
     }
+
+
+    private void connect()
+    {
+        mqttHandler.connect(mqttHandler.BROKER_URL,mqttHandler.CLIENT_ID, mqttHandler.USER, mqttHandler.PASS);
+
+
+        try {
+            publishMessage(mqttHandler.TOPIC_PULSADOR,"1");
+            Thread.sleep(1000);
+            subscribeToTopic(mqttHandler.TOPIC_PULSADOR);
+            subscribeToTopic(mqttHandler.TOPIC_GPS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private void publishMessage(String topic, String message){
+        activity.showMessage( "Publishing message: " + message);
+        mqttHandler.publish(topic,message);
+    }
+    private void subscribeToTopic(String topic){
+        activity.showMessage( "Subscribing to topic "+ topic);
+        mqttHandler.subscribe(topic);
+    }
+
 
 
     public void checkPermisson()
@@ -131,72 +160,30 @@ public class MapsActivtyPresenter {
     private void configureBroadcastReciever() {
         //se asocia(registra) la  accion RESPUESTA_OPERACION, para que cuando el Servicio de recepcion la ejecute
         //se invoque automaticamente el OnRecive del objeto receiver
-        filtro = new IntentFilter("com.example.intentservice.intent.action.RESPUESTA_OPERACION");
+        //se asocia(registra) la  accion RESPUESTA_OPERACION, para que cuando el Servicio de recepcion la ejecute
+        //se invoque automaticamente el OnRecive del objeto receiver
+
+        filterReceive = new IntentFilter(MqttHandler.ACTION_DATA_RECEIVE);
+        filterConncetionLost = new IntentFilter(MqttHandler.ACTION_CONNECTION_LOST);
         filtroExterno = new IntentFilter("com.example.intentservice.intent.action.NOTIFICACION_FIREBASE");
 
-        filtro.addCategory(Intent.CATEGORY_DEFAULT);
+        filterReceive.addCategory(Intent.CATEGORY_DEFAULT);
+        filterConncetionLost.addCategory(Intent.CATEGORY_DEFAULT);
         filtroExterno.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
-        activity.getApplicationContext().registerReceiver(receiver, filtro);
+        activity.getApplicationContext().registerReceiver(receiver, filterReceive);
+        activity.getApplicationContext().registerReceiver(connectionLost,filterConncetionLost);
         activity.getApplicationContext().registerReceiver(receiverExtern, filtroExterno);
 
     }
 
     public Location getLocation() {
-        try {
 
-            if (checkconnection()) {
-                // Si no hay proveedor habilitado
-                //solicito que active el gps
-                activity.alertNoGps();
-            }
-
-            // if GPS Enabled get lat/long using GPS Services
-            if (isGPSEnabled) {
-                setPositionGPS();
-            }else if (isNetworkEnabled) {
-                setPositionNetwork();
-            }
-
-        } catch (Exception e) {
-            Log.e("getLocation", e.getMessage());
-        }
-        return location;
+        return null;
     }
 
     public void setPositionGPS() {
-        if (location == null) {
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    MIN_TIME_BW_UPDATES,
-                    MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) activity);
-            if (locationManager != null) {
-                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (location != null) {
-                    activity.positionUpdate(location);
-                }
-            }
-        }
-    }
-
-    void setPositionNetwork(){
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        locationManager.requestLocationUpdates(
-                LocationManager.NETWORK_PROVIDER,
-                MIN_TIME_BW_UPDATES,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) activity);
-        if (locationManager != null) {
-            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (location != null) {
-                activity.positionUpdate(location);
-            }
-        }
-
+                   activity.positionUpdate(location);
     }
 
     public void checkGeofenceRoute(LatLng latLng){
@@ -225,10 +212,6 @@ public class MapsActivtyPresenter {
         if(listLastGeofence.size()==0)
             return false;
 
-        if(checkconnection()){
-            activity.showMessage("No hay conexion de GPS o Red");
-            return false;
-        }
 
         Log.d("Alerta", "Entrando en For");
         for (int i = 0; i < listLastGeofence.size(); i++) {
@@ -372,21 +355,6 @@ public class MapsActivtyPresenter {
         return color;
     }
 
-    private boolean checkconnection(){
-        locationManager = (LocationManager) activity.getApplicationContext()
-                .getSystemService(activity.getApplicationContext().LOCATION_SERVICE);
-
-        // getting GPS status
-        isGPSEnabled = locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-        // getting network status
-        isNetworkEnabled = locationManager
-                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-        return (!isGPSEnabled && !isNetworkEnabled);
-    }
-
     public void closeFragment() {
         Fragment prev = activity.getSupportFragmentManager().findFragmentById(frag.getId());
 
@@ -482,6 +450,15 @@ public class MapsActivtyPresenter {
         closeFragment();
     }
 
+    public void closeActivity()
+    {
+        clearGeofenceMaps();
+        mqttHandler.disconnect();
+
+        activity.getApplicationContext().unregisterReceiver(receiver);
+        activity.getApplicationContext().unregisterReceiver(receiverExtern);
+        activity.getApplicationContext().unregisterReceiver(connectionLost);
+    }
     public void clearGeofenceMaps() {
         selectPoint = SELECT_ORIGIN_POINT;
         clearGeofencesIntent();
@@ -501,19 +478,29 @@ public class MapsActivtyPresenter {
         waypointsActiveRoute = null;
     }
 
-    public class ReceptorOperation extends BroadcastReceiver {
+    public class ConnectionLost extends BroadcastReceiver
+
+    {
+
         public void onReceive(Context context, Intent intent) {
 
-            int operacion = 0;
+             activity.showMessage("Conexion Perdida");
+             connect();
 
-            operacion = intent.getExtras().getInt("Operacion");
-
-            if (operacion == Tools.OPERATION_UPDATE_ACTIVE_ROUTE) {
-                updateActiveRoute(intent);
-            } else if (operacion == Tools.OPERATION_CLEAR_ACTIVE_ROUTE) {
-                clearActiveRoute();
-            }
         }
+
+    }
+
+
+    public class ReceptorOperacion extends BroadcastReceiver {
+
+        public void onReceive(Context context, Intent intent) {
+
+            //Se obtiene los valores que envio el servicio atraves de un untent
+            //NOtAR la utilizacion de un objeto Bundle es opcional.
+            String msgJson = intent.getStringExtra("msgJson");
+        }
+
     }
 
     public class ReceptorNotificacion extends BroadcastReceiver {

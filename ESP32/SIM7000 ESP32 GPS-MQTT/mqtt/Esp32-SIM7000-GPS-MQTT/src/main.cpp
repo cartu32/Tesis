@@ -11,6 +11,8 @@ Battery battery = Battery();
 
 enum Event event;
 enum State state;
+enum Event ant_event;
+enum State ant_state;
 
 bool timeout;
 long last_current_time;
@@ -141,6 +143,8 @@ void setup()
   state=State::ST_Doing_control;
   event=Event::EV_Continue;
 
+  ant_state=state;
+  ant_event=event;
 }
 
 void GenerateEvent()
@@ -158,17 +162,24 @@ void GenerateEvent()
    event=Event::EV_Continue;
 }
 
+void printState()
+{
+  if ((event != ant_event) && (state!=ant_state))
+    {
+      ant_event=event;
+      ant_state=state;
+      DebugPrintEstado(states_s[state], events_s[event]);
+    }
+}
+
 void StateMachine()
 {
   GenerateEvent();
 
   if ((event >= 0) && (event < MAX_EVENTS) && (state >= 0) && (state < MAX_STATES))
   {
-    /*if (event != Event::EV_Continue)
-    {*/
-      DebugPrintEstado(states_s[state], events_s[event]);
-    //}
-
+    printState();
+    
     state_table[state][event]();
   }
   

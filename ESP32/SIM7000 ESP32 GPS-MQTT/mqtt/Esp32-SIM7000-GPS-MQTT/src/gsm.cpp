@@ -30,9 +30,6 @@ void Gsm::init()
 {
   DebugPrint("Initializing modem...");
   modemMannager::restart();
-
-  String modemInfo = modemMannager::getInfo();
-  DebugPrint("Modem Info: "+modemInfo);
   
 
   #if TINY_GSM_USE_GPRS

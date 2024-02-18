@@ -36,13 +36,13 @@ bool Battery::checkBattery()
             
             // When connecting USB, the battery detection will return 0,
             // because the adc detection circuit is disconnected when connecting USB
-            DebugPrint("Voltage :" + String(battery_voltage));
+          //  DebugPrint("Voltage :" + String(battery_voltage));
 
-            if (battery_voltage == 0) 
+            /*if (battery_voltage == 0) 
             {
                 DebugPrint("USB is connected, please disconnect USB.");
                 
-            }
+            }*/
 
             if((battery_voltage<OPTIMUM_BATTERY_THRESHOLD)&&
                 (battery_voltage!=0))

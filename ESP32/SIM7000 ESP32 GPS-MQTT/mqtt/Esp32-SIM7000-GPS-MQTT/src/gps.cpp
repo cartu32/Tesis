@@ -12,9 +12,6 @@ Gps::Gps()
 
 void Gps::init()
 {
-    DebugPrint("Start positioning . Make sure to locate outdoors.");
-    DebugPrint("The blue indicator light flashes to indicate positioning.");
-
     this->enableGPS();
     this->initTimerToActivateGPs();
 }
@@ -65,11 +62,11 @@ bool Gps::checkGps()
       if((lat!=0) && (lon!=0))
       {
 
-        DebugPrint("----------------------------------");
+/*        DebugPrint("----------------------------------");
         DebugPrint("Latitude:"+lat);
         DebugPrint("Longitude"+lon);
         DebugPrint("Altitude"+msl_alt);
-        DebugPrint("GPS Satellites Used:"+String(gps_satellites_used));
+        DebugPrint("GPS Satellites Used:"+String(gps_satellites_used));*/
         
 
         event = Event::EV_Gps_coordinates;  
