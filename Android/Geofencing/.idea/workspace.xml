@@ -15,40 +15,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3064b07b-239a-4195-83ec-1d7bf15b2693" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_eclipse_paho_org_eclipse_paho_client_mqttv3_1_2_5.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Connection/MqttHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Model/ActualLocation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/7.4/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/7.4/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/checksums/md5-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/7.4/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.4/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.4/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.4/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.4/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.4/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.4/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.androidTest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.androidTest.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.main.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.unitTest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/app/Geofencing.app.unitTest.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService_0_GeofenceTransitionService_calls.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService_1_onCreate_calls.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService_onCreate_flow.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService_onHandleIntent_flow.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService_structure.puml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Views/Activities/MapsActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Views/Activities/MapsActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/include/gps.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/include/gps.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/battery.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/battery.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/gps.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/gps.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/gsm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/gsm.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../ESP32/SIM7000 ESP32 GPS-MQTT/mqtt/Esp32-SIM7000-GPS-MQTT/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,19 +100,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "C:/Tesis/Android/Geofencing",
-    "project.structure.last.edited": "Dependencies",
-    "project.structure.proportion": "0.17",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Tesis/Android/Geofencing&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Dependencies&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
   }
-}]]></component>
+}</component>
   <component name="PsdUISettings">
     <option name="LAST_EDITED_BUILD_TYPE" value="release" />
   </component>
@@ -276,17 +252,12 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>565</line>
+          <line>592</line>
           <option name="timeStamp" value="321" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>407</line>
-          <option name="timeStamp" value="323" />
-        </line-breakpoint>
-        <line-breakpoint suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>604</line>
+          <line>631</line>
           <option name="timeStamp" value="324" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="java-line">
@@ -294,35 +265,15 @@
           <line>65</line>
           <option name="timeStamp" value="325" />
         </line-breakpoint>
-        <line-breakpoint suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>478</line>
-          <option name="timeStamp" value="327" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>356</line>
-          <option name="timeStamp" value="330" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService.java</url>
           <line>108</line>
           <option name="timeStamp" value="331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>366</line>
-          <option name="timeStamp" value="332" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService.java</url>
           <line>138</line>
           <option name="timeStamp" value="334" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>281</line>
-          <option name="timeStamp" value="335" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Model/SharedPreferencesRoutes.java</url>
@@ -335,34 +286,34 @@
           <option name="timeStamp" value="337" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>284</line>
-          <option name="timeStamp" value="338" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/GeofenceTransitionService.java</url>
           <line>45</line>
           <option name="timeStamp" value="340" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>105</line>
-          <option name="timeStamp" value="348" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>101</line>
-          <option name="timeStamp" value="349" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
-          <line>500</line>
-          <option name="timeStamp" value="352" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Connection/MqttHandler.java</url>
           <line>97</line>
           <option name="timeStamp" value="353" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
+          <line>523</line>
+          <option name="timeStamp" value="354" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Views/Activities/MapsActivity.java</url>
+          <line>79</line>
+          <option name="timeStamp" value="357" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Presenter/MapsActivtyPresenter.java</url>
+          <line>514</line>
+          <option name="timeStamp" value="360" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/geofencing/Views/Activities/MapsActivity.java</url>
+          <line>170</line>
+          <option name="timeStamp" value="361" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

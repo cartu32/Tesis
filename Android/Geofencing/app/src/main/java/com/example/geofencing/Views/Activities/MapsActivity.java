@@ -2,8 +2,6 @@ package com.example.geofencing.Views.Activities;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -80,6 +78,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //elimino todos los geofences que pudieron haber quedado cargados, si la aplicacion se cerro
         // anteriormente por la ocurrencia de algun error.
         mapsActivtyPresenter.clearGeofenceMaps();
+
+        mMap.getUiSettings().setAllGesturesEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setMapToolbarEnabled(true);
+
+        mapsActivtyPresenter.connectMqtt();
+
+
     }
 
     public void showMessage(String message) {
@@ -101,8 +108,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onLocationChanged(Location location) {
         LatLng latLng;
 
-        latLng = positionUpdate(location);
+        latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
+        positionUpdate(latLng);
         mapsActivtyPresenter.checkGeofenceRoute(latLng);
     }
 
@@ -121,16 +129,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public LatLng positionUpdate(Location location) {
+    public boolean positionUpdate(LatLng latLng) {
 
-        LatLng latLng;
-
-        float zoomLevel = 16.0f; //This goes up to 21
-        latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        float zoomLevel = 1.0f; //This goes up to 21
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
 
-        return latLng;
+        return true;
     }
 
 
@@ -159,6 +164,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         geoFenceMarker = new MarkerOptions().position(latLng);
         mMap.addMarker(geoFenceMarker);
 
+    }
+
+    public void updateLocationSenior(LatLng latLng)
+    {
+        addMarker(latLng);
+        positionUpdate(latLng);
     }
 
     public void addMarkerGeofence(LatLng latLng, float radius) {
@@ -190,25 +201,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
-    public void alertNoGps() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("El sistema GPS esta desactivado, ¿Desea activarlo?")
-                .setCancelable(false)
-                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
-                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        mapsActivtyPresenter.setPositionGPS();
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        dialog.cancel();
-                    }
-                });
-        alert = builder.create();
-        alert.show();
-    }
 
     @Override
 

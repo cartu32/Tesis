@@ -32,6 +32,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.PolyUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,12 +71,12 @@ public class MapsActivtyPresenter
     private MapsRoute mapsRoute;
     List<LatLng> waypointsActiveRoute = null;
     private MqttHandler mqttHandler;
-    public IntentFilter filtroExterno;
-    public IntentFilter filterReceive;
+    public IntentFilter filterNotificationFirebase;
+    public IntentFilter filterReceiveMqtt;
     public IntentFilter filterConncetionLost;
-    private ReceptorNotificacion receiverExtern = new ReceptorNotificacion();
-    private ReceptorOperacion receiver =new ReceptorOperacion();
-    private ConnectionLost connectionLost =new ConnectionLost();
+    private ReceptorNotificacionFirebase brReceiverFirebase = new ReceptorNotificacionFirebase();
+    private ReceptorMqtt brReceverMqtt=new ReceptorMqtt();
+    private ReceptorConnectionLost brConnectionLost =new ReceptorConnectionLost();
 
 
     //Array que contiene las areas de Geofencing agregadas manualmente por el usuario
@@ -88,7 +91,7 @@ public class MapsActivtyPresenter
         mapsRoute = new MapsRoute(activity);
 
         mqttHandler = new MqttHandler(activity.getApplicationContext());
-        connect();
+
 
         configureBroadcastReciever();
 
@@ -97,7 +100,7 @@ public class MapsActivtyPresenter
     }
 
 
-    private void connect()
+    public void connectMqtt()
     {
         mqttHandler.connect(mqttHandler.BROKER_URL,mqttHandler.CLIENT_ID, mqttHandler.USER, mqttHandler.PASS);
 
@@ -105,7 +108,7 @@ public class MapsActivtyPresenter
         try {
             publishMessage(mqttHandler.TOPIC_PULSADOR,"1");
             Thread.sleep(1000);
-            subscribeToTopic(mqttHandler.TOPIC_PULSADOR);
+            //subscribeToTopic(mqttHandler.TOPIC_PULSADOR);
             subscribeToTopic(mqttHandler.TOPIC_GPS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -163,17 +166,17 @@ public class MapsActivtyPresenter
         //se asocia(registra) la  accion RESPUESTA_OPERACION, para que cuando el Servicio de recepcion la ejecute
         //se invoque automaticamente el OnRecive del objeto receiver
 
-        filterReceive = new IntentFilter(MqttHandler.ACTION_DATA_RECEIVE);
+        filterReceiveMqtt = new IntentFilter(MqttHandler.ACTION_DATA_RECEIVE);
         filterConncetionLost = new IntentFilter(MqttHandler.ACTION_CONNECTION_LOST);
-        filtroExterno = new IntentFilter("com.example.intentservice.intent.action.NOTIFICACION_FIREBASE");
+        filterNotificationFirebase = new IntentFilter("com.example.intentservice.intent.action.NOTIFICACION_FIREBASE");
 
-        filterReceive.addCategory(Intent.CATEGORY_DEFAULT);
+        filterReceiveMqtt.addCategory(Intent.CATEGORY_DEFAULT);
         filterConncetionLost.addCategory(Intent.CATEGORY_DEFAULT);
-        filtroExterno.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        filterNotificationFirebase.addCategory(Intent.CATEGORY_ALTERNATIVE);
 
-        activity.getApplicationContext().registerReceiver(receiver, filterReceive);
-        activity.getApplicationContext().registerReceiver(connectionLost,filterConncetionLost);
-        activity.getApplicationContext().registerReceiver(receiverExtern, filtroExterno);
+        activity.getApplicationContext().registerReceiver(brReceverMqtt, filterReceiveMqtt);
+        activity.getApplicationContext().registerReceiver(brConnectionLost,filterConncetionLost);
+        activity.getApplicationContext().registerReceiver(brReceiverFirebase, filterNotificationFirebase);
 
     }
 
@@ -182,9 +185,6 @@ public class MapsActivtyPresenter
         return null;
     }
 
-    public void setPositionGPS() {
-                   activity.positionUpdate(location);
-    }
 
     public void checkGeofenceRoute(LatLng latLng){
         boolean resp;
@@ -412,6 +412,19 @@ public class MapsActivtyPresenter
         }
     }
 
+    private Location getObjectLocation(String latitude,String longitude)
+    {
+        // Convertir latitud y longitud de cadena a double
+        double latitud = Double.parseDouble(latitude);
+        double longitud = Double.parseDouble(longitude);
+
+        // Crear un objeto Location y establecer latitud y longitud
+        Location location = new Location("dummyProvider"); // Puedes poner cualquier proveedor aquí
+        location.setLatitude(latitud);
+        location.setLongitude(longitud);
+
+        return location;
+    }
     public void generateRouteManual(){
         generateGeofencesManual();
         mapsRoute.getWaypoints(originPoint, destinationPoint,idAreaActiva);
@@ -455,9 +468,9 @@ public class MapsActivtyPresenter
         clearGeofenceMaps();
         mqttHandler.disconnect();
 
-        activity.getApplicationContext().unregisterReceiver(receiver);
-        activity.getApplicationContext().unregisterReceiver(receiverExtern);
-        activity.getApplicationContext().unregisterReceiver(connectionLost);
+        activity.getApplicationContext().unregisterReceiver(brReceverMqtt);
+        activity.getApplicationContext().unregisterReceiver(brReceiverFirebase);
+        activity.getApplicationContext().unregisterReceiver(brConnectionLost);
     }
     public void clearGeofenceMaps() {
         selectPoint = SELECT_ORIGIN_POINT;
@@ -478,32 +491,46 @@ public class MapsActivtyPresenter
         waypointsActiveRoute = null;
     }
 
-    public class ConnectionLost extends BroadcastReceiver
+    public class ReceptorConnectionLost extends BroadcastReceiver
 
     {
 
         public void onReceive(Context context, Intent intent) {
 
              activity.showMessage("Conexion Perdida");
-             connect();
+            connectMqtt();
 
         }
 
     }
 
 
-    public class ReceptorOperacion extends BroadcastReceiver {
+    public class ReceptorMqtt extends BroadcastReceiver {
 
         public void onReceive(Context context, Intent intent) {
+            try {
+                //Se obtiene los valores que envio el servicio atraves de un untent
+                //NOtAR la utilizacion de un objeto Bundle es opcional.
 
-            //Se obtiene los valores que envio el servicio atraves de un untent
-            //NOtAR la utilizacion de un objeto Bundle es opcional.
-            String msgJson = intent.getStringExtra("msgJson");
+                String msgJson = intent.getStringExtra("msgJson");
+                JSONObject jsonObject= new JSONObject(msgJson);
+
+                JSONObject positionObject = jsonObject.getJSONObject("context");
+                double latitude=Double.parseDouble(positionObject.getString("lat"));
+                double longitude=Double.parseDouble(positionObject.getString("lng"));
+
+                LatLng latLng = new LatLng(latitude, longitude);
+
+                activity.updateLocationSenior(latLng);
+
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }
 
-    public class ReceptorNotificacion extends BroadcastReceiver {
+    public class ReceptorNotificacionFirebase extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
 
             int operacion = 0;
