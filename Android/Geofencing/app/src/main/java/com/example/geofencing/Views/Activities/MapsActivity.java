@@ -26,6 +26,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -42,6 +43,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int RC_HANDLE_GMS = 9001;
     private Circle circle;
     private MarkerOptions geoFenceMarker = null;
+
+    private Marker previousAncientMarker=null;
+    private float zoomLevel = 19.0f; //This goes up to 21
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +135,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public boolean positionUpdate(LatLng latLng) {
 
-        float zoomLevel = 1.0f; //This goes up to 21
+
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
 
@@ -160,16 +164,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getLocation();
     }
 
-    private void addMarker(LatLng latLng) {
-        geoFenceMarker = new MarkerOptions().position(latLng);
-        mMap.addMarker(geoFenceMarker);
+    private Marker addMarker(LatLng latLng) {
+        Marker marker;
 
+        geoFenceMarker = new MarkerOptions().position(latLng);
+        marker = mMap.addMarker(geoFenceMarker);
+
+        return marker;
     }
 
     public void updateLocationSenior(LatLng latLng)
     {
-        addMarker(latLng);
+        if(previousAncientMarker!=null)
+            previousAncientMarker.remove();
+
+        previousAncientMarker=addMarker(latLng);
         positionUpdate(latLng);
+
     }
 
     public void addMarkerGeofence(LatLng latLng, float radius) {
