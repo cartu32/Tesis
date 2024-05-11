@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.google.firebase:firebase-analytics:20.1.1@aar" external-system-id="GRADLE">
+    <CLASSES>
+      <root url="file://D:/Android_SDK/Gradle/caches/transforms-3/1a30da8dc3bf0772c56e113071f48605/transformed/jetified-firebase-analytics-20.1.1/AndroidManifest.xml" />
+      <root url="jar://D:/Android_SDK/Gradle/caches/transforms-3/1a30da8dc3bf0772c56e113071f48605/transformed/jetified-firebase-analytics-20.1.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://D:/Android_SDK/Gradle/caches/modules-2/files-2.1/com.google.firebase/firebase-analytics/20.1.1/ace98f39b262c59be4be4d52b871d1ba5dfff723/firebase-analytics-20.1.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES />
+  </library>
+</component>
