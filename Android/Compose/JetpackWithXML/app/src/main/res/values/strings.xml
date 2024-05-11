@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">JetpackWithXML</string>
+    <string name="button">Presioname</string>
+    <string name="textview">texto a MOostrar</string>
+</resources>
