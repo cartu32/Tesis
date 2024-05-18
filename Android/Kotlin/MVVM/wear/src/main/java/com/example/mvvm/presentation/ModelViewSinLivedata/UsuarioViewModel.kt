@@ -3,7 +3,6 @@ package com.example.mvvm.presentation.ModelViewSinLivedata
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class UsuarioViewModel : ViewModel() {

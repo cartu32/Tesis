@@ -4,7 +4,7 @@
  * changes to the libraries and their usages.
  */
 
-package com.example.mvvm.presentation.ModelViewSinLivedata
+package com.example.mvvm.presentation.ModelViewConLivedata
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,30 +12,51 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.Observer
 import androidx.wear.compose.material.Text
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mvvm.presentation.ModelViewConLivedata.UsuarioViewModelLV
-import com.example.mvvm.presentation.ModelViewSinLivedata.UsuarioViewModel
+import com.example.mvvm.presentation.ModelViewSinLivedata.UsuarioModel
 
 @Composable
-fun UsuarioScreen(model: UsuarioViewModel =viewModel<UsuarioViewModel>()) {
+fun UsuarioScreenLV(model: UsuarioViewModelLV =viewModel<UsuarioViewModelLV>()) {
 
-    var usuario = model.usuarioModel
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var edad by remember { mutableStateOf(0) }
+    var nombre by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Edad  de usuario: ${model.usuarioModel.edad}")
+        // se genera el observer para el usuario
+        model.usuarioModel.observe(lifecycleOwner, Observer{
+            edad=it.edad
+            nombre=it.nombre
+        })
+
+        Text(text = "Nombre: ${nombre}")
+        Text(text = "Edad: ${edad}")
+
 
         FilledTonalButton(
             colors = ButtonDefaults.buttonColors( Color.Red),
-            onClick = {model.incrementarEdad()
+            onClick = {
+                model.incrementarEdad()
+                model.asignName("Esteban")
         }
         ) {
             Text(text = "Actualizar Usuario")
@@ -45,6 +66,6 @@ fun UsuarioScreen(model: UsuarioViewModel =viewModel<UsuarioViewModel>()) {
 
 @Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
-fun PreviewUsuarioScreen() {
-    UsuarioScreen()
+fun PreviewUsuarioScreenLV() {
+    UsuarioScreenLV()
 }
