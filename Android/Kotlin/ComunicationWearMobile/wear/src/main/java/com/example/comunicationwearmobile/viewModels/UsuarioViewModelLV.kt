@@ -1,16 +1,11 @@
-package com.example.mvvm.presentation.ModelViewConLivedata
+package com.example.comunicationwearmobile.viewModels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.mvvm.presentation.ModelViewSinLivedata.UsuarioModel
-import com.example.mvvm.presentation.ModelViewSinLivedata.UsuarioViewModel
+import com.example.comunicationwearmobile.models.UsuarioModelLV
 
 class UsuarioViewModelLV : ViewModel() {
-    public val usuarioModel = MutableLiveData(UsuarioModel())
+    public val usuarioModel = MutableLiveData(UsuarioModelLV())
 
 
     /*Compse no detecta cambios en objetos complejos automaticamente (en este caso UsuarioModel)

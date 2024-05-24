@@ -1,4 +1,4 @@
-package com.example.mvvm.presentation.ModelViewConLivedata
+package com.example.comunicationwearmobile.models
 
 data class UsuarioModelLV(
     var nombre: String="",
