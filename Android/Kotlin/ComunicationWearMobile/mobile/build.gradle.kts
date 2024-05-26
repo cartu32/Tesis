@@ -50,5 +50,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //depndencias para wear os
+    implementation ("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
+    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+
     wearApp(project(":wear"))
 }

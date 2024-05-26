@@ -66,16 +66,25 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
-
+    implementation ("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation ("com.google.android.gms:play-services-tasks:18.1.0")
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
+    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
 
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
+
+
 
     wearApp(project(":wear"))
 
