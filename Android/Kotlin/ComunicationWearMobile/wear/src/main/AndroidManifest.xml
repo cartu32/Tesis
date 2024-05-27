@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name=".viewModels.MobileDataListenerService"
+            android:name=".models.MobileDataListenerService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

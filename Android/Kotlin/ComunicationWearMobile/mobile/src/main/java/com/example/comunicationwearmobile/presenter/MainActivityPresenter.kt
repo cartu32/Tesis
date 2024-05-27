@@ -1,37 +1,27 @@
 
 package com.example.comunicationwearmobile.presenter
 
-import android.util.Log
-import androidx.activity.ComponentActivity
-import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.Wearable
+import com.example.comunicationwearmobile.common.InterfaceMainAct
+import com.example.comunicationwearmobile.common.InterfaceMainPre
+import com.example.comunicationwearmobile.models.WearableDataListenerService
 
 
-class MainActivityPresenter(activity: ComponentActivity) {
-    private val activity: ComponentActivity = activity
+class MainActivityPresenter(interMainView: InterfaceMainAct,listenerService: WearableDataListenerService):InterfaceMainPre {
 
-    fun sendDataWear() {
-        val putDataMapReq = PutDataMapRequest.create("/data_path")
-        putDataMapReq.dataMap.putString("key", "valor")
-        val putDataReq = putDataMapReq.asPutDataRequest()
-        Wearable.getDataClient(activity).putDataItem(putDataReq)
+    private var interMainView: InterfaceMainAct? = interMainView
+    private var listenerService: WearableDataListenerService? = listenerService
+    override fun onDataReceived(data: String) {
+        interMainView?.showToast(data)
+        interMainView?.updateTextBox(data)
     }
 
-    fun sendDataToWearable(path: String?, key: String?, value: String?) {
-        val dataClient = Wearable.getDataClient(activity)
-
-        val putDataMapRequest = PutDataMapRequest.create(path!!)
-        val dataMap = putDataMapRequest.dataMap
-        dataMap.putString(key!!, value!!)
-
-        val request = putDataMapRequest.asPutDataRequest()
-        val dataItemTask = dataClient.putDataItem(request)
-        dataItemTask.addOnSuccessListener { dataItem ->
-            Log.d(
-                "TAG",
-                "Data sent successfully: " + dataItem.uri
-            )
-        }
+    public fun sendDataWearable(path:String,msg:String){
+        listenerService?.sendDataWearable(path,msg)
     }
+
+    fun onCleared() {
+        listenerService?.onCleared()
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.viewModels
+package com.example.comunicationwearmobile.models
 
 import android.content.Intent
 import android.util.Log
