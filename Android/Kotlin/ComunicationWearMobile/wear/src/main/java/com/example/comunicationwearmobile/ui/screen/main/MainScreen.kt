@@ -20,16 +20,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Observer
 import androidx.wear.compose.material.Text
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.comunicationwearmobile.viewModels.UsuarioViewModelLV
+import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 @Composable
-fun UsuarioScreenLV(model: UsuarioViewModelLV =viewModel<UsuarioViewModelLV>()) {
+fun UsuarioScreenLV(model: MobileViewModel =viewModel<MobileViewModel>()) {
 
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    var edad by remember { mutableStateOf(0) }
-    var nombre by remember { mutableStateOf("") }
+    var messageMobile by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -37,20 +36,17 @@ fun UsuarioScreenLV(model: UsuarioViewModelLV =viewModel<UsuarioViewModelLV>()) 
         verticalArrangement = Arrangement.Center
     ) {
         // se genera el observer para el usuario
-        model.usuarioModel.observe(lifecycleOwner, Observer{
-            edad=it.edad
-            nombre=it.nombre
+        model.mobileMsgModel.observe(lifecycleOwner, Observer{
+            messageMobile=it.message
         })
 
-        Text(text = "Nombre: ${nombre}")
-        Text(text = "Edad: ${edad}")
+        Text(text = "Msg: $messageMobile")
 
 
         FilledTonalButton(
             colors = ButtonDefaults.buttonColors( Color.Red),
             onClick = {
-                model.incrementarEdad()
-                model.asignName("Esteban")
+                model.setMessage("pepipto")
             }
         ) {
             Text(text = "Actualizar Usuario")

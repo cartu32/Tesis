@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
 
     private val listenerButton = View.OnClickListener {
-       Utils.showToast(this,"Solicitando Permisos")
+       Utils.showToast(this,"Enviando datos a Wear OS")
        mainActivityPresenter?.sendDataWearable("/mensaje","Esteban")
 
     }
