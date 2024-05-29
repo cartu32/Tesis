@@ -8,11 +8,19 @@ class MobileViewModel : ViewModel() {
     public val mobileMsgModel = MutableLiveData(MobileMsgModel())
 
 
-    fun setMessage(msg:String) {
+    fun setMessage2(msg: String) {
         val dataMobile = mobileMsgModel.value ?: return
         // Modificar la propiedad edad
         dataMobile.message = msg
         // Notificar el cambio al observer con setValue
         mobileMsgModel.value = dataMobile
+    }
+
+    fun setMessage(msg: String) {
+        val dataMobile = mobileMsgModel.value ?: return
+        // Modificar la propiedad edad
+        dataMobile.message = msg
+
+        mobileMsgModel.postValue(dataMobile)
     }
 }

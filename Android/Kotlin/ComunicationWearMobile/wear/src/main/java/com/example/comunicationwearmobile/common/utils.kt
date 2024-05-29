@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.utils
+package com.example.comunicationwearmobile.common
 
 import android.content.Context
 import android.widget.Toast

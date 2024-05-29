@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
         permissionManager= PermissionManager(this)
         wearableDataListenerService=WearableDataListenerService(this)
-        mainActivityPresenter=MainActivityPresenter(this,wearableDataListenerService)
+           mainActivityPresenter=MainActivityPresenter(this,wearableDataListenerService)
 
 
         cmdSendWear?.setOnClickListener(listenerButton)

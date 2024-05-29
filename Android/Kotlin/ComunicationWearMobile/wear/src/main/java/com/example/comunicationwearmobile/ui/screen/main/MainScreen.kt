@@ -18,17 +18,19 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.wear.compose.material.Text
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.comunicationwearmobile.MainActivity
 import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 @Composable
-fun UsuarioScreenLV(model: MobileViewModel =viewModel<MobileViewModel>()) {
-
+fun UsuarioScreenLV(activity: MainActivity) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
-
     var messageMobile by remember { mutableStateOf("") }
+
+    val model: MobileViewModel = ViewModelProvider(activity).get(MobileViewModel::class.java)
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -36,7 +38,7 @@ fun UsuarioScreenLV(model: MobileViewModel =viewModel<MobileViewModel>()) {
         verticalArrangement = Arrangement.Center
     ) {
         // se genera el observer para el usuario
-        model.mobileMsgModel.observe(lifecycleOwner, Observer{
+        model.mobileMsgModel.observe(activity, Observer{
             messageMobile=it.message
         })
 
@@ -57,5 +59,5 @@ fun UsuarioScreenLV(model: MobileViewModel =viewModel<MobileViewModel>()) {
 @Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun PreviewUsuarioScreenLV() {
-    UsuarioScreenLV()
+    UsuarioScreenLV(MainActivity())
 }

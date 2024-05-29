@@ -7,14 +7,22 @@
 package com.example.comunicationwearmobile
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.ui.WearApp
 import com.example.comunicationwearmobile.ui.screen.main.UsuarioScreenLV
+import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var model: MobileViewModel
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,9 +31,22 @@ class MainActivity : ComponentActivity() {
             //Aplica el theme
             WearApp{
                 //llama a la funcion que crea la pantalla
-                UsuarioScreenLV()
+                UsuarioScreenLV(this)
             }
         }
+        model = ViewModelProvider(this).get(MobileViewModel::class.java)
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val message = intent?.getStringExtra("message") ?: return
+                model.setMessage(message)
+            }
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            receiver, IntentFilter("MobileDataListenerService.MessageReceived")
+        )
     }
+
 }
 
