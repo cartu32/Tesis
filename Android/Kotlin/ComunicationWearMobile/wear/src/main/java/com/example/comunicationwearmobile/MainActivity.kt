@@ -34,19 +34,6 @@ class MainActivity : ComponentActivity() {
                 UsuarioScreenLV(this)
             }
         }
-        model = ViewModelProvider(this).get(MobileViewModel::class.java)
-
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val message = intent?.getStringExtra("message") ?: return
-                model.setMessage(message)
-            }
-        }
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            receiver, IntentFilter("MobileDataListenerService.MessageReceived")
-        )
     }
-
 }
 
