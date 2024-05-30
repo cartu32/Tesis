@@ -23,25 +23,20 @@ import androidx.wear.compose.material.Text
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.comunicationwearmobile.MainActivity
 import com.example.comunicationwearmobile.viewModels.MobileViewModel
+import com.example.comunicationwearmobile.viewModels.observeMobileMessage
 
 @Composable
 fun UsuarioScreenLV(activity: MainActivity) {
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    var messageMobile by remember { mutableStateOf("") }
-
     val model: MobileViewModel = ViewModelProvider(activity).get(MobileViewModel::class.java)
+
+    val messageMobile = observeMobileMessage(activity, model)
 
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // se genera el observer para el usuario
-        model.mobileMsgModel.observe(activity, Observer{
-            messageMobile=it.message
-        })
-
         Text(text = "Msg: $messageMobile")
 
 
