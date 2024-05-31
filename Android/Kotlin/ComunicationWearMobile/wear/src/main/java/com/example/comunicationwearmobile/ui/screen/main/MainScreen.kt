@@ -30,15 +30,15 @@ fun UsuarioScreenLV(activity: MainActivity) {
 
     val model: MobileViewModel = ViewModelProvider(activity).get(MobileViewModel::class.java)
 
-    val messageMobile = observeMobileMessage(activity, model)
+    val messageMobile by observeMobileMessage(activity, model)
 
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Msg: $messageMobile")
-
+        Text(text = "Number: ${messageMobile.numberMsg}")
+        Text(text = "Msg: ${messageMobile.message}")
 
         FilledTonalButton(
             colors = ButtonDefaults.buttonColors( Color.Red),
@@ -47,6 +47,15 @@ fun UsuarioScreenLV(activity: MainActivity) {
             }
         ) {
             Text(text = "Actualizar Usuario")
+        }
+
+        FilledTonalButton(
+            colors = ButtonDefaults.buttonColors( Color.Red),
+            onClick = {
+                model.incrementNumberMessage()
+            }
+        ) {
+            Text(text = "incrementar numero")
         }
     }
 }

@@ -9,7 +9,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,26 +39,29 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
     }
     fun setMessage(msg: String) {
         val dataMobile = mobileMsgModel.value ?: return
-        // Modificar la propiedad edad
-        dataMobile.message = msg
 
-        mobileMsgModel.postValue(dataMobile)
+        // Crear una nueva instancia de MobileMsgModel con los nuevos valores
+        mobileMsgModel.value = dataMobile.copy(message = msg)
     }
 
-    // Función para observar los cambios en el ViewModel
+    fun incrementNumberMessage() {
+        val dataMobile = mobileMsgModel.value ?: return
 
-
+        // Crear una nueva instancia de MobileMsgModel con los nuevos valores
+         mobileMsgModel.value = dataMobile.copy(numberMsg = dataMobile.numberMsg + 1)
     }
+
+}
 
 @Composable
-fun observeMobileMessage(activity: ComponentActivity, model: MobileViewModel): String {
-    var messageMobile by remember { mutableStateOf("") }
+fun observeMobileMessage(activity: ComponentActivity, model: MobileViewModel): State<MobileMsgModel> {
+    var messageMobile = remember { mutableStateOf(MobileMsgModel()) }
 
     //con esto se crea el observer en el viewmodel
     DisposableEffect(activity)
     {
         val observer = Observer<MobileMsgModel> { newMessage ->
-            messageMobile = newMessage.message
+            messageMobile.value = newMessage
         }
         model.mobileMsgModel.observe(activity, observer)
 
