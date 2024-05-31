@@ -22,7 +22,6 @@ import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var model: MobileViewModel
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {

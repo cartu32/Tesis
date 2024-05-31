@@ -1,6 +1,8 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
 
+import android.app.Application
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -17,14 +19,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import androidx.wear.compose.material.Text
 import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.models.MobileMsgModel
 import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 
 @Composable
-fun UsuarioScreenLV(activity: MainActivity) {
-
-    val model: MobileViewModel = ViewModelProvider(activity).get(MobileViewModel::class.java)
-    val messageMobile by model.observeMobileMessage(activity, model)
+fun UsuarioScreenLV(messageMobile: MobileMsgModel, setMessage: (String) -> Unit, incrementNumberMessage: () -> Unit) {
 
     CenteredColumn()
     {
@@ -34,11 +34,11 @@ fun UsuarioScreenLV(activity: MainActivity) {
 
         CustomButton(
             text = "Actualizar Usuario",
-            onClick = {model.setMessage("pepito")}
+            onClick = {setMessage("pepito")}
         )
         CustomButton(
             text = "incrementar numero",
-            onClick = {model.incrementNumberMessage()}
+            onClick = {incrementNumberMessage()}
         )
     }
 }
@@ -78,8 +78,36 @@ fun CustomButton(
     }
 }
 
+/*Debido a que viewmodel no funciona con PreviewSe tuvo que hacer 2 llamadas separadas
+  de UsuarioScreenLV:
+
+    1)para poder poder hacer el Preview (PreviewUsuarioScreenLV), que funciona con datos estaticos
+    2)UsuarioScreenLV que es para poder ejecutar la app en el fisico y en el simulador, con los
+      datos del viewmodel
+ */
+
+@Composable
+fun UsuarioScreenLV(
+    activity: ComponentActivity,
+    model: MobileViewModel = ViewModelProvider(activity).get(MobileViewModel::class.java)
+) {
+
+    val messageMobile by model.observeMobileMessage(activity,model)
+
+    UsuarioScreenLV(
+        messageMobile = messageMobile,
+        setMessage = { model.setMessage(it) },
+        incrementNumberMessage = { model.incrementNumberMessage() }
+    )
+}
+
 @Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun PreviewUsuarioScreenLV() {
-    UsuarioScreenLV(MainActivity())
+    // Proporcionar datos estáticos para la vista previa
+    UsuarioScreenLV(
+        messageMobile = MobileMsgModel(message = "Mensaje Prueba", numberMsg = 42),
+        setMessage = {},
+        incrementNumberMessage = {}
+    )
 }
