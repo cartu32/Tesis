@@ -8,23 +8,29 @@ import android.content.IntentFilter
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.models.MobileMsgModel
 
+/*
+Los viewmodels se usan para mantener el estado de las variables. Esto sirve mas que nada para cuando
+se gira la pantalla, o no se quiere guardar el estado de las mismas sin la necesidad de usar un
+objeto bundle
+ */
 class MobileViewModel(application: Application) : AndroidViewModel(application) {
     public val mobileMsgModel = MutableLiveData(MobileMsgModel())
 
+    /*
+    En el constructor se definen los broadcast que va a usar el service de WearableListenerService
+     para enviar datos a la view. Como es un sevice se usan para ello los braodcast receiver
+     */
     init {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -51,25 +57,30 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
          mobileMsgModel.value = dataMobile.copy(numberMsg = dataMobile.numberMsg + 1)
     }
 
-}
 
-@Composable
-fun observeMobileMessage(activity: ComponentActivity, model: MobileViewModel): State<MobileMsgModel> {
-    var messageMobile = remember { mutableStateOf(MobileMsgModel()) }
+    /*
+     Se generan los observer del livedata para notificarle a la vista que se produjo un cambio en
+     el modelo. Este cambio se debe hacer efectivo dentro de DisposableEffect,
+      sino se hace asi se va a modificar el modelo pero no se le notifica a la view.
+     */
+    @Composable
+    fun observeMobileMessage(activity: ComponentActivity, model: MobileViewModel): State<MobileMsgModel> {
+        var messageMobile = remember { mutableStateOf(MobileMsgModel()) }
 
-    //con esto se crea el observer en el viewmodel
-    DisposableEffect(activity)
-    {
-        val observer = Observer<MobileMsgModel> { newMessage ->
-            messageMobile.value = newMessage
+        //con esto se crea el observer en el viewmodel
+        DisposableEffect(activity)
+        {
+            val observer = Observer<MobileMsgModel> { newMessage ->
+                messageMobile.value = newMessage
+            }
+            model.mobileMsgModel.observe(activity, observer)
+
+            // Cleanup observer when no longer needed
+            onDispose {
+                model.mobileMsgModel.removeObserver(observer)
+            }
         }
-        model.mobileMsgModel.observe(activity, observer)
+        return messageMobile
 
-        // Cleanup observer when no longer needed
-        onDispose {
-            model.mobileMsgModel.removeObserver(observer)
-        }
     }
-    return messageMobile
-
 }
