@@ -37,7 +37,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.7")
+
     implementation(libs.androidx.compose.material)
     implementation (libs.material)
     implementation(libs.androidx.compose.foundation)
@@ -51,13 +51,16 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //depndencias para wear os
+    //dependencias  agregadas para wear os
     implementation ("com.google.android.gms:play-services-wearable:18.1.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.7")
 
+    //dependencias de librerias compartidas entre wear y mobile
+    implementation(project(":shared_library"))
     wearApp(project(":wear"))
 }

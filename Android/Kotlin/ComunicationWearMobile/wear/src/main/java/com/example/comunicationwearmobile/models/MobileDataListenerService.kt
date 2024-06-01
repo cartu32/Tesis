@@ -7,14 +7,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.viewModels.MobileViewModel
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
-
+import com.example.shared_library.SharedData
 
 class MobileDataListenerService : WearableListenerService() {
-
+    private  val TAG = "PhoneListenerService"
     override fun onMessageReceived(messageEvent: MessageEvent) {
         Log.d(TAG, "onMessageReceived(): $messageEvent")
         Log.d(TAG, String(messageEvent.data))
-        if (messageEvent.path == MESSAGE_PATH) {
+        if (messageEvent.path == SharedData.msg_mobile_to_wear) {
 
             val intent = Intent("MobileDataListenerService.MessageReceived")
             intent.putExtra("message", String(messageEvent.data))
@@ -24,10 +24,6 @@ class MobileDataListenerService : WearableListenerService() {
         }
     }
 
-    companion object{
-        private const val TAG = "PhoneListenerService"
-        private const val MESSAGE_PATH = "/mensaje"
-    }
 
 
 }

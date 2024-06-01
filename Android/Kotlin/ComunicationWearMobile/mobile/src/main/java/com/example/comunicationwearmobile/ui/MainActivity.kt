@@ -12,6 +12,7 @@ import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.comunicationwearmobile.presenter.MainActivityPresenter
+import com.example.shared_library.SharedData
 
 class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
@@ -44,7 +45,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
     private val listenerButton = View.OnClickListener {
        Utils.showToast(this,"Enviando datos a Wear OS")
-       mainActivityPresenter?.sendDataWearable("/mensaje","Esteban")
+       mainActivityPresenter?.sendDataWearable(SharedData.msg_mobile_to_wear,"Esteban")
 
     }
 

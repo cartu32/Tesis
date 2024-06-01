@@ -84,6 +84,8 @@ dependencies {
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
+    //dependencias de librerias compartidas entre wear y mobile
+    implementation(project(":shared_library"))
 
 
     wearApp(project(":wear"))

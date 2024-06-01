@@ -22,3 +22,6 @@ dependencyResolutionManagement {
 rootProject.name = "comunicationWearMobile"
 include(":mobile")
 include(":wear")
+
+
+include(":shared_library")
