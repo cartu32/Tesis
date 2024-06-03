@@ -41,6 +41,7 @@ fun UsuarioScreenLV(messageMobile: MobileMsgModel, setMessage: (String) -> Unit,
             onClick = {incrementNumberMessage()}
         )
     }
+
 }
 
 @Composable

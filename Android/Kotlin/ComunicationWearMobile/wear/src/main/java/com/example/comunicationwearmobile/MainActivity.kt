@@ -22,17 +22,24 @@ import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
 
 class MainActivity : ComponentActivity() {
-
+    private var model: MobileViewModel? = null
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             //Aplica el theme
             WearApp{
+
+                model= ViewModelProvider(this).get(MobileViewModel::class.java)
                 //llama a la funcion que crea la pantalla
-                UsuarioScreenLV(this)
+                UsuarioScreenLV(this, model!!)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        model?.onCleared()
     }
 }
 

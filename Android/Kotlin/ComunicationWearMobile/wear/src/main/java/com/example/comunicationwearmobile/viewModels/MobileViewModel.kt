@@ -18,7 +18,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MobileMsgModel
+import com.example.shared_library.SharedData
 
 /*
 Los viewmodels se usan para mantener el estado de las variables. Esto sirve mas que nada para cuando
@@ -26,7 +28,8 @@ se gira la pantalla, o no se quiere guardar el estado de las mismas sin la neces
 objeto bundle
  */
 class MobileViewModel(application: Application) : AndroidViewModel(application) {
-    public val mobileMsgModel = MutableLiveData(MobileMsgModel())
+    val mobileMsgModel = MutableLiveData(MobileMsgModel())
+    val appContext:Context =application.applicationContext
 
     /*
     En el constructor se definen los broadcast que va a usar el service de WearableListenerService
@@ -38,11 +41,15 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
                 val message = intent?.getStringExtra("message") ?: return
                 setMessage(message)
             }
+
         }
 
         LocalBroadcastManager.getInstance(application).registerReceiver(
             receiver, IntentFilter("MobileDataListenerService.MessageReceived")
         )
+
+        val serviceIntent = Intent(appContext, MobileDataListenerService::class.java)
+        appContext.startService(serviceIntent)
     }
     fun setMessage(msg: String) {
         val dataMobile = mobileMsgModel.value ?: return
@@ -56,8 +63,19 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
 
         // Crear una nueva instancia de MobileMsgModel con los nuevos valores
          mobileMsgModel.value = dataMobile.copy(numberMsg = dataMobile.numberMsg + 1)
+
+        sendMessageToService(SharedData.msg_wear_to_mobile, mobileMsgModel.value!!.numberMsg.toString())
+
     }
 
+
+    private fun sendMessageToService(path:String, message:String){
+        val serviceIntent = Intent(appContext, MobileDataListenerService::class.java).apply {
+            putExtra("path", path)
+            putExtra("message", message)
+        }
+        appContext.startService(serviceIntent)
+    }
 
     /*
      Se generan los observer del livedata para notificarle a la vista que se produjo un cambio en
@@ -84,4 +102,10 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
         return messageMobile
 
     }
+
+    public override fun onCleared() {
+        sendMessageToService("CANCEL_JOBS","cancelar")
+    }
+
+
 }

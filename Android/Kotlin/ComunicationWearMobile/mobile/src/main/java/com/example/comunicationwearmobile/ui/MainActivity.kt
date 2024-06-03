@@ -23,9 +23,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
     private var permissionManager: PermissionManager? =null
     private var mainActivityPresenter: MainActivityPresenter? =null
-    private var wearableDataListenerService: WearableDataListenerService = WearableDataListenerService(
-        this
-    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,8 +35,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
         txtMsgToWear   = findViewById(R.id.txtMsgToWear)
 
         permissionManager= PermissionManager(this)
-        wearableDataListenerService=WearableDataListenerService(this)
-           mainActivityPresenter=MainActivityPresenter(this,wearableDataListenerService)
+        mainActivityPresenter=MainActivityPresenter(this)
 
 
         cmdSendWear?.setOnClickListener(listenerButton)
