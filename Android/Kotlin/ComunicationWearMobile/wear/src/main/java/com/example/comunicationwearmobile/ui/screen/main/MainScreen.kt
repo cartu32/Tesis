@@ -36,11 +36,11 @@ fun UsuarioScreenLV(messageMobile: MobileMsgModel, setMessage: (String) -> Unit,
         CustomText(text = "Msg: ${messageMobile.message}")
 
         CustomButton(
-            text = "Actualizar Usuario",
+            text = "Actualizar Msg",
             onClick = {setMessage("pepito")}
         )
         CustomButton(
-            text = "incrementar numero",
+            text = "Inc-Enviar Mobile",
             onClick = {incrementNumberMessage()}
         )
     }

@@ -34,16 +34,18 @@
 
     <TextView
         android:id="@+id/txtMsgFromWear"
-        android:layout_width="189dp"
-        android:layout_height="51dp"
+        android:layout_width="315dp"
+        android:layout_height="80dp"
+        android:background="@color/white"
         android:text="Msg From Wear"
-        android:textColor="#F40707"
-        android:textSize="20sp"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintHorizontal_bias="0.614"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.183" />
+        app:layout_constraintVertical_bias="0.087" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
