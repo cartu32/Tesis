@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class WearableDataListenerService : WearableListenerService() {
 
 
-    private val TAG: String="MainActivityPresenter"
+    private val TAG: String="WearableDataListnener"
     private var transcriptionNodeId: String? = null
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
@@ -28,26 +28,17 @@ class WearableDataListenerService : WearableListenerService() {
         intent?.let {
             val path = it.getStringExtra("path")
             val message = it.getStringExtra("message")
-            if (path != null && message != null) {
-                sendDataWearable(path, message)
-            }
+
+            if (path == null || message == null)
+                return  START_STICKY
+            if (path==SharedData.cancel_path)
+                onCleared()
+            else
+                sendDataMobile(path, message)
         }
         return START_STICKY
     }
 
-
-    override fun onMessageReceived(messageEvent: MessageEvent) {
-        Log.d(TAG, "onMessageReceived(): $messageEvent")
-        Log.d(TAG, String(messageEvent.data))
-        if (messageEvent.path == SharedData.msg_wear_to_mobile) {
-
-            val intent = Intent("WearDataListenerService.MessageReceived")
-            intent.putExtra("message", String(messageEvent.data))
-            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-
-            Log.d(TAG, "Message received: ${String(messageEvent.data)}")
-        }
-    }
 
 
     private fun getNodes(): Collection<String> {
@@ -55,7 +46,7 @@ class WearableDataListenerService : WearableListenerService() {
     }
 
 
-    private fun sendDataWearable(path:String, msg:String)
+    private fun sendDataMobile(path:String, msg:String)
     {
         scope.launch() {
             transcriptionNodeId = getNodes().first().also { nodeId ->
@@ -72,9 +63,20 @@ class WearableDataListenerService : WearableListenerService() {
         }
     }
 
-
-    fun onCleared() {
+    private fun onCleared() {
         job.cancel() // Cancela todas las coroutines cuando ya no sean necesarias
     }
+    override fun onMessageReceived(messageEvent: MessageEvent) {
+
+        if (messageEvent.path == SharedData.msg_wear_to_mobile) {
+
+            val intent = Intent(SharedData.broadcast_wear_data)
+            intent.putExtra("message", String(messageEvent.data))
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+
+        }
+    }
+
+
 
 }

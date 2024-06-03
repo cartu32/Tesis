@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 
 class MobileDataListenerService : WearableListenerService() {
     private  val TAG = "PhoneListenerService"
+
     private var transcriptionNodeId: String? = null
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
@@ -29,7 +30,7 @@ class MobileDataListenerService : WearableListenerService() {
 
             if (path == null || message == null)
                 return  START_STICKY
-            if (path=="CANCEL_JOBS")
+            if (path==SharedData.cancel_path)
                 onCleared()
             else
                sendDataWearable(path, message)
@@ -38,15 +39,12 @@ class MobileDataListenerService : WearableListenerService() {
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        Log.d(TAG, "onMessageReceived(): $messageEvent")
-        Log.d(TAG, String(messageEvent.data))
+
         if (messageEvent.path == SharedData.msg_mobile_to_wear) {
 
-            val intent = Intent("MobileDataListenerService.MessageReceived")
+            val intent = Intent(SharedData.broadcast_mobile_data)
             intent.putExtra("message", String(messageEvent.data))
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-
-            Log.d(TAG, "Message received: ${String(messageEvent.data)}")
         }
     }
 
@@ -71,7 +69,7 @@ class MobileDataListenerService : WearableListenerService() {
         }
     }
 
-    fun onCleared() {
+    private fun onCleared() {
         job.cancel() // Cancela todas las coroutines cuando ya no sean necesarias
     }
 }

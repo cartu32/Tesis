@@ -9,6 +9,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.common.InterfaceMainAct
 import com.example.comunicationwearmobile.common.InterfaceMainPre
 import com.example.comunicationwearmobile.models.WearableDataListenerService
+import com.example.shared_library.SharedData
 
 
 class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
@@ -41,15 +42,20 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
     }
 
     public fun sendDataWearable(path:String,msg:String){
-        val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra("path", path)
-            putExtra("message", msg)
-        }
-        mContext?.startService(serviceIntent)
+        sendMessageToService(path,msg)
     }
 
+
     fun onCleared() {
-        //listenerService?.onCleared()
+        sendMessageToService(SharedData.cancel_path,"")
+    }
+
+    private fun sendMessageToService(path:String, message:String){
+        val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
+            putExtra("path", path)
+            putExtra("message", message)
+        }
+        mContext?.startService(serviceIntent)
     }
 
 

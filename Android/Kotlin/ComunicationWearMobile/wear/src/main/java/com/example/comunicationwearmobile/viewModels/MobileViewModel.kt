@@ -28,8 +28,8 @@ se gira la pantalla, o no se quiere guardar el estado de las mismas sin la neces
 objeto bundle
  */
 class MobileViewModel(application: Application) : AndroidViewModel(application) {
-    val mobileMsgModel = MutableLiveData(MobileMsgModel())
-    val appContext:Context =application.applicationContext
+    private val mobileMsgModel = MutableLiveData(MobileMsgModel())
+    private val appContext:Context =application.applicationContext
 
     /*
     En el constructor se definen los broadcast que va a usar el service de WearableListenerService
@@ -45,7 +45,7 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         LocalBroadcastManager.getInstance(application).registerReceiver(
-            receiver, IntentFilter("MobileDataListenerService.MessageReceived")
+            receiver, IntentFilter(SharedData.broadcast_mobile_data)
         )
 
         val serviceIntent = Intent(appContext, MobileDataListenerService::class.java)
@@ -77,6 +77,11 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
         appContext.startService(serviceIntent)
     }
 
+
+    public override fun onCleared() {
+        sendMessageToService(SharedData.cancel_path," ")
+    }
+
     /*
      Se generan los observer del livedata para notificarle a la vista que se produjo un cambio en
      el modelo. Este cambio se debe hacer efectivo dentro de DisposableEffect,
@@ -101,10 +106,6 @@ class MobileViewModel(application: Application) : AndroidViewModel(application) 
         }
         return messageMobile
 
-    }
-
-    public override fun onCleared() {
-        sendMessageToService("CANCEL_JOBS","cancelar")
     }
 
 

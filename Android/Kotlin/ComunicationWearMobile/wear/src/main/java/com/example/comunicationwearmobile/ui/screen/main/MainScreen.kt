@@ -22,7 +22,10 @@ import com.example.comunicationwearmobile.MainActivity
 import com.example.comunicationwearmobile.models.MobileMsgModel
 import com.example.comunicationwearmobile.viewModels.MobileViewModel
 
-
+/**************************************************************************************
+ ************************** FUNCIONES QUE CREAN LA VIEW********************************
+ **************************************************************************************
+ */
 @Composable
 fun UsuarioScreenLV(messageMobile: MobileMsgModel, setMessage: (String) -> Unit, incrementNumberMessage: () -> Unit) {
 
@@ -79,12 +82,20 @@ fun CustomButton(
     }
 }
 
-/*Debido a que viewmodel no funciona con PreviewSe tuvo que hacer 2 llamadas separadas
-  de UsuarioScreenLV:
 
-    1)para poder poder hacer el Preview (PreviewUsuarioScreenLV), que funciona con datos estaticos
-    2)UsuarioScreenLV que es para poder ejecutar la app en el fisico y en el simulador, con los
-      datos del viewmodel
+/**************************************************************************************
+ ************** FUNCIONES QUE LLAMAN A LAS QUE CREAN LA VIEW***************************
+ **************************************************************************************
+Debido a que viewmodel no funciona con Preview se tuvo que hacer 2 llamadas separadas
+de UsuarioScreenLV:
+
+1)para poder poder hacer el Preview (PreviewUsuarioScreenLV), que funciona con datos
+estaticos
+
+2)UsuarioScreenLV que es para poder ejecutar la app en el fisico y en el simulador, con los
+  datos del viewmodel
+
+ ****************************************************************************************
  */
 
 @Composable
