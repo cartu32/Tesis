@@ -2,9 +2,7 @@ package com.example.comunicationwearmobile.models
 
 import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.comunicationwearmobile.viewModels.MobileViewModel
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import com.example.shared_library.SharedData

@@ -7,41 +7,35 @@
 package com.example.comunicationwearmobile
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.ui.WearApp
-import com.example.comunicationwearmobile.ui.screen.main.UsuarioScreenLV
-import com.example.comunicationwearmobile.viewModels.MobileViewModel
+import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
+import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 
 
 class MainActivity : ComponentActivity() {
 
-    private var model: MobileViewModel? = null
+    private var model: AlertsViewModel? = null
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        model = ViewModelProvider(this).get(MobileViewModel::class.java)
+        model = ViewModelProvider(this).get(AlertsViewModel::class.java)
 
         setContent {
             //Aplica el theme
             WearApp{
                 //llama a la funcion que crea la pantalla
-                UsuarioScreenLV(this, model!!)
+                HorizontalPagerWithDotsIndicatorScreen()
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        model?.onCleared()
     }
 }
 
