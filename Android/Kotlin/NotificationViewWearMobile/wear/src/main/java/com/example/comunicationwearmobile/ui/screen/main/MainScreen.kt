@@ -1,19 +1,25 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.material.Button
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.ui.component.ViewPagerItem
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 
 /**************************************************************************************
  ************************** FUNCIONES QUE CREAN LA VIEW********************************
@@ -44,43 +50,54 @@ fun MsgAlertScreen(alertsViewModel: AlertsViewModel= viewModel<AlertsViewModel>(
         }
     }
 
-}
-*/
-@OptIn(ExperimentalFoundationApi::class)
+}*/
+
+@OptIn(ExperimentalPagerApi::class)
 fun HorizontalPagerWithDotsIndicatorScreen() {
     val pageCount = 5
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val pagerState = rememberPagerState(0)
 
-    Box(modifier = Modifier) {
-        HorizontalPager(state = pagerState) { page ->
-            ViewPagerItem(page = page)
+    Box(modifier = Modifier.fillMaxSize()) {
+        HorizontalPager(
+            count = pageCount,
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+
+        ) { page ->
+            ViewPagerItem(page = page) {
+                    Column {
+                    Text(text = "Page: $page")
+                    Spacer(modifier = Modifier.height(2.dp)) // Espacio entre cada componente Text
+                    Text(text = "Titulo: ")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "Mensaje: ")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "Fecha: ")
+                  //  Spacer(modifier = Modifier.height(2.dp))
+//                    Text(text = "Hora: ")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Button(onClick = { /*TODO*/ }) {
+                            Text("Texto")
+                        }
+                }
+            }
+
         }
 
         ViewPagerDotsIndicator(
-            Modifier
+            modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             pageCount = pageCount,
-            currentPageIteration = pagerState.currentPage
+            currentPage = pagerState.currentPage
         )
     }
 }
 
-
 /**************************************************************************************
  ************** FUNCIONES QUE LLAMAN A LAS QUE CREAN LA VIEW***************************
  **************************************************************************************
-Debido a que viewmodel no funciona con Preview se tuvo que hacer 2 llamadas separadas
-de UsuarioScreenLV:
-
-1)para poder poder hacer el Preview (PreviewUsuarioScreenLV), que funciona con datos
-estaticos
-
-2)UsuarioScreenLV que es para poder ejecutar la app en el fisico y en el simulador, con los
-  datos del viewmodel
-
- ****************************************************************************************
  */
 
 

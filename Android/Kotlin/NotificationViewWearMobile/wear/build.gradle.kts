@@ -77,7 +77,8 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
-
+    implementation (libs.accompanist.pager)
+    implementation (libs.accompanist.pager.indicators)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
