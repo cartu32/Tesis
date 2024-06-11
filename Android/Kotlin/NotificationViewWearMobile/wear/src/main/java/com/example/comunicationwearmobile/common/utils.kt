@@ -18,7 +18,7 @@ fun dateToString(dateTime: LocalDateTime):String{
 }
 
 fun getHour(dateTime: LocalDateTime):String{
-    val formatter=DateTimeFormatter.ofPattern("HH:mm:ss")
+    val formatter=DateTimeFormatter.ofPattern("HH:mm")
     val formatterDate=dateTime.format(formatter)
 
     return formatterDate
@@ -26,7 +26,7 @@ fun getHour(dateTime: LocalDateTime):String{
 
 
 fun getDate(dateTime: LocalDateTime):String{
-    val formatter=DateTimeFormatter.ofPattern("HH:mm:ss")
+    val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val formatterDate=dateTime.format(formatter)
 
     return formatterDate
