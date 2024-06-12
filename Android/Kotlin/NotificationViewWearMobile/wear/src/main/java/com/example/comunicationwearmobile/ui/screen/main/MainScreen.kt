@@ -9,14 +9,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material.Button
+import androidx.compose.ui.unit.sp
 import com.example.comunicationwearmobile.common.getDate
 import com.example.comunicationwearmobile.common.getHour
 import com.example.comunicationwearmobile.models.MsgAlertModel
@@ -33,27 +42,36 @@ import com.google.accompanist.pager.rememberPagerState
 
 @Composable
 fun PageContent(page: Int, msgAlert:MsgAlertModel) {
-    Column(modifier = Modifier,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-        //Text(text = "Page: $page")
-       //Spacer(modifier = Modifier.height(2.dp))
-        Text(text = msgAlert.title)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = msgAlert.message)
-        Spacer(modifier = Modifier.height(2.dp))
+    CustomColumn(){
+        Text(text = msgAlert.title, color = Color.Red,fontSize = 15.sp,)
+        Spacer(modifier = Modifier.height(10.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center){
+        Text(text = msgAlert.message)
+        Spacer(modifier = Modifier.height(10.dp))
+
+        CustomRow(){
             Text(text = getDate(msgAlert.date) )
+            Spacer(modifier = Modifier.width(35.dp))
             Text(text = getHour(msgAlert.date))
         }
         Spacer(modifier = Modifier.height(2.dp))
-        Button(onClick = { /*TODO*/ }) {
-            Text("Texto")
-        }
+        FloatingActionButton()
     }
 }
 
+@Composable
+fun FloatingActionButton() {
+    FloatingActionButton(
+        onClick = { print("Hello") },
+        shape = CircleShape,
+        containerColor=Color.Green,
+        contentColor = Color.White,
+        modifier = Modifier.size(50.dp),
+        elevation = FloatingActionButtonDefaults.elevation(8.dp),
+        ) {
+        Icon(Icons.Filled.Check, "Floating action button.")
+    }
+}
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 fun HorizontalPagerWithDotsIndicatorScreen() {
@@ -85,6 +103,27 @@ fun HorizontalPagerWithDotsIndicatorScreen() {
     }
 }
 
+@Composable
+fun CustomColumn(
+    content: @Composable ()-> Unit
+) {
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        content()
+    }
+}
+
+@Composable
+fun CustomRow(content:@Composable () -> Unit){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ){
+        content()
+    }
+}
 /**************************************************************************************
  ************** FUNCIONES QUE LLAMAN A LAS QUE CREAN LA VIEW***************************
  **************************************************************************************
