@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.comunicationwearmobile.common.TypeMsg
 import com.example.comunicationwearmobile.models.MsgAlertModel
 import com.example.comunicationwearmobile.models.MsgAlertState
 import kotlinx.coroutines.launch
@@ -22,8 +23,8 @@ class AlertsViewModel:ViewModel() {
         viewModelScope.launch {
             state=state.copy(
                 alertsList = listOf(
-                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba"),
-                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba"),
+                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba",TypeMsg.Reminder),
+                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba",TypeMsg.Alert),
                 )
             )
         }

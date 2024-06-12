@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.comunicationwearmobile.common.TypeMsg
 import com.example.comunicationwearmobile.common.getDate
 import com.example.comunicationwearmobile.common.getHour
 import com.example.comunicationwearmobile.models.MsgAlertModel
@@ -35,6 +37,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 
+const val COUNT_PAGE: Int = 5
+const val INITIAL_PAGE: Int =0
+
 /**************************************************************************************
  ************************** FUNCIONES QUE CREAN LA VIEW********************************
  **************************************************************************************
@@ -42,7 +47,7 @@ import com.google.accompanist.pager.rememberPagerState
 
 @Composable
 fun PageContent(page: Int, msgAlert:MsgAlertModel) {
-    CustomColumn(){
+    CustomColumn {
         Text(text = msgAlert.title, color = Color.Red,fontSize = 15.sp,)
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -55,12 +60,16 @@ fun PageContent(page: Int, msgAlert:MsgAlertModel) {
             Text(text = getHour(msgAlert.date))
         }
         Spacer(modifier = Modifier.height(2.dp))
-        FloatingActionButton()
+
+        if(msgAlert.typeMsg==TypeMsg.Reminder)
+            FloatingActionButtonOK()
+        else
+            FloatingActionButtonAlert()
     }
 }
 
 @Composable
-fun FloatingActionButton() {
+fun FloatingActionButtonOK() {
     FloatingActionButton(
         onClick = { print("Hello") },
         shape = CircleShape,
@@ -72,11 +81,26 @@ fun FloatingActionButton() {
         Icon(Icons.Filled.Check, "Floating action button.")
     }
 }
+
+
+@Composable
+fun FloatingActionButtonAlert() {
+    FloatingActionButton(
+        onClick = { print("Hello") },
+        shape = CircleShape,
+        containerColor=Color.Red,
+        contentColor = Color.White,
+        modifier = Modifier.size(50.dp),
+        elevation = FloatingActionButtonDefaults.elevation(8.dp),
+    ) {
+        Icon(Icons.Filled.Warning, "Floating action button.")
+    }
+}
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 fun HorizontalPagerWithDotsIndicatorScreen() {
-    val pageCount = 5
-    val pagerState = rememberPagerState(0)
+    val pageCount = COUNT_PAGE
+    val pagerState = rememberPagerState(INITIAL_PAGE)
 
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
@@ -86,7 +110,7 @@ fun HorizontalPagerWithDotsIndicatorScreen() {
 
         ) { page ->
             ViewPagerItem(page = page) {
-                val msgAlert=MsgAlertModel("Recordatorio de HOY","Turno Cardiologo")
+                val msgAlert=MsgAlertModel("Recordatorio de HOY","Turno Cardiologo", typeMsg = TypeMsg.Reminder)
                 PageContent(page = page,msgAlert)
             }
 

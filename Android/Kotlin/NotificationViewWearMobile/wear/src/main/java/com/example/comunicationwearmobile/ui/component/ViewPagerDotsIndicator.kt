@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
+
 fun ViewPagerDotsIndicator(
     modifier: Modifier = Modifier,
     pageCount: Int,

@@ -30,7 +30,6 @@ fun ViewPagerItem(
             .background(color = backgroundColor)
             .fillMaxWidth()
             .height(300.dp),
-            //.padding(2.dp),
         contentAlignment = Alignment.Center,
     ) {
         content()
