@@ -23,13 +23,14 @@ class AlertsViewModel:ViewModel() {
         viewModelScope.launch {
             state=state.copy(
                 alertsList = listOf(
-                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba",TypeMsg.Reminder),
-                    MsgAlertModel("Titulo Prueba","Cuerpo Prueba",TypeMsg.Alert),
-                )
+                    /*MsgAlertModel("Recordatorio de Hoy","Turno Medico",TypeMsg.Reminder),
+                    MsgAlertModel("Perdio turno","No fue al medico",TypeMsg.Alert),*/
+                    MsgAlertModel("Todo esta bien","Sin notificaciones",TypeMsg.WithoutNotifications),
+                    )
             )
         }
     }
-    fun onBoolClcicked(msgAlert:MsgAlertModel) {
+    fun removeMsgAlertList(msgAlert:MsgAlertModel) {
 
         val index= state.alertsList.indexOf(msgAlert)
         val updateAlert=state.alertsList.toMutableList()
@@ -37,5 +38,18 @@ class AlertsViewModel:ViewModel() {
         updateAlert.removeAt(index)
         state=state.copy(
             alertsList = updateAlert)
+    }
+
+    fun addMsgAlertList(msgAlert:MsgAlertModel){
+        val indexNewItem=state.alertsList.count()
+        val updateAlert=state.alertsList.toMutableList()
+
+        updateAlert.add(indexNewItem,msgAlert)
+        state=state.copy(
+            alertsList = updateAlert)
+    }
+
+    fun getCountItemList():Int{
+        return state.alertsList.count()
     }
 }

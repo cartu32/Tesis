@@ -11,6 +11,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
+import com.example.comunicationwearmobile.common.TypeMsg
+import com.example.comunicationwearmobile.models.MsgAlertModel
 import com.example.comunicationwearmobile.ui.WearApp
 import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
@@ -28,8 +30,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             //Aplica el theme
             WearApp{
+              
                 //llama a la funcion que crea la pantalla
-                HorizontalPagerWithDotsIndicatorScreen()
+                HorizontalPagerWithDotsIndicatorScreen(model!!)
             }
         }
     }
