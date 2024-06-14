@@ -41,18 +41,18 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
         interMainView?.updateTextBox(data)
     }
 
-    public fun sendDataWearable(path:String,msg:String){
+    public fun sendDataWearable(path:SharedData.TypeMsg,msg:String){
         sendMessageToService(path,msg)
     }
 
 
     fun onCleared() {
-        sendMessageToService(SharedData.cancel_path,"")
+        sendMessageToService(SharedData.TypeMsg.cancel_path,"")
     }
 
-    private fun sendMessageToService(path:String, message:String){
+    private fun sendMessageToService(typeMsg: SharedData.TypeMsg, message:String){
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra("path", path)
+            putExtra("typeMsg", typeMsg)
             putExtra("message", message)
         }
         mContext?.startService(serviceIntent)

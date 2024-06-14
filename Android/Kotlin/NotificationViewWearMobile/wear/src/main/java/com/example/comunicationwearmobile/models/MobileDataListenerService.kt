@@ -17,13 +17,14 @@ import kotlinx.coroutines.launch
 class MobileDataListenerService : WearableListenerService() {
     private  val TAG = "PhoneListenerService"
 
+
     private var transcriptionNodeId: String? = null
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            val path = it.getStringExtra("path")
+            val path = intent.getSerializableExtra("msgType") as? TypeMsg
             val message = it.getStringExtra("message")
 
             if (path == null || message == null)

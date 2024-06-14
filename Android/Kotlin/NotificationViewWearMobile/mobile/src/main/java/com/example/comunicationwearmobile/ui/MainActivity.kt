@@ -1,8 +1,13 @@
 package com.example.comunicationwearmobile.ui
 
+import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -11,19 +16,26 @@ import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.InterfaceMainAct
 import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.Utils
-import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.comunicationwearmobile.presenter.MainActivityPresenter
 import com.example.shared_library.SharedData
+import java.text.SimpleDateFormat
 
+@Suppress("NAME_SHADOWING")
 class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
     private var cmdSendWear: Button? = null
     private var txtMsgFromWear: TextView? = null
-    private var txtMsgToWear: EditText?= null
+
+    private var txtMsgTitle: EditText?= null
+    private var txtMsg: EditText?= null
+    private var txtDate:TextView?=null
+    private var txtTime: TextView?=null
 
     private var permissionManager: PermissionManager? =null
     private var mainActivityPresenter: MainActivityPresenter? =null
 
+    private var date:String?=null
+    private var time:String?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,25 +44,64 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
         cmdSendWear    = findViewById<Button>(R.id.cmdSendWear)
         txtMsgFromWear = findViewById<TextView>(R.id.txtMsgFromWear)
-        txtMsgToWear   = findViewById(R.id.txtMsgToWear)
+        txtMsgTitle    = findViewById<EditText>(R.id.txtMsgTitle)
+        txtMsg         = findViewById<EditText>(R.id.txtMsg)
+        txtDate        = findViewById<TextView>(R.id.txtDate)
+        txtTime        = findViewById<TextView>(R.id.txtClock)
+
+
 
         permissionManager= PermissionManager(this)
         mainActivityPresenter=MainActivityPresenter(this)
 
-
+        txtDate?.setOnClickListener(listenerDate)
+        txtTime?.setOnClickListener(listenerTime)
         cmdSendWear?.setOnClickListener(listenerButton)
         permissionManager!!.checkPermissionGiven()
     }
+
+    @SuppressLint("SimpleDateFormat")
+    private val listenerTime= View.OnClickListener {
+        val selecetedTime = Calendar.getInstance()
+        val hour   =  selecetedTime.get(Calendar.HOUR_OF_DAY)
+        val minute =  selecetedTime.get(Calendar.MINUTE)
+
+        val listener = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+            selecetedTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            selecetedTime.set(Calendar.MINUTE,minute)
+
+            txtTime?.text  = SimpleDateFormat("HH:mm").format(selecetedTime.time)
+        }
+        TimePickerDialog(this, listener, hour, minute, true).show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private val listenerDate= View.OnClickListener {
+        val selectedCalendar = Calendar.getInstance()
+        val year  = selectedCalendar.get(Calendar.YEAR)
+        val month = selectedCalendar.get(Calendar.MONTH)
+        val day   = selectedCalendar.get(Calendar.DAY_OF_MONTH)
+
+        val listener = DatePickerDialog.OnDateSetListener{
+            view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+            date="$dayOfMonth/${month+1}/$year"
+            txtDate?.setText(date)
+        }
+        val datePickerDialog= DatePickerDialog(this,listener,year,month,day)
+
+        datePickerDialog.show()
+    }
+
 
 
     private val listenerButton = View.OnClickListener {
         var text="Vacio"
 
-        if(txtMsgToWear!!.text.isNotEmpty())
-            text= txtMsgToWear!!.text.toString()
+        if(txtMsgTitle!!.text.isNotEmpty())
+            text= txtMsgTitle!!.text.toString()
 
        Utils.showToast(this,"Enviando datos a Wear OS")
-       mainActivityPresenter?.sendDataWearable(SharedData.msg_mobile_to_wear,text)
+       mainActivityPresenter?.sendDataWearable(SharedData.TypeMsg.messageDevice,text)
 
     }
 

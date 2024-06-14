@@ -8,4 +8,15 @@ object SharedData {
     val broadcast_mobile_data:String="MobileDataListenerService.MessageReceived"
 
     val cancel_path:String = "cancel_path"
+
+    enum class TypeNotification{
+        Reminder,
+        Alert,
+        WithoutNotifications,
+    }
+
+    enum class TypeMsg{
+        messageDevice,
+        cancel_path,
+    }
 }

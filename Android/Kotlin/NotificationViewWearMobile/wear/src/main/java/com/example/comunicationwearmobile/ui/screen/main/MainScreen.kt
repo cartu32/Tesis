@@ -29,19 +29,17 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
-import com.example.comunicationwearmobile.common.TypeMsg
 import com.example.comunicationwearmobile.common.getDate
 import com.example.comunicationwearmobile.common.getHour
 import com.example.comunicationwearmobile.models.MsgAlertModel
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.ui.component.ViewPagerItem
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
+import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 
-const val COUNT_PAGE: Int = 5
 const val INITIAL_PAGE: Int =0
 
 /**************************************************************************************
@@ -66,9 +64,9 @@ fun PageContent(page: Int, msgAlert:MsgAlertModel) {
         Spacer(modifier = Modifier.height(2.dp))
 
         when(msgAlert.typeMsg){
-            TypeMsg.Reminder -> FloatingActionButtonOK()
-            TypeMsg.Alert -> FloatingActionButtonAlert()
-            TypeMsg.WithoutNotifications -> FloatingActionButtonNoNotification()
+            SharedData.TypeNotification.Reminder -> FloatingActionButtonOK()
+            SharedData.TypeNotification.Alert -> FloatingActionButtonAlert()
+            SharedData.TypeNotification.WithoutNotifications -> FloatingActionButtonNoNotification()
         }
     }
 }

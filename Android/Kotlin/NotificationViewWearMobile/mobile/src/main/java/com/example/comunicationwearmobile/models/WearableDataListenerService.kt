@@ -1,10 +1,8 @@
 package com.example.comunicationwearmobile.models
 
-import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.comunicationwearmobile.ui.MainActivity
 import com.example.shared_library.SharedData
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -26,15 +24,15 @@ class WearableDataListenerService : WearableListenerService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            val path = it.getStringExtra("path")
+            val typeMsg = it.getStringExtra("typeMsg")
             val message = it.getStringExtra("message")
 
-            if (path == null || message == null)
+            if (typeMsg == null || message == null)
                 return  START_STICKY
-            if (path==SharedData.cancel_path)
-                onCleared()
+           /* if (typeMsg==SharedData.TypeMsg.cancel_path)
+                onCleared()*/
             else
-                sendDataMobile(path, message)
+                sendDataMobile(typeMsg, message)
         }
         return START_STICKY
     }
