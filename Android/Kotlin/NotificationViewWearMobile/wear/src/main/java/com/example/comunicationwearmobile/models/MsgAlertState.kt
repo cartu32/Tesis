@@ -1,5 +1,7 @@
 package com.example.comunicationwearmobile.models
 
-data class MsgAlertState (
-    var alertsList: List<MsgAlertModel> = emptyList()
+import com.example.shared_library.SharedData
+
+data class MsgAlertState(
+    var alertsList: List<SharedData.MsgNotification> = emptyList()
   )

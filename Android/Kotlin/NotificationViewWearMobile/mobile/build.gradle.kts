@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -59,6 +60,10 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.7")
+
+    implementation (libs.kotlin.stdlib)
+    implementation (libs.androidx.core.ktx.v160)
+    implementation (libs.jetbrains.kotlin.parcelize.runtime)
 
     //dependencias de librerias compartidas entre wear y mobile
     implementation(project(":shared_library"))

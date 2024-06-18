@@ -34,9 +34,6 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
     private var permissionManager: PermissionManager? =null
     private var mainActivityPresenter: MainActivityPresenter? =null
 
-    private var date:String?=null
-    private var time:String?=null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //aca va el codigo de la activity
@@ -48,8 +45,6 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
         txtMsg         = findViewById<EditText>(R.id.txtMsg)
         txtDate        = findViewById<TextView>(R.id.txtDate)
         txtTime        = findViewById<TextView>(R.id.txtClock)
-
-
 
         permissionManager= PermissionManager(this)
         mainActivityPresenter=MainActivityPresenter(this)
@@ -84,8 +79,8 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
         val listener = DatePickerDialog.OnDateSetListener{
             view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
-            date="$dayOfMonth/${month+1}/$year"
-            txtDate?.setText(date)
+
+            txtDate?.setText("$dayOfMonth/${month+1}/$year")
         }
         val datePickerDialog= DatePickerDialog(this,listener,year,month,day)
 
@@ -95,13 +90,17 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
 
 
     private val listenerButton = View.OnClickListener {
-        var text="Vacio"
+       val msgNotification:SharedData.MsgNotification
 
-        if(txtMsgTitle!!.text.isNotEmpty())
-            text= txtMsgTitle!!.text.toString()
-
+       msgNotification = SharedData.MsgNotification(
+           title = txtMsgTitle?.text.toString(),
+           message = txtMsg?.text.toString(),
+           typeNotification = SharedData.TypeNotification.Alert,
+           date = txtDate?.text.toString(),
+           hour =txtTime?.text.toString()
+       )
        Utils.showToast(this,"Enviando datos a Wear OS")
-       mainActivityPresenter?.sendDataWearable(SharedData.TypeMsg.messageDevice,text)
+       mainActivityPresenter?.sendDataWearable(msgNotification)
 
     }
 

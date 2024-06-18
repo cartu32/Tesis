@@ -2,7 +2,9 @@ package com.example.comunicationwearmobile.common
 
 import android.content.Context
 import android.widget.Toast
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -17,7 +19,7 @@ fun dateToString(dateTime: LocalDateTime):String{
     return formatterDate
 }
 
-fun getHour(dateTime: LocalDateTime):String{
+fun getHour(dateTime: LocalDate):String{
     val formatter=DateTimeFormatter.ofPattern("HH:mm")
     val formatterDate=dateTime.format(formatter)
 
@@ -25,7 +27,7 @@ fun getHour(dateTime: LocalDateTime):String{
 }
 
 
-fun getDate(dateTime: LocalDateTime):String{
+fun getDate(dateTime: LocalTime):String{
     val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val formatterDate=dateTime.format(formatter)
 

@@ -10,6 +10,8 @@ import com.example.comunicationwearmobile.common.InterfaceMainAct
 import com.example.comunicationwearmobile.common.InterfaceMainPre
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.shared_library.SharedData
+import com.example.shared_library.fromByteArray
+import com.example.shared_library.toByteArray
 
 
 class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
@@ -22,9 +24,10 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
 
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val message = intent?.getStringExtra("message") ?: return
+                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.INTENT_BODY_MESSAGE)!!
 
-                interMainView.updateTextBox(message)
+                val msgAlert: SharedData.MsgResponseNotification = fromByteArray(msgBytes)
+                interMainView.updateTextBox(msgAlert.idNotification.toString())
             }
 
         }
@@ -41,19 +44,21 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
         interMainView?.updateTextBox(data)
     }
 
-    public fun sendDataWearable(path:SharedData.TypeMsg,msg:String){
-        sendMessageToService(path,msg)
+    public fun sendDataWearable(msg:SharedData.MsgNotification){
+
+        sendMessageToService(SharedData.TypeMsg.messageDevice.name,msg)
     }
 
 
     fun onCleared() {
-        sendMessageToService(SharedData.TypeMsg.cancel_path,"")
+        sendMessageToService(SharedData.TypeMsg.cancelCoroutines.name,SharedData.MsgNotification())
     }
 
-    private fun sendMessageToService(typeMsg: SharedData.TypeMsg, message:String){
+    private fun sendMessageToService(typeMsg: String, msgAlert:SharedData.MsgNotification){
+        val byteArrayData:ByteArray =toByteArray(msgAlert)
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra("typeMsg", typeMsg)
-            putExtra("message", message)
+            putExtra(SharedData.INTENT_TYPE_MSG, typeMsg)
+            putExtra(SharedData.INTENT_BODY_MESSAGE, byteArrayData)
         }
         mContext?.startService(serviceIntent)
     }

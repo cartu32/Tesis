@@ -17,26 +17,29 @@ import kotlinx.coroutines.launch
 class WearableDataListenerService : WearableListenerService() {
 
 
-    private val TAG: String="WearableDataListnener"
+    private val TAG: String = "WearableDataListnener"
     private var transcriptionNodeId: String? = null
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            val typeMsg = it.getStringExtra("typeMsg")
-            val message = it.getStringExtra("message")
+            val typeMsg = it.getStringExtra(SharedData.INTENT_TYPE_MSG)
+            val message = it.getByteArrayExtra(SharedData.INTENT_BODY_MESSAGE)
 
-            if (typeMsg == null || message == null)
-                return  START_STICKY
-           /* if (typeMsg==SharedData.TypeMsg.cancel_path)
-                onCleared()*/
-            else
-                sendDataMobile(typeMsg, message)
+            if (message == null || typeMsg == null) {
+                return START_STICKY
+            }
+            when (typeMsg) {
+                SharedData.TypeMsg.messageDevice.name -> {
+                    sendDataMobile(typeMsg, message)
+                }
+
+                SharedData.TypeMsg.cancelCoroutines.name -> onCleared()
+            }
         }
         return START_STICKY
     }
-
 
 
     private fun getNodes(): Collection<String> {
@@ -44,14 +47,13 @@ class WearableDataListenerService : WearableListenerService() {
     }
 
 
-    private fun sendDataMobile(path:String, msg:String)
-    {
+    private fun sendDataMobile(path: String, msg: ByteArray) {
         scope.launch() {
             transcriptionNodeId = getNodes().first().also { nodeId ->
                 val sendTask: Task<*> = Wearable.getMessageClient(applicationContext).sendMessage(
                     nodeId,
                     path,
-                    msg.toByteArray() //send your desired information here
+                    msg //send your desired information here
                 ).apply {
                     addOnSuccessListener { Log.d(TAG, "OnSuccess") }
                     addOnFailureListener { Log.d(TAG, "OnFailure") }
@@ -64,17 +66,13 @@ class WearableDataListenerService : WearableListenerService() {
     private fun onCleared() {
         job.cancel() // Cancela todas las coroutines cuando ya no sean necesarias
     }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
 
-        if (messageEvent.path == SharedData.msg_wear_to_mobile) {
-
-            val intent = Intent(SharedData.broadcast_wear_data)
-            intent.putExtra("message", String(messageEvent.data))
-            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-
-        }
+        val intent = Intent(SharedData.BROADCAST_WEAR_DATA)
+        intent.putExtra(SharedData.INTENT_BODY_MESSAGE, messageEvent.data)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
-
-
-
 }
+
+

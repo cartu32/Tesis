@@ -21,7 +21,6 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +28,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.comunicationwearmobile.common.getDate
-import com.example.comunicationwearmobile.common.getHour
-import com.example.comunicationwearmobile.models.MsgAlertModel
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.ui.component.ViewPagerItem
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
@@ -48,7 +44,7 @@ const val INITIAL_PAGE: Int =0
  */
 
 @Composable
-fun PageContent(page: Int, msgAlert:MsgAlertModel) {
+fun PageContent(page: Int, msgAlert:SharedData.MsgNotification) {
     CustomColumn {
         Text(text = msgAlert.title, color = Color.Red,fontSize = 15.sp,)
         Spacer(modifier = Modifier.height(10.dp))
@@ -57,13 +53,13 @@ fun PageContent(page: Int, msgAlert:MsgAlertModel) {
         Spacer(modifier = Modifier.height(10.dp))
 
         CustomRow(){
-            Text(text = getDate(msgAlert.date) )
+            Text(text = msgAlert.date)
             Spacer(modifier = Modifier.width(35.dp))
-            Text(text = getHour(msgAlert.date))
+            Text(text = msgAlert.hour)
         }
         Spacer(modifier = Modifier.height(2.dp))
 
-        when(msgAlert.typeMsg){
+        when(msgAlert.typeNotification){
             SharedData.TypeNotification.Reminder -> FloatingActionButtonOK()
             SharedData.TypeNotification.Alert -> FloatingActionButtonAlert()
             SharedData.TypeNotification.WithoutNotifications -> FloatingActionButtonNoNotification()
@@ -176,6 +172,6 @@ fun CustomRow(content:@Composable () -> Unit){
 @Composable
 fun PreviewUsuarioScreenLV() {
 // Simulación de ViewModel para la vista previa
-    val model = remember { AlertsViewModel() }
-    HorizontalPagerWithDotsIndicatorScreen(model)
+   // val model = remember { AlertsViewModel() }
+   // HorizontalPagerWithDotsIndicatorScreen(model)
 }
