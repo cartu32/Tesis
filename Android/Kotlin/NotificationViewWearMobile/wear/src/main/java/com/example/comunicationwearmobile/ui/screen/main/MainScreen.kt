@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.FloatingActionButton
@@ -77,7 +77,7 @@ fun FloatingActionButtonOK() {
         modifier = Modifier.size(50.dp),
         elevation = FloatingActionButtonDefaults.elevation(8.dp),
         ) {
-        Icon(Icons.Filled.Check, "Floating action button.")
+        Icon(Icons.Filled.DateRange, "Floating action button.")
     }
 }
 

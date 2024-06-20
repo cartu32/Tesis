@@ -6,9 +6,12 @@ import android.app.TimePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -30,10 +33,12 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
     private var txtMsg: EditText?= null
     private var txtDate:TextView?=null
     private var txtTime: TextView?=null
+    private var spTypeNotification:Spinner?=null
 
     private var permissionManager: PermissionManager? =null
     private var mainActivityPresenter: MainActivityPresenter? =null
 
+    private var  selectedItemSP:SharedData.TypeNotification = SharedData.TypeNotification.WithoutNotifications
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //aca va el codigo de la activity
@@ -45,14 +50,53 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
         txtMsg         = findViewById<EditText>(R.id.txtMsg)
         txtDate        = findViewById<TextView>(R.id.txtDate)
         txtTime        = findViewById<TextView>(R.id.txtClock)
+        spTypeNotification = findViewById<Spinner>(R.id.spTypeNotification)
+
 
         permissionManager= PermissionManager(this)
         mainActivityPresenter=MainActivityPresenter(this)
 
+        loadSpiner()
+
         txtDate?.setOnClickListener(listenerDate)
         txtTime?.setOnClickListener(listenerTime)
         cmdSendWear?.setOnClickListener(listenerButton)
+        spTypeNotification?.setOnItemSelectedListener(listenerSpinner)
+
+
         permissionManager!!.checkPermissionGiven()
+    }
+
+    private fun loadSpiner() {
+        var arrayList:ArrayList<String> = ArrayList()
+
+        arrayList.add("Seleccione una opcion")
+        arrayList.add(SharedData.TypeNotification.Alert.name)
+        arrayList.add(SharedData.TypeNotification.Reminder.name)
+
+        var adapter:ArrayAdapter<String> = ArrayAdapter(this,android.R.layout.simple_spinner_item,arrayList)
+        adapter.setDropDownViewResource(android.R.layout.select_dialog_item)
+        spTypeNotification?.adapter = adapter
+
+        spTypeNotification?.setSelection(0, false)
+
+    }
+
+    // Configura el listener para el Spinner
+    private val listenerSpinner = object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+            if (position == 0) {
+                return
+            }
+
+            // Acción cuando un ítem es seleccionado
+            selectedItemSP = SharedData.TypeNotification.valueOf(parent.getItemAtPosition(position).toString())
+            Toast.makeText(parent.context, "Seleccionado: $selectedItemSP", Toast.LENGTH_SHORT).show()
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>) {
+            // Acción cuando nada es seleccionado
+        }
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -95,7 +139,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
        msgNotification = SharedData.MsgNotification(
            title = txtMsgTitle?.text.toString(),
            message = txtMsg?.text.toString(),
-           typeNotification = SharedData.TypeNotification.Alert,
+           typeNotification =selectedItemSP,
            date = txtDate?.text.toString(),
            hour =txtTime?.text.toString()
        )
