@@ -22,6 +22,7 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -118,7 +119,16 @@ fun FloatingActionButtonNoNotification() {
 @OptIn(ExperimentalPagerApi::class)
 fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val pageCount = alertsViewModel.getCountItemList()
-    val pagerState = rememberPagerState(INITIAL_PAGE)
+    val pagerState = rememberPagerState()
+
+    val lastPageIndex = pageCount - 1
+
+    // This effect will be triggered when pageCount changes (i.e., when a new page is added)
+    LaunchedEffect(pageCount) {
+        if (pageCount > 0) {
+            pagerState.scrollToPage(lastPageIndex)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
