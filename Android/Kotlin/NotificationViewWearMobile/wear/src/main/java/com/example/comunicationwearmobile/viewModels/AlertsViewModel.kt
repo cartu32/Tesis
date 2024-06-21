@@ -24,6 +24,7 @@ objeto bundle
  */
 class AlertsViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext:Context =application.applicationContext
+    private val isFirstElement: Boolean = true
 
     var state by mutableStateOf(MsgAlertState())
     private set
@@ -34,9 +35,9 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             state=state.copy(
                 alertsList = listOf(
                     /*MsgAlertModel("Recordatorio de Hoy","Turno Medico",TypeMsg.Reminder),
-                    MsgAlertModel("Perdio turno","No fue al medico",TypeMsg.Alert),*/
+                    MsgAlertModel("Perdio turno","No fue al medico",TypeMsg.Alert),
                     SharedData.MsgNotification("Todo esta bien","Sin notificaciones",
-                        SharedData.TypeNotification.WithoutNotifications),
+                        SharedData.TypeNotification.WithoutNotifications),*/
                     )
             )
         }
@@ -71,18 +72,12 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     fun removeMsgAlert(indexList: Int){
         val updateAlert=state.alertsList.toMutableList()
 
-        val idMsg:Int =getIdMsgList(indexList,updateAlert)
         removeMsgAlertList(indexList,updateAlert)
 
-        sendMsgRemoveMobile(idMsg)
+        sendMsgRemoveMobile(indexList)
     }
 
 
-    private fun getIdMsgList(indexList: Int, updateAlert: MutableList<SharedData.MsgNotification>): Int {
-        val msgAlert= updateAlert.get(indexList)
-        val idMsg=msgAlert.idNotification
-        return idMsg
-    }
 
     fun removeMsgAlertList(index: Int, updateAlert: MutableList<SharedData.MsgNotification>) {
 
@@ -97,6 +92,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     fun addMsgAlertList(msgAlert:SharedData.MsgNotification){
         val indexNewItem=state.alertsList.count()
         val updateAlert=state.alertsList.toMutableList()
+
 
         updateAlert.add(indexNewItem,msgAlert)
         state=state.copy(

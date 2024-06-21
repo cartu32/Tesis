@@ -38,7 +38,6 @@ object SharedData
         var message: String="",
         var typeNotification: TypeNotification = TypeNotification.WithoutNotifications,
         var date:String ="01/01/2000",
-        var hour:String = "00:00",
-        var idNotification:Int =-1,
+        var hour:String = "00:00"
     )
 }

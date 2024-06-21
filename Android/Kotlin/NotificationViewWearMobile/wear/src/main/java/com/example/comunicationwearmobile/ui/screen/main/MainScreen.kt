@@ -1,7 +1,6 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,8 +38,6 @@ import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-
-const val INITIAL_PAGE: Int =0
 
 /**************************************************************************************
  ************************** FUNCIONES QUE CREAN LA VIEW********************************
@@ -64,7 +63,7 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
 
         when(msgAlert.typeNotification){
             SharedData.TypeNotification.Reminder -> FloatingActionButtonOK(page,alertsViewModel)
-            SharedData.TypeNotification.Alert -> FloatingActionButtonAlert()
+            SharedData.TypeNotification.Alert -> FloatingActionButtonAlert(page,alertsViewModel)
             SharedData.TypeNotification.WithoutNotifications -> FloatingActionButtonNoNotification()
         }
     }
@@ -74,8 +73,7 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
 @Composable
 fun FloatingActionButtonOK(currentPage: Int, alertsViewModel: AlertsViewModel) {
     FloatingActionButton(
-        onClick = { Log.d("Pagina","Current Page: ${currentPage}")
-                    alertsViewModel.removeMsgAlert(currentPage)},
+        onClick = {alertsViewModel.removeMsgAlert(currentPage)},
         shape = CircleShape,
         containerColor=Color.Green,
         contentColor = Color.White,
@@ -88,9 +86,9 @@ fun FloatingActionButtonOK(currentPage: Int, alertsViewModel: AlertsViewModel) {
 
 
 @Composable
-fun FloatingActionButtonAlert() {
+fun FloatingActionButtonAlert(currentPage: Int, alertsViewModel: AlertsViewModel) {
     FloatingActionButton(
-        onClick = { print("Hello") },
+        onClick = { alertsViewModel.removeMsgAlert(currentPage)},
         shape = CircleShape,
         containerColor=Color.Red,
         contentColor = Color.White,
@@ -105,7 +103,7 @@ fun FloatingActionButtonAlert() {
 @Composable
 fun FloatingActionButtonNoNotification() {
     FloatingActionButton(
-        onClick = { print("Hello") },
+        onClick = {},
         shape = CircleShape,
         containerColor=Color.Blue,
         contentColor = Color.White,
@@ -115,67 +113,101 @@ fun FloatingActionButtonNoNotification() {
         Icon(Icons.Filled.ThumbUp, "Floating action button.")
     }
 }
+
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val pageCount = alertsViewModel.getCountItemList()
+
+    if (pageCount != 0) {
+        NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel )
+    } else {
+        DefaultView()
+    }
+
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun NotificationPagerView(pageCount:Int, alertsViewModel: AlertsViewModel) {
     val pagerState = rememberPagerState()
 
     val lastPageIndex = pageCount - 1
 
-    // This effect will be triggered when pageCount changes (i.e., when a new page is added)
+    // Este efecto se activará cuando pageCount cambie (es decir, cuando se agregue una nueva página)
     LaunchedEffect(pageCount) {
         if (pageCount > 0) {
             pagerState.scrollToPage(lastPageIndex)
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    //esta parte es la de la vista
+    Box(modifier = Modifier.fillMaxSize())
+    {
+        //aca va la parte de las paginas
         HorizontalPager(
-            count = pageCount,
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-
+            count = pageCount ,
+            state = pagerState ,
+            modifier = Modifier.fillMaxSize() ,
         ) { page ->
             ViewPagerItem(page = page) {
-                val msgAlert= alertsViewModel.state.alertsList.get(page)
-                PageContent(page = page,msgAlert,alertsViewModel)
+                val msgAlert = alertsViewModel.state.alertsList[page]
+                PageContent(page = page , msgAlert = msgAlert , alertsViewModel = alertsViewModel)
             }
-
         }
 
+        //esta parte es de los indicadores de las paginas
         ViewPagerDotsIndicator(
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            pageCount = alertsViewModel.getCountItemList(),
+                .align(Alignment.BottomCenter) ,
+            pageCount = alertsViewModel.getCountItemList() ,
             currentPage = pagerState.currentPage
         )
     }
+
 }
 
 @Composable
-fun CustomColumn(
-    content: @Composable ()-> Unit
-) {
+fun CustomColumn(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier,
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
         content()
     }
 }
 
 @Composable
-fun CustomRow(content:@Composable () -> Unit){
+fun CustomRow(content: @Composable () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
-    ){
+    ) {
         content()
     }
 }
+
+@Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
+@Composable
+fun DefaultView() {
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CustomColumn {
+            Text(
+                text = "No hay Alertas disponibles",
+                modifier = Modifier.padding(16.dp),
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
+            FloatingActionButtonNoNotification()
+        }
+
+    }
+}
+
 /**************************************************************************************
  ************** FUNCIONES QUE LLAMAN A LAS QUE CREAN LA VIEW***************************
  **************************************************************************************
