@@ -24,18 +24,18 @@ class WearableDataListenerService : WearableListenerService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            val typeMsg = it.getStringExtra(SharedData.INTENT_TYPE_MSG)
-            val message = it.getByteArrayExtra(SharedData.INTENT_BODY_MESSAGE)
+            val typeMsg = it.getStringExtra(SharedData.ParamIntent.INTERNAL_OPERATION.name)
+            val message = it.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)
 
             if (message == null || typeMsg == null) {
                 return START_STICKY
             }
             when (typeMsg) {
-                SharedData.TypeMsg.messageDevice.name -> {
+                SharedData.InternalOperationType.sendMessageDevice.name -> {
                     sendDataMobile(typeMsg, message)
                 }
 
-                SharedData.TypeMsg.cancelCoroutines.name -> onCleared()
+                SharedData.InternalOperationType.cancelCoroutines.name -> onCleared()
             }
         }
         return START_STICKY
@@ -69,8 +69,9 @@ class WearableDataListenerService : WearableListenerService() {
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
 
-        val intent = Intent(SharedData.BROADCAST_WEAR_DATA)
-        intent.putExtra(SharedData.INTENT_BODY_MESSAGE, messageEvent.data)
+        val intent = Intent(SharedData.Broadcast.fromWearData.name)
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, messageEvent.data)
+
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 }

@@ -24,16 +24,16 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
 
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.INTENT_BODY_MESSAGE)!!
+                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
-                val msgAlert: SharedData.MsgResponseNotification = fromByteArray(msgBytes)
-                interMainView.updateTextBox(msgAlert.idNotification.toString())
+                val msgAlert:SharedData.MsgViewNotification = fromByteArray(msgBytes)
+                interMainView.updateTextBox(msgAlert.numberNotification.toString())
             }
 
         }
 
         LocalBroadcastManager.getInstance(mContext!!).registerReceiver(
-            receiver, IntentFilter("WearDataListenerService.MessageReceived")
+            receiver, IntentFilter(SharedData.Broadcast.fromWearData.name)
         )
 
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java)
@@ -46,19 +46,19 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
 
     public fun sendDataWearable(msg:SharedData.MsgNotification){
 
-        sendMessageToService(SharedData.TypeMsg.messageDevice.name,msg)
+        sendMessageToService(SharedData.InternalOperationType.sendMessageDevice.name,msg)
     }
 
 
     fun onCleared() {
-        sendMessageToService(SharedData.TypeMsg.cancelCoroutines.name,SharedData.MsgNotification())
+        sendMessageToService(SharedData.InternalOperationType.cancelCoroutines.name,SharedData.MsgNotification())
     }
 
     private fun sendMessageToService(typeMsg: String, msgAlert:SharedData.MsgNotification){
         val byteArrayData:ByteArray =toByteArray(msgAlert)
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra(SharedData.INTENT_TYPE_MSG, typeMsg)
-            putExtra(SharedData.INTENT_BODY_MESSAGE, byteArrayData)
+            putExtra(SharedData.ParamIntent.INTERNAL_OPERATION.name, typeMsg)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, byteArrayData)
         }
         mContext?.startService(serviceIntent)
     }

@@ -24,7 +24,7 @@ objeto bundle
  */
 class AlertsViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext:Context =application.applicationContext
-    private val isFirstElement: Boolean = true
+
 
     var state by mutableStateOf(MsgAlertState())
     private set
@@ -53,7 +53,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
        val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
 
-                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.INTENT_BODY_MESSAGE)!!
+                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
                 val msgAlert:SharedData.MsgNotification = fromByteArray(msgBytes)
                 addMsgAlertList(msgAlert)
             }
@@ -61,7 +61,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(
-            receiver, IntentFilter(SharedData.BROADCAST_MOBILE_DATA)
+            receiver, IntentFilter(SharedData.Broadcast.fromMobileData.name)
         )
 
         val serviceIntent = Intent(appContext, MobileDataListenerService::class.java)

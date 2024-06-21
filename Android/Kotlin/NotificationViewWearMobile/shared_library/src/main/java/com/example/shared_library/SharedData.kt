@@ -4,15 +4,21 @@ import kotlinx.serialization.Serializable
 
 object SharedData
 {
+    const val PATH_ADD_NOTIFICATION:String      = "/add_notificaction"
+    const val PATH_VIEWED_NOTIFICATION:String   = "/viewed_notification"
+
     //constante que se utilizan para que el wearabledatalistener le avise ala view de los datos
     //recibidios
-    const val BROADCAST_WEAR_DATA:String="WearDataListenerService.MessageReceived"
-    const val BROADCAST_MOBILE_DATA:String="MobileDataListenerService.MessageReceived"
-
+    enum class Broadcast{
+        fromWearData,
+        fromMobileData,
+    }
     //Constantes que se utilizan para los intent que se envian a la clase WearableDataListner
-    const val INTENT_TYPE_MSG:String     = "Type_MSG"
-    const val INTENT_BODY_MESSAGE:String = "BODY_MESSAGE"
-
+    enum class ParamIntent{
+        INTERNAL_OPERATION,
+        MESSAGE_BODY,
+        MESSAGE_PATH,
+    }
     //constante que indican el tipo de notificacion que se le va a enviar al smartwartch
     enum class TypeNotification{
         Reminder,
@@ -22,15 +28,14 @@ object SharedData
 
     //constantantes que se utiliza para indicar si el starservice de WearableDatableListener se lamo
     //enviar un msg al wearable o es para cancelar las courutinas creadas en el service.
-    enum class TypeMsg{
-        messageDevice,
+    enum class InternalOperationType{
+        sendMessageDevice,
         cancelCoroutines,
     }
 
     @Serializable
-    data class MsgResponseNotification(
-        var idNotification:Int =-1,
-        var activate:Boolean=false
+    data class MsgViewNotification(
+        var numberNotification:Int=-1
     )
     @Serializable
     data class MsgNotification(
