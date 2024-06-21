@@ -67,16 +67,33 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         appContext.startService(serviceIntent)
 
     }
-    fun removeMsgAlertList(msgAlert:SharedData.MsgNotification) {
 
-        val index= state.alertsList.indexOf(msgAlert)
+    fun removeMsgAlert(indexList: Int){
         val updateAlert=state.alertsList.toMutableList()
+
+        val idMsg:Int =getIdMsgList(indexList,updateAlert)
+        removeMsgAlertList(indexList,updateAlert)
+
+        sendMsgRemoveMobile(idMsg)
+    }
+
+
+    private fun getIdMsgList(indexList: Int, updateAlert: MutableList<SharedData.MsgNotification>): Int {
+        val msgAlert= updateAlert.get(indexList)
+        val idMsg=msgAlert.idNotification
+        return idMsg
+    }
+
+    fun removeMsgAlertList(index: Int, updateAlert: MutableList<SharedData.MsgNotification>) {
 
         updateAlert.removeAt(index)
         state=state.copy(
             alertsList = updateAlert)
     }
 
+    private fun sendMsgRemoveMobile(idMsg: Int) {
+
+        }
     fun addMsgAlertList(msgAlert:SharedData.MsgNotification){
         val indexNewItem=state.alertsList.count()
         val updateAlert=state.alertsList.toMutableList()

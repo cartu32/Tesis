@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.common.InterfaceMainAct
 import com.example.comunicationwearmobile.common.InterfaceMainPre
+import com.example.comunicationwearmobile.models.CounterNotification
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
@@ -45,6 +46,10 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
     }
 
     public fun sendDataWearable(msg:SharedData.MsgNotification){
+
+        //Establezco el id de la notificacion segun el contador
+        CounterNotification.incrementCounter()
+        msg.idNotification=CounterNotification.getCounter()
 
         sendMessageToService(SharedData.TypeMsg.messageDevice.name,msg)
     }

@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,8 +44,9 @@ const val INITIAL_PAGE: Int =0
  **************************************************************************************
  */
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun PageContent(page: Int, msgAlert:SharedData.MsgNotification) {
+fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel: AlertsViewModel) {
     CustomColumn {
         Text(text = msgAlert.title, color = Color.Red,fontSize = 15.sp,)
         Spacer(modifier = Modifier.height(10.dp))
@@ -60,17 +62,19 @@ fun PageContent(page: Int, msgAlert:SharedData.MsgNotification) {
         Spacer(modifier = Modifier.height(2.dp))
 
         when(msgAlert.typeNotification){
-            SharedData.TypeNotification.Reminder -> FloatingActionButtonOK()
+            SharedData.TypeNotification.Reminder -> FloatingActionButtonOK(page,alertsViewModel)
             SharedData.TypeNotification.Alert -> FloatingActionButtonAlert()
             SharedData.TypeNotification.WithoutNotifications -> FloatingActionButtonNoNotification()
         }
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun FloatingActionButtonOK() {
+fun FloatingActionButtonOK(currentPage: Int, alertsViewModel: AlertsViewModel) {
     FloatingActionButton(
-        onClick = { print("Hello") },
+        onClick = { Log.d("Pagina","Current Page: ${currentPage}")
+                    alertsViewModel.removeMsgAlert(currentPage)},
         shape = CircleShape,
         containerColor=Color.Green,
         contentColor = Color.White,
@@ -125,7 +129,7 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
         ) { page ->
             ViewPagerItem(page = page) {
                 val msgAlert= alertsViewModel.state.alertsList.get(page)
-                PageContent(page = page,msgAlert)
+                PageContent(page = page,msgAlert,alertsViewModel)
             }
 
         }
