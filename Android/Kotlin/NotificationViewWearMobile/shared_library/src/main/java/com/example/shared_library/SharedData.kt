@@ -4,7 +4,12 @@ import kotlinx.serialization.Serializable
 
 object SharedData
 {
+    //constantes que indican el tipo de mensaje que es
+    //este tipo de mensaje se usa para agregar una notificacion a la  view
     const val PATH_ADD_NOTIFICATION:String      = "/add_notificaction"
+
+    //este tipo de mensaje se usa para avisar que el usuario vio la notificacion
+    //y se debe eliminar de la view
     const val PATH_VIEWED_NOTIFICATION:String   = "/viewed_notification"
 
     //constante que se utilizan para que el wearabledatalistener le avise ala view de los datos
@@ -15,7 +20,6 @@ object SharedData
     }
     //Constantes que se utilizan para los intent que se envian a la clase WearableDataListner
     enum class ParamIntent{
-        INTERNAL_OPERATION,
         MESSAGE_BODY,
         MESSAGE_PATH,
     }

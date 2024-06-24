@@ -9,13 +9,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
-import kotlinx.coroutines.launch
+import com.example.shared_library.toByteArray
 
 /*
 Los viewmodels se usan para mantener el estado de las variables. Esto sirve mas que nada para cuando
@@ -30,18 +29,6 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     private set
 
     init {
-
-        viewModelScope.launch {
-            state=state.copy(
-                alertsList = listOf(
-                    /*MsgAlertModel("Recordatorio de Hoy","Turno Medico",TypeMsg.Reminder),
-                    MsgAlertModel("Perdio turno","No fue al medico",TypeMsg.Alert),
-                    SharedData.MsgNotification("Todo esta bien","Sin notificaciones",
-                        SharedData.TypeNotification.WithoutNotifications),*/
-                    )
-            )
-        }
-
          initLocalBrodacast()
     }
 
@@ -50,15 +37,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     /*En el constructor se definen los broadcast que va a usar el service de WearableListenerService
     para enviar datos a la view. Como es un sevice se usan para ello los braodcast receiver
     */
-       val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-
-                val msgBytes:ByteArray = intent?.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
-                val msgAlert:SharedData.MsgNotification = fromByteArray(msgBytes)
-                addMsgAlertList(msgAlert)
-            }
-
-        }
+       val receiver = createBroadcastReceiver()
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(
             receiver, IntentFilter(SharedData.Broadcast.fromMobileData.name)
@@ -69,27 +48,53 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
 
     }
 
-    fun removeMsgAlert(indexList: Int){
+    // Función para crear el BroadcastReceiver
+    private fun createBroadcastReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val path:String = intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
+
+                val msgBytes: ByteArray = intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
+
+
+                when(path){
+                    SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
+                    SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+                }
+
+            }
+        }
+    }
+
+    private fun removeMsgAlert(msgBytes: ByteArray){
+        val indexList:Int = fromByteArray(msgBytes)
+
+        removeMsgAlertList(indexList)
+    }
+
+    fun removeMsgAlertList(indexList: Int){
         val updateAlert=state.alertsList.toMutableList()
 
-        removeMsgAlertList(indexList,updateAlert)
+        updateAlert.removeAt(indexList)
+        state=state.copy(alertsList = updateAlert)
 
         sendMsgRemoveMobile(indexList)
     }
 
 
-
-    fun removeMsgAlertList(index: Int, updateAlert: MutableList<SharedData.MsgNotification>) {
-
-        updateAlert.removeAt(index)
-        state=state.copy(
-            alertsList = updateAlert)
-    }
-
     private fun sendMsgRemoveMobile(idMsg: Int) {
 
+        val byteArrayData:ByteArray = toByteArray(idMsg)
+        val serviceIntent = Intent(appContext, MobileDataListenerService::class.java).apply {
+            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,SharedData.PATH_VIEWED_NOTIFICATION)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, byteArrayData)
         }
-    fun addMsgAlertList(msgAlert:SharedData.MsgNotification){
+        appContext.startService(serviceIntent)
+    }
+
+    fun addMsgAlertList(msgBytes: ByteArray){
+        val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
+
         val indexNewItem=state.alertsList.count()
         val updateAlert=state.alertsList.toMutableList()
 

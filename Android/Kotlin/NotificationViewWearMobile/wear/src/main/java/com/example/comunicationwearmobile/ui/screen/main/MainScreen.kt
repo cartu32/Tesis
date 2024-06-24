@@ -73,7 +73,7 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
 @Composable
 fun FloatingActionButtonOK(currentPage: Int, alertsViewModel: AlertsViewModel) {
     FloatingActionButton(
-        onClick = {alertsViewModel.removeMsgAlert(currentPage)},
+        onClick = {alertsViewModel.removeMsgAlertList(currentPage)},
         shape = CircleShape,
         containerColor=Color.Green,
         contentColor = Color.White,
@@ -88,7 +88,7 @@ fun FloatingActionButtonOK(currentPage: Int, alertsViewModel: AlertsViewModel) {
 @Composable
 fun FloatingActionButtonAlert(currentPage: Int, alertsViewModel: AlertsViewModel) {
     FloatingActionButton(
-        onClick = { alertsViewModel.removeMsgAlert(currentPage)},
+        onClick = { alertsViewModel.removeMsgAlertList(currentPage)},
         shape = CircleShape,
         containerColor=Color.Red,
         contentColor = Color.White,

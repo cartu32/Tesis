@@ -4,7 +4,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.shared_library.SharedData
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
@@ -24,12 +23,13 @@ class WearableDataListenerService : WearableListenerService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
+            val path    = it.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)
             val message = it.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)
 
-            if (message == null) {
+            if ((message == null)||(path==null)) {
                 return START_STICKY
             }
-            sendDataToWearable("typeMsg", message)
+            sendDataToWearable(path, message)
            }
         return START_STICKY
     }
@@ -58,7 +58,9 @@ class WearableDataListenerService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
 
         val intent = Intent(SharedData.Broadcast.fromWearData.name)
+
         intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, messageEvent.data)
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name, messageEvent.path)
 
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
