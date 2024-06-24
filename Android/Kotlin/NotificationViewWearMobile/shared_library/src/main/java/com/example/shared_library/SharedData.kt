@@ -26,13 +26,6 @@ object SharedData
         WithoutNotifications,
     }
 
-    //constantantes que se utiliza para indicar si el starservice de WearableDatableListener se lamo
-    //enviar un msg al wearable o es para cancelar las courutinas creadas en el service.
-    enum class InternalOperationType{
-        sendMessageDevice,
-        cancelCoroutines,
-    }
-
     @Serializable
     data class MsgViewNotification(
         var numberNotification:Int=-1

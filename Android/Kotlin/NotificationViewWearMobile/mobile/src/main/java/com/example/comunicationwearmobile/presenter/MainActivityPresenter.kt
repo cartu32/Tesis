@@ -46,18 +46,13 @@ class MainActivityPresenter(interMainView: InterfaceMainAct):InterfaceMainPre {
 
     public fun sendDataWearable(msg:SharedData.MsgNotification){
 
-        sendMessageToService(SharedData.InternalOperationType.sendMessageDevice.name,msg)
+        sendMessageToService("",msg)
     }
 
-
-    fun onCleared() {
-        sendMessageToService(SharedData.InternalOperationType.cancelCoroutines.name,SharedData.MsgNotification())
-    }
 
     private fun sendMessageToService(typeMsg: String, msgAlert:SharedData.MsgNotification){
         val byteArrayData:ByteArray =toByteArray(msgAlert)
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.INTERNAL_OPERATION.name, typeMsg)
             putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, byteArrayData)
         }
         mContext?.startService(serviceIntent)

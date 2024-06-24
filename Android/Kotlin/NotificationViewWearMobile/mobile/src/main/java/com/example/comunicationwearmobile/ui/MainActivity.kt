@@ -152,7 +152,6 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
     override fun onDestroy() {
         super.onDestroy()
 
-        mainActivityPresenter?.onCleared()
     }
 
     override fun showToast(msg: String) {

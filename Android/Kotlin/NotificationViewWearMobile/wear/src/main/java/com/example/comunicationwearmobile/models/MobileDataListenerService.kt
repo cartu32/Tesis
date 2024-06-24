@@ -24,18 +24,12 @@ class MobileDataListenerService : WearableListenerService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            val typeMsg = it.getStringExtra(SharedData.ParamIntent.INTERNAL_OPERATION.name)
             val message = it.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)
 
-            if (message == null || typeMsg == null) {
+            if (message == null) {
                 return START_STICKY
             }
-            when (typeMsg) {
-                SharedData.InternalOperationType.sendMessageDevice.name -> {
-                    sendDataWearable(typeMsg, message)
-                }
-                SharedData.InternalOperationType.cancelCoroutines.name -> onCleared()
-            }
+            sendDataToMobile("typeMsg", message)
         }
         return START_STICKY
     }
@@ -53,25 +47,25 @@ class MobileDataListenerService : WearableListenerService() {
         return Tasks.await(Wearable.getNodeClient(applicationContext).connectedNodes).map { it.id }
     }
 
-    private fun sendDataWearable(path: String, msg: ByteArray)
-    {
-        scope.launch() {
-            transcriptionNodeId = getNodes().first().also { nodeId ->
-                val sendTask: Task<*> = Wearable.getMessageClient(applicationContext).sendMessage(
-                    nodeId,
-                    path,
-                    msg //send your desired information here
-                ).apply {
-                    addOnSuccessListener { Log.d(TAG, "OnSuccess") }
-                    addOnFailureListener { Log.d(TAG, "OnFailure") }
+    private fun sendDataToMobile(path: String, msg: ByteArray) {
+        scope.launch {
+            try {
+                transcriptionNodeId = getNodes().firstOrNull()
+                transcriptionNodeId?.let { nodeId ->
+                    Wearable.getMessageClient(applicationContext).sendMessage(nodeId, path, msg).apply {
+                        addOnSuccessListener { Log.d(TAG, "OnSuccess") }
+                        addOnFailureListener { Log.d(TAG, "OnFailure") }
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error sending message", e)
             }
-
         }
     }
 
-    private fun onCleared() {
-        job.cancel() // Cancela todas las coroutines cuando ya no sean necesarias
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 }
 
