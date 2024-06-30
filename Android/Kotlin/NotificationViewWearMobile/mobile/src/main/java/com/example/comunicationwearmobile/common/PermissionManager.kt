@@ -26,7 +26,8 @@ class PermissionManager(activity: ComponentActivity) {
         Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
         Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     @SuppressLint("NewApi")

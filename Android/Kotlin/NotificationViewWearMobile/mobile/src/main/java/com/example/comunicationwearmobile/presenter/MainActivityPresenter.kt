@@ -17,9 +17,11 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     private var interMainView: InterfaceMainAct? = interMainView
     private val mContext: Context? = interMainView as? Context
-
+    private var notification:NotificationPresenter?=null;
 
     init{
+
+        notification=NotificationPresenter.getInstance()
 
         val receiver =createBroadcastReceiver()
 
@@ -56,6 +58,7 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     public fun sendDataWearable(msg:SharedData.MsgNotification){
 
+        notification?.generateNotification(mContext!!)
         sendMessageToService(SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 
