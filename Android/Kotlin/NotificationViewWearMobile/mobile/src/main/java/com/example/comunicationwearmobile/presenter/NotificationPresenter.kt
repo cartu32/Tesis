@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -44,12 +45,14 @@ class NotificationPresenter private constructor() {
         notificationBuilder.setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
             .setWhen(System.currentTimeMillis())
-            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setSmallIcon(R.drawable.old_person)
+            .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
             .setTicker("Mensajes")
             .setContentTitle("Titulo")
             .setContentIntent(onClick(context))
             .setContentText("Esta es una descripción")
             .setContentInfo("New")
+            .setLocalOnly(true)
 
         val random = Random()
         val m = random.nextInt(9999 - 1000) + 1000
