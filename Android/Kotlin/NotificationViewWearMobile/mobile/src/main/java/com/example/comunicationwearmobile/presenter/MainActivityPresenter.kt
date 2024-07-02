@@ -58,7 +58,7 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     public fun sendDataWearable(msg:SharedData.MsgNotification){
 
-        notification?.generateNotification(mContext!!)
+        notification?.showNotification(mContext!!,msg)
         sendMessageToService(SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 

@@ -1,76 +1,111 @@
 package com.example.comunicationwearmobile.presenter
 
-import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.ui.MainActivity
+import com.example.shared_library.SharedData
 
 import java.util.Random
+import kotlin.math.log
 
-
+@Suppress("UNREACHABLE_CODE")
 class NotificationPresenter private constructor() {
 
-    private val CHANNEL_ID = "NOTIFICATION_URGENT_ID"
-    private val CHANNEL_NAME = "My Notifications"
-    private val CHANNEL_DESCRIPTION = "Channel description"
+    private val GROUP_KEY_NOTIFICATION = "GROUP_NOTIFICATION"
+    private val CHANNEL_ID = "CHANNEL_ID_NOTIFICATION"
+    private val CHANNEL_NAME = "CHANNEL_NAME_NOTIFICATION"
+    private val CHANNEL_DESCRIPTION = "CHANNEL_DESCRIPTION_NOTIFICATION"
+    private val PATTERN_VIBRATION: LongArray = longArrayOf(0, 1000, 500, 1000)
 
-    fun generateNotification(context: Context) {
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private var countActiveNotifications:Int=0
+    fun showNotification(context: Context , msg: SharedData.MsgNotification) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val notificationChannel = NotificationChannel(
-            CHANNEL_ID , CHANNEL_NAME , NotificationManager.IMPORTANCE_HIGH
-        )
-        notificationChannel.description = CHANNEL_DESCRIPTION
-        notificationChannel.enableLights(true)
-        notificationChannel.lightColor = Color.RED
-        notificationChannel.vibrationPattern = longArrayOf(0 , 1000 , 500 , 1000)
-        notificationChannel.enableVibration(true)
-        notificationChannel.setShowBadge(true)
+        val notificationBuilder = createChannel(context, notificationManager)
 
-        notificationManager.createNotificationChannel(notificationChannel)
+        // Crear y notificar la notificación del grupo
+        val groupNotificationBuilder = createGroupNotification(context)
+        notificationManager.notify(0, groupNotificationBuilder.build())
 
-        val notificationBuilder = NotificationCompat.Builder(context , CHANNEL_ID)
+        // Crear y notificar una notificación individual
+        createNotification(context, notificationBuilder,msg)
+        notificationManager.notify(countActiveNotifications, notificationBuilder.build())
+    }
 
+    private fun createGroupNotification(context: Context): NotificationCompat.Builder {
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.old_person)
+            .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
+            .setContentTitle("Grupo de notificaciones")
+            .setContentText("Usted tiene algunas alertas pendientes por leer")
+            .setGroup(GROUP_KEY_NOTIFICATION)
+            .setGroupSummary(true)
+            .setAutoCancel(true)
+    }
+
+    private fun createNotification(
+        context: Context ,
+        notificationBuilder: NotificationCompat.Builder ,
+        msg: SharedData.MsgNotification
+    ) {
         notificationBuilder.setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.drawable.old_person)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
-            .setTicker("Mensajes")
-            .setContentTitle("Titulo")
             .setContentIntent(onClick(context))
-            .setContentText("Esta es una descripción")
-            .setContentInfo("New")
+            .setGroup(GROUP_KEY_NOTIFICATION)
             .setLocalOnly(true)
+            .setTicker("Mensajes")
+            .setContentTitle(msg.title)
+            .setStyle(NotificationCompat.InboxStyle()
+                .addLine(msg.message)
+                .addLine("")
+                .addLine("Fecha: "+msg.date+"    Hora: " +msg.hour))
 
-        val random = Random()
-        val m = random.nextInt(9999 - 1000) + 1000
-        notificationManager.notify(m , notificationBuilder.build())
+        countActiveNotifications++
+    }
+
+    private fun createChannel(context: Context, notificationManager: NotificationManager): NotificationCompat.Builder {
+        val notificationChannel = NotificationChannel(
+            CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationChannel.description = CHANNEL_DESCRIPTION
+        notificationChannel.enableLights(true)
+        notificationChannel.lightColor = Color.RED
+        notificationChannel.vibrationPattern = PATTERN_VIBRATION
+        notificationChannel.enableVibration(true)
+        notificationChannel.setShowBadge(true)
+
+        notificationManager.createNotificationChannel(notificationChannel)
+
+        return NotificationCompat.Builder(context, CHANNEL_ID)
     }
 
     private fun onClick(context: Context): PendingIntent {
-        val notificationIntent = Intent(context ,MainActivity::class.java)
-        notificationIntent.putExtra("age" , "13")
+        val notificationIntent = Intent(context, MainActivity::class.java)
+        notificationIntent.putExtra("age", "13")
         notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
         return PendingIntent.getActivity(
-            context ,
-            0 ,
-            notificationIntent ,
+            context,
+            0,
+            notificationIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
     }
+
+
     companion object {
         @Volatile
         private var instance: NotificationPresenter? = null
