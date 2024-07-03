@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
+import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.comunicationwearmobile.ui.MainActivity
 import com.example.shared_library.SharedData
 
@@ -58,12 +59,18 @@ class NotificationPresenter private constructor() {
         notificationBuilder: NotificationCompat.Builder ,
         msg: SharedData.MsgNotification
     ) {
+
+       /* val intent = Intent(context, WearableDataListenerService::class.java).apply {
+            putExtra("notification_id", notificationId)
+        }
+        val pendingIntent = PendingIntent.getService(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+*/
         notificationBuilder.setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.drawable.old_person)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
-            .setContentIntent(onClick(context))
+   //         .setContentIntent(onClick(context))
             .setGroup(GROUP_KEY_NOTIFICATION)
             .setLocalOnly(true)
             .setTicker("Mensajes")
@@ -90,19 +97,6 @@ class NotificationPresenter private constructor() {
         notificationManager.createNotificationChannel(notificationChannel)
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-    }
-
-    private fun onClick(context: Context): PendingIntent {
-        val notificationIntent = Intent(context, MainActivity::class.java)
-        notificationIntent.putExtra("age", "13")
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-        return PendingIntent.getActivity(
-            context,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
     }
 
 

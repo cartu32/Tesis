@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(),InterfaceMainAct {
            hour =txtTime?.text.toString()
        )
        Utils.showToast(this,"Enviando datos a Wear OS")
-       mainActivityPresenter?.sendDataWearable(msgNotification)
+       mainActivityPresenter?.sendNotificationToWearable(msgNotification)
 
     }
 

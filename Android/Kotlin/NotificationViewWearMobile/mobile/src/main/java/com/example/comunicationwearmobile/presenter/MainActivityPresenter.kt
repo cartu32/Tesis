@@ -56,14 +56,16 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
         interMainView?.updateTextBox(indexList.toString())
     }
 
-    public fun sendDataWearable(msg:SharedData.MsgNotification){
+
+
+    public fun sendNotificationToWearable(msg:SharedData.MsgNotification){
 
         notification?.showNotification(mContext!!,msg)
         sendMessageToService(SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 
 
-    private fun sendMessageToService(path: String, msgAlert:SharedData.MsgNotification){
+    private inline fun<reified T> sendMessageToService(path: String , msgAlert:T){
         val byteArrayData:ByteArray =toByteArray(msgAlert)
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
             putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,path)
