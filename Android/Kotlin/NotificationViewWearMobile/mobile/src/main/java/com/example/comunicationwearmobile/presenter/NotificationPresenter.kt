@@ -1,5 +1,6 @@
 package com.example.comunicationwearmobile.presenter
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,6 +16,7 @@ import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.comunicationwearmobile.ui.MainActivity
 import com.example.shared_library.SharedData
+import com.example.shared_library.toByteArray
 
 import java.util.Random
 import kotlin.math.log
@@ -54,23 +56,27 @@ class NotificationPresenter private constructor() {
             .setAutoCancel(true)
     }
 
+    @SuppressLint("LaunchActivityFromNotification")
     private fun createNotification(
         context: Context ,
         notificationBuilder: NotificationCompat.Builder ,
         msg: SharedData.MsgNotification
     ) {
 
-       /* val intent = Intent(context, WearableDataListenerService::class.java).apply {
-            putExtra("notification_id", notificationId)
-        }
-        val pendingIntent = PendingIntent.getService(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-*/
+       val cancelNotificationIntent = Intent(context, WearableDataListenerService::class.java).apply {
+            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,SharedData.PATH_VIEWED_NOTIFICATION)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, toByteArray( countActiveNotifications))
+       }
+        val cancelPendingIntent = PendingIntent.getService(context, countActiveNotifications, cancelNotificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
         notificationBuilder.setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.drawable.old_person)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
-   //         .setContentIntent(onClick(context))
+            .setContentIntent(cancelPendingIntent)
+            .setDeleteIntent(cancelPendingIntent)
             .setGroup(GROUP_KEY_NOTIFICATION)
             .setLocalOnly(true)
             .setTicker("Mensajes")
