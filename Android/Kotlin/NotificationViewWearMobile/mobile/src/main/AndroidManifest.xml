@@ -55,8 +55,9 @@
                     android:host="*"
                     android:pathPrefix="/"
                     android:scheme="wear" />
-            </intent-filter>
+             </intent-filter>
         </service>
+        <receiver android:name=".presenter.NotificationCancelReceiver" />
 
 
     </application>

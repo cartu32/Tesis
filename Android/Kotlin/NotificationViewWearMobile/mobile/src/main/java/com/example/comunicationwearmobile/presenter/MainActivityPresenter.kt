@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.common.InterfaceMainAct
+import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
@@ -61,18 +62,11 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
     public fun sendNotificationToWearable(msg:SharedData.MsgNotification){
 
         notification?.showNotification(mContext!!,msg)
-        sendMessageToService(SharedData.PATH_ADD_NOTIFICATION,msg)
+        Utils.sendMessageToService(mContext!! ,SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 
 
-    private inline fun<reified T> sendMessageToService(path: String , msgAlert:T){
-        val byteArrayData:ByteArray =toByteArray(msgAlert)
-        val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,path)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, byteArrayData)
-        }
-        mContext?.startService(serviceIntent)
-    }
+
 
 
 }

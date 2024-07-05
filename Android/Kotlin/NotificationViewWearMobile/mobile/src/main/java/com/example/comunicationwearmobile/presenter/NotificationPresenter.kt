@@ -5,21 +5,18 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
+import com.example.comunicationwearmobile.models.SpNotificationCounter
 import com.example.comunicationwearmobile.models.WearableDataListenerService
-import com.example.comunicationwearmobile.ui.MainActivity
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
-
-import java.util.Random
-import kotlin.math.log
 
 @Suppress("UNREACHABLE_CODE")
 class NotificationPresenter private constructor() {
@@ -30,7 +27,6 @@ class NotificationPresenter private constructor() {
     private val CHANNEL_DESCRIPTION = "CHANNEL_DESCRIPTION_NOTIFICATION"
     private val PATTERN_VIBRATION: LongArray = longArrayOf(0, 1000, 500, 1000)
 
-    private var countActiveNotifications:Int=0
     fun showNotification(context: Context , msg: SharedData.MsgNotification) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -40,9 +36,11 @@ class NotificationPresenter private constructor() {
         val groupNotificationBuilder = createGroupNotification(context)
         notificationManager.notify(0, groupNotificationBuilder.build())
 
+        val notificationId=SpNotificationCounter.increment(context)
+
         // Crear y notificar una notificación individual
-        createNotification(context, notificationBuilder,msg)
-        notificationManager.notify(countActiveNotifications, notificationBuilder.build())
+        createNotification(context, notificationBuilder,msg,notificationId)
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 
     private fun createGroupNotification(context: Context): NotificationCompat.Builder {
@@ -60,14 +58,13 @@ class NotificationPresenter private constructor() {
     private fun createNotification(
         context: Context ,
         notificationBuilder: NotificationCompat.Builder ,
-        msg: SharedData.MsgNotification
+        msg: SharedData.MsgNotification ,
+        notificationId: Int
     ) {
 
-       val cancelNotificationIntent = Intent(context, WearableDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,SharedData.PATH_VIEWED_NOTIFICATION)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, toByteArray( countActiveNotifications))
-       }
-        val cancelPendingIntent = PendingIntent.getService(context, countActiveNotifications, cancelNotificationIntent,
+       val cancelNotificationIntent = Intent(context, NotificationCancelReceiver::class.java)
+
+        val cancelPendingIntent = PendingIntent.getBroadcast(context, notificationId, cancelNotificationIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         notificationBuilder.setAutoCancel(true)
@@ -86,7 +83,6 @@ class NotificationPresenter private constructor() {
                 .addLine("")
                 .addLine("Fecha: "+msg.date+"    Hora: " +msg.hour))
 
-        countActiveNotifications++
     }
 
     private fun createChannel(context: Context, notificationManager: NotificationManager): NotificationCompat.Builder {
@@ -115,4 +111,15 @@ class NotificationPresenter private constructor() {
                 instance ?: NotificationPresenter().also { instance = it }
             }
     }
+}
+
+// BroadcastReceiver para manejar la cancelación de notificaciones
+// Esto se hace aca dentro porque sino no puedo decrementar el contador de notificaciones en
+// el pending intent
+class NotificationCancelReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+            val notificationId=SpNotificationCounter.decrement(context)
+            // Decrementar el contador de notificaciones activas
+            Utils.sendMessageToService(context,SharedData.PATH_VIEWED_NOTIFICATION,notificationId)
+     }
 }
