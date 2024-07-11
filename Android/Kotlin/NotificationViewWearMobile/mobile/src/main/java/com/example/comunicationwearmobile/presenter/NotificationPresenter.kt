@@ -19,34 +19,47 @@ import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 
 @Suppress("UNREACHABLE_CODE")
-class NotificationPresenter private constructor() {
+class NotificationPresenter private constructor(context: Context) {
 
     private val GROUP_KEY_NOTIFICATION = "GROUP_NOTIFICATION"
     private val CHANNEL_ID = "CHANNEL_ID_NOTIFICATION"
     private val CHANNEL_NAME = "CHANNEL_NAME_NOTIFICATION"
     private val CHANNEL_DESCRIPTION = "CHANNEL_DESCRIPTION_NOTIFICATION"
     private val PATTERN_VIBRATION: LongArray = longArrayOf(0, 1000, 500, 1000)
+    private val appContext: Context = context.applicationContext
 
-    fun showNotification(context: Context , msg: SharedData.MsgNotification) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val notificationBuilder = createChannel(context, notificationManager)
+
+    companion object {
+        @Volatile
+        private var INSTANCE: NotificationPresenter? = null
+
+        fun getInstance(context: Context): NotificationPresenter {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: NotificationPresenter(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
+    fun showNotification(msg: SharedData.MsgNotification) {
+        val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notificationBuilder = createChannel(notificationManager)
 
         // Crear y notificar la notificación del grupo
-        val groupNotificationBuilder = createGroupNotification(context)
+        val groupNotificationBuilder = createGroupNotification()
         notificationManager.notify(0, groupNotificationBuilder.build())
 
-        val notificationId=SpNotificationCounter.increment(context)
+        val notificationId=SpNotificationCounter.increment(appContext)
 
         // Crear y notificar una notificación individual
-        createNotification(context, notificationBuilder,msg,notificationId)
+        createNotification(notificationBuilder,msg,notificationId)
         notificationManager.notify(notificationId, notificationBuilder.build())
     }
 
-    private fun createGroupNotification(context: Context): NotificationCompat.Builder {
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+    private fun createGroupNotification(): NotificationCompat.Builder {
+        return NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.old_person)
-            .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
+            .setLargeIcon(BitmapFactory.decodeResource(appContext.resources, R.drawable.old_person))
             .setContentTitle("Grupo de notificaciones")
             .setContentText("Usted tiene algunas alertas pendientes por leer")
             .setGroup(GROUP_KEY_NOTIFICATION)
@@ -56,22 +69,21 @@ class NotificationPresenter private constructor() {
 
     @SuppressLint("LaunchActivityFromNotification")
     private fun createNotification(
-        context: Context ,
         notificationBuilder: NotificationCompat.Builder ,
         msg: SharedData.MsgNotification ,
         notificationId: Int
     ) {
 
-       val cancelNotificationIntent = Intent(context, NotificationCancelReceiver::class.java)
+       val cancelNotificationIntent = Intent(appContext, NotificationCancelReceiver::class.java)
 
-        val cancelPendingIntent = PendingIntent.getBroadcast(context, notificationId, cancelNotificationIntent,
+        val cancelPendingIntent = PendingIntent.getBroadcast(appContext, notificationId, cancelNotificationIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         notificationBuilder.setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.drawable.old_person)
-            .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.old_person))
+            .setLargeIcon(BitmapFactory.decodeResource(appContext.resources, R.drawable.old_person))
             .setContentIntent(cancelPendingIntent)
             .setDeleteIntent(cancelPendingIntent)
             .setGroup(GROUP_KEY_NOTIFICATION)
@@ -85,7 +97,7 @@ class NotificationPresenter private constructor() {
 
     }
 
-    private fun createChannel(context: Context, notificationManager: NotificationManager): NotificationCompat.Builder {
+    private fun createChannel(notificationManager: NotificationManager): NotificationCompat.Builder {
         val notificationChannel = NotificationChannel(
             CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH
         )
@@ -98,19 +110,10 @@ class NotificationPresenter private constructor() {
 
         notificationManager.createNotificationChannel(notificationChannel)
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(appContext, CHANNEL_ID)
     }
 
 
-    companion object {
-        @Volatile
-        private var instance: NotificationPresenter? = null
-
-        fun getInstance(): NotificationPresenter =
-            instance ?: synchronized(this) {
-                instance ?: NotificationPresenter().also { instance = it }
-            }
-    }
 }
 
 // BroadcastReceiver para manejar la cancelación de notificaciones
@@ -123,3 +126,4 @@ class NotificationCancelReceiver : BroadcastReceiver() {
             Utils.sendMessageToService(context,SharedData.PATH_VIEWED_NOTIFICATION,notificationId)
      }
 }
+

@@ -22,11 +22,11 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     init{
 
-        notification=NotificationPresenter.getInstance()
+        notification=NotificationPresenter.getInstance(mContext!!)
 
         val receiver =createBroadcastReceiver()
 
-        LocalBroadcastManager.getInstance(mContext!!).registerReceiver(
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(
             receiver, IntentFilter(SharedData.Broadcast.fromWearData.name)
         )
 
@@ -61,7 +61,7 @@ class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     public fun sendNotificationToWearable(msg:SharedData.MsgNotification){
 
-        notification?.showNotification(mContext!!,msg)
+        notification?.showNotification(msg)
         Utils.sendMessageToService(mContext!! ,SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 
