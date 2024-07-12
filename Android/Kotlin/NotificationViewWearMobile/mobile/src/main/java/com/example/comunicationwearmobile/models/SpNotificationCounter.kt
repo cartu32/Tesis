@@ -1,27 +1,41 @@
 package com.example.comunicationwearmobile.models
 
 import android.content.Context
+import android.content.SharedPreferences
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-object SpNotificationCounter {
-    private const val PREFS_NAME = "notification_prefs"
-    private const val KEY_COUNT = "notification_count"
+class SpListNotificactionId private constructor(context: Context) {
 
-    fun increment(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val count = prefs.getInt(KEY_COUNT, 0) + 1
-        prefs.edit().putInt(KEY_COUNT, count).apply()
-        return count
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
+    private val gson = Gson()
+
+    companion object {
+        private const val PREF_FILE_NAME = "PREF_FILE_NAME"
+        @Volatile
+        private var INSTANCE: SpListNotificactionId? = null
+
+        fun getInstance(context: Context): SpListNotificactionId {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: SpListNotificactionId(context.applicationContext).also { INSTANCE = it }
+            }
+        }
     }
 
-    fun decrement(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val count = (prefs.getInt(KEY_COUNT, 0) - 1).coerceAtLeast(0)
-        prefs.edit().putInt(KEY_COUNT, count).apply()
-        return count
+    fun saveArrayList(list: ArrayList<Int>, key: String) {
+        val editor = prefs.edit()
+        val json = gson.toJson(list)
+        editor.putString(key, json)
+        editor.apply()
     }
 
-    fun getCount(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getInt(KEY_COUNT, 0)
+    fun getArrayList(key: String): ArrayList<Int> {
+        val json = prefs.getString(key, null)
+        val type = object : TypeToken<ArrayList<Int>>() {}.type
+        return if (json != null) {
+            gson.fromJson(json, type)
+        } else {
+            ArrayList()
+        }
     }
 }

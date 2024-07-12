@@ -53,13 +53,14 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     //dependencias  agregadas para wear os
-    implementation ("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation (libs.play.services.wearable)
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
-    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
-    implementation ("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.7")
+    implementation (libs.androidx.lifecycle.extensions)
+    implementation (libs.androidx.lifecycle.runtime.ktx)
+    implementation (libs.androidx.appcompat)
+    implementation(libs.ui.tooling.preview)
+    implementation (libs.gson)
 
     implementation (libs.kotlin.stdlib)
     implementation (libs.androidx.core.ktx.v160)

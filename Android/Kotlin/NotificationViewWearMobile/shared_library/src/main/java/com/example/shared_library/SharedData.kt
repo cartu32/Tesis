@@ -12,6 +12,7 @@ object SharedData
     //y se debe eliminar de la view
     const val PATH_VIEWED_NOTIFICATION:String   = "/viewed_notification"
 
+    const val PARAM_PENDING_INTENT_NOTIFICATION_ID:String = "PARAM_NOTIFICATION_ID"
     //constante que se utilizan para que el wearabledatalistener le avise ala view de los datos
     //recibidios
     enum class Broadcast{
