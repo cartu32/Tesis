@@ -69,18 +69,22 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     private fun removeMsgAlert(msgBytes: ByteArray){
         val indexList:Int = fromByteArray(msgBytes)
 
-        removeMsgAlertList(indexList)
+        updateRemoveMsg(indexList)
     }
 
-    fun removeMsgAlertList(indexList: Int){
+     fun removeMsgAlertList(indexList: Int){
+        updateRemoveMsg(indexList)
+        sendMsgRemoveMobile(indexList)
+    }
+
+
+    private fun updateRemoveMsg(indexList:Int){
         val updateAlert=state.alertsList.toMutableList()
 
         updateAlert.removeAt(indexList)
         state=state.copy(alertsList = updateAlert)
 
-        sendMsgRemoveMobile(indexList)
     }
-
 
     private fun sendMsgRemoveMobile(idMsg: Int) {
 

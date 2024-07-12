@@ -8,13 +8,16 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.SpListNotificactionId
 import com.example.shared_library.SharedData
+import com.example.shared_library.fromByteArray
 
 class NotificationPresenter private constructor(context: Context) {
 
@@ -27,7 +30,14 @@ class NotificationPresenter private constructor(context: Context) {
     private val PATTERN_VIBRATION: LongArray = longArrayOf(0, 1000, 500, 1000)
     private val appContext: Context = context.applicationContext
 
+    init {
 
+        val receiver = createBroadcastReceiver()
+
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(
+            receiver , IntentFilter(SharedData.Broadcast.fromWearData.name)
+        )
+    }
     companion object {
         @Volatile
         private var INSTANCE: NotificationPresenter? = null
@@ -38,6 +48,30 @@ class NotificationPresenter private constructor(context: Context) {
             }
         }
     }
+
+    // Función para crear el BroadcastReceiver
+    private fun createBroadcastReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val path:String = intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
+
+                val msgBytes: ByteArray = intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
+
+
+                when(path){
+                    SharedData.PATH_VIEWED_NOTIFICATION -> onDataReceived(msgBytes)
+                }
+            }
+        }
+    }
+
+    fun onDataReceived(msgBytes: ByteArray) {
+        val indexList:Int = fromByteArray(msgBytes)
+
+        cancelNotificationID(indexList)
+    }
+
+
     fun showNotification(msg: SharedData.MsgNotification) {
         val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -57,7 +91,7 @@ class NotificationPresenter private constructor(context: Context) {
     private fun getNotificationId():Int{
         val preferences= SpListNotificactionId.getInstance(appContext)
         val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
-        var newId:Int=1
+        var newId=1
 
         if (listNotification.isNotEmpty()) {
             newId = listNotification.last()
@@ -68,9 +102,10 @@ class NotificationPresenter private constructor(context: Context) {
         return newId
     }
 
+
     //esta funcion elimina el notification id del shared preference. Atencion la eliminacion de la
     //bandeja de entrada se hace automaticamente con el pending intent, ya esta implicito
-    public fun removeNotificationId(idNotification:Int):Int{
+    fun removeByNotificationId(idNotification:Int):Int{
         val preferences= SpListNotificactionId.getInstance(appContext)
         val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
 
@@ -82,6 +117,34 @@ class NotificationPresenter private constructor(context: Context) {
         return posList
     }
 
+    private fun removeByPositionId(indexList:Int):Pair<Int,Boolean>{
+        val preferences= SpListNotificactionId.getInstance(appContext)
+        val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
+
+        val notificationId= listNotification[indexList]
+        listNotification.removeAt(indexList)
+
+        val isListEmpty:Boolean=listNotification.isEmpty()
+
+        preferences.saveArrayList(listNotification,KEY_LIST_NOTIFICATION_SP)
+
+        return Pair(notificationId,isListEmpty)
+    }
+
+    private fun cancelNotificationID(indexList: Int){
+        // Obtener el NotificationManager del sistema
+
+        val (notificationId,allNotificationsCanceled)=removeByPositionId(indexList)
+        val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        // Cancelar la notificación con el ID especificado
+        notificationManager.cancel(notificationId)
+
+        //si todas las notificaciones del smrtphone fueron canceladas, entonces se cancela la notificacion del grupo
+        if(allNotificationsCanceled){
+            notificationManager.cancel(GROUP_ID)
+        }
+
+    }
     private fun createGroupNotification(): NotificationCompat.Builder {
         return NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.old_person)
@@ -153,7 +216,7 @@ class NotificationCancelReceiver : BroadcastReceiver() {
 
         val notificationId= intent.getIntExtra(SharedData.PARAM_PENDING_INTENT_NOTIFICATION_ID,0    )
         val notificationPresenter =NotificationPresenter.getInstance(context)
-        val posNotificationId = notificationPresenter.removeNotificationId(notificationId)
+        val posNotificationId = notificationPresenter.removeByNotificationId(notificationId)
 
         // Decrementar el contador de notificaciones activas
         Utils.sendMessageToService(context,SharedData.PATH_VIEWED_NOTIFICATION,posNotificationId)
