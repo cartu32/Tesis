@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,8 +18,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 
 fun ViewPagerDotsIndicator(
-    modifier: Modifier = Modifier,
-    pageCount: Int,
+    modifier: Modifier = Modifier ,
+    pageCount: Int? ,
     currentPage: Int
 ) {
     Row(
@@ -28,14 +27,16 @@ fun ViewPagerDotsIndicator(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        repeat(pageCount) { page ->
-            val color = if (page == currentPage) Color.Black else Color.Gray
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .size(8.dp)
-                    .background(color, shape = CircleShape)
-            )
+        if (pageCount != null) {
+            repeat(pageCount) { page ->
+                val color = if (page == currentPage) Color.Black else Color.Gray
+                Box(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(8.dp)
+                        .background(color, shape = CircleShape)
+                )
+            }
         }
     }
 }

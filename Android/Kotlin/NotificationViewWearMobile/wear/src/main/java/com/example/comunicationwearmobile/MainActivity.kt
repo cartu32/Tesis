@@ -13,7 +13,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import com.example.comunicationwearmobile.ui.WearApp
-import com.example.comunicationwearmobile.ui.screen.main.ActivateUnlockScreen
 import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 
@@ -33,8 +32,6 @@ class MainActivity : ComponentActivity() {
             WearApp{
                 //llama a la funcion que crea la pantalla
                 HorizontalPagerWithDotsIndicatorScreen(model!!)
-                //llamo a la funcion que va encender la pantalla cuando reciba una notificacion
-                ActivateUnlockScreen(this,alertsViewModel = model!!)
 
             }
         }

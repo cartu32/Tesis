@@ -23,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,8 +33,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
-import com.example.comunicationwearmobile.ui.component.ViewPagerItem
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -113,61 +115,57 @@ fun FloatingActionButtonNoNotification() {
         Icon(Icons.Filled.ThumbUp, "Floating action button.")
     }
 }
-
-@Composable
 @OptIn(ExperimentalPagerApi::class)
+@Composable
 fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
-    val pageCount = alertsViewModel.getCountItemList()
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
+    val pageCount = state.alertsList?.size
 
     if (pageCount != 0) {
-        NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel )
+        if (pageCount != null) {
+            NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel)
+        }
     } else {
         DefaultView()
     }
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun NotificationPagerView(pageCount:Int, alertsViewModel: AlertsViewModel) {
+fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
     val pagerState = rememberPagerState()
-
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
     val lastPageIndex = pageCount - 1
 
-    // Este efecto se activará cuando pageCount cambie (es decir, cuando se agregue una nueva página)
     LaunchedEffect(pageCount) {
         if (pageCount > 0) {
             pagerState.scrollToPage(lastPageIndex)
         }
     }
 
-    //esta parte es la de la vista
-    Box(modifier = Modifier.fillMaxSize())
-    {
-        //aca va la parte de las paginas
+    Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
-            count = pageCount ,
-            state = pagerState ,
-            modifier = Modifier.fillMaxSize() ,
+            count = pageCount,
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
         ) { page ->
-            ViewPagerItem(page = page) {
-                val msgAlert = alertsViewModel.state.alertsList[page]
-                PageContent(page = page , msgAlert = msgAlert , alertsViewModel = alertsViewModel)
+            val msgAlert = state.alertsList?.get(page)
+            if (msgAlert != null) {
+                PageContent(page = page, msgAlert = msgAlert, alertsViewModel = alertsViewModel)
             }
         }
 
-        //esta parte es de los indicadores de las paginas
         ViewPagerDotsIndicator(
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter) ,
-            pageCount = alertsViewModel.getCountItemList() ,
+                .align(Alignment.BottomCenter),
+            pageCount = pageCount,
             currentPage = pagerState.currentPage
         )
     }
-
 }
+
 
 @Composable
 fun CustomColumn(content: @Composable () -> Unit) {
