@@ -35,19 +35,21 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         val receiver = createBroadcastReceiver()
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(
-            receiver, IntentFilter(SharedData.Broadcast.fromMobileData.name)
+            receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name)
         )
 
-        val serviceIntent = Intent(appContext, MobileDataListenerService::class.java)
+        val serviceIntent = Intent(appContext , MobileDataListenerService::class.java)
         appContext.startService(serviceIntent)
     }
 
     private fun createBroadcastReceiver(): BroadcastReceiver {
         return object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val path: String = intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
+            override fun onReceive(context: Context? , intent: Intent?) {
+                val path: String =
+                    intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
 
-                val msgBytes: ByteArray = intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
+                val msgBytes: ByteArray =
+                    intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
                 when (path) {
                     SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
@@ -56,6 +58,16 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+
+    public fun removeAllMsg() {
+        _stateListNotif.value?.alertsList?.forEach { msgAlert ->
+            val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
+            if (indexList != -1) {
+                removeMsgAlertList(indexList)
+            }
+        }
+    }
+
 
     private fun removeMsgAlert(msgBytes: ByteArray) {
         val indexList: Int = fromByteArray(msgBytes)
@@ -79,11 +91,12 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+
     private fun sendMsgRemoveMobile(idMsg: Int) {
         val byteArrayData: ByteArray = toByteArray(idMsg)
-        val serviceIntent = Intent(appContext, MobileDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name, SharedData.PATH_VIEWED_NOTIFICATION)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, byteArrayData)
+        val serviceIntent = Intent(appContext , MobileDataListenerService::class.java).apply {
+            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , SharedData.PATH_VIEWED_NOTIFICATION)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , byteArrayData)
         }
         appContext.startService(serviceIntent)
     }
@@ -95,9 +108,5 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             currentAlertsList?.add(msgAlert)
             _stateListNotif.value = currentState.copy(alertsList = currentAlertsList)
         }
-    }
-
-    fun getCountItemList(): Int? {
-        return _stateListNotif.value?.alertsList?.count()
     }
 }

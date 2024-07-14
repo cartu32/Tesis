@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG," Ejecuta  Ondestroy")
+        model?.removeAllMsg()
     }
 
     override fun onStop() {
