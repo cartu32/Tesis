@@ -51,6 +51,8 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                 val msgBytes: ByteArray =
                     intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
+
+
                 when (path) {
                     SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
                     SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
@@ -59,7 +61,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    public fun removeAllMsg() {
+     fun removeAllMsg() {
         _stateListNotif.value?.alertsList?.forEach { msgAlert ->
             val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
             if (indexList != -1) {

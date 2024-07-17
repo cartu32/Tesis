@@ -1,6 +1,9 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
 
+import android.app.KeyguardManager
+import android.content.Context
+import android.os.PowerManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +32,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -122,8 +126,18 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
     val pageCount = state.alertsList?.size
 
+    // Obtener el KeyguardManager
+    val keyguardManager = LocalContext.current.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+    val powerManager = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager
+
+    // Verificar si la pantalla está desbloqueada y no esta apagada
+    val isScreenUnlocked = !keyguardManager.isKeyguardLocked
+    val isScreenOn = powerManager.isInteractive
+
     if (pageCount != 0) {
-        if (pageCount != null) {
+        //si la pantalla esta bloqueada o apagada no se actualiza la view con el listado, hasta que
+        //se desbloquee o encienda nuevamente
+        if (pageCount != null && isScreenUnlocked && isScreenOn) {
             NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel)
         }
     } else {
