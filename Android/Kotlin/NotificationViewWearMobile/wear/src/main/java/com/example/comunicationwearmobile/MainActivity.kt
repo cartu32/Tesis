@@ -12,6 +12,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_CREATED
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_NO_CREATED
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_PAUSED
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_RESUMED
 import com.example.comunicationwearmobile.ui.WearApp
 import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
@@ -22,6 +26,9 @@ class MainActivity : ComponentActivity() {
     private val TAG: String? ="MainActivvity"
     private var model: AlertsViewModel? = null
 
+    companion object{
+        var stateActivity:Int= ST_ACTIVITY_NO_CREATED
+    }
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +37,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             //Aplica el theme
             WearApp{
+                stateActivity= ST_ACTIVITY_CREATED
+
                 //llama a la funcion que crea la pantalla
                 HorizontalPagerWithDotsIndicatorScreen(model!!)
 
@@ -43,23 +52,30 @@ class MainActivity : ComponentActivity() {
     }
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG," Ejecuta  Ondestroy")
+
+        stateActivity = ST_ACTIVITY_NO_CREATED
         model?.removeAllMsg()
+        Log.d(TAG," Ejecuta  Ondestroy")
     }
 
     override fun onStop() {
         super.onStop()
+
         Log.d(TAG," Ejecuta  OnStop")
     }
 
     override fun onPause() {
         super.onPause()
+        stateActivity = ST_ACTIVITY_PAUSED
         Log.d(TAG," Ejecuta  OnPause")
     }
 
     override fun onResume() {
         super.onResume()
+
+        stateActivity = ST_ACTIVITY_RESUMED
         Log.d(TAG," Ejecuta  OnResume")
     }
+
 }
 

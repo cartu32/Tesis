@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.viewModels
 
 import android.app.Application
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,6 +10,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_NO_CREATED
+import com.example.comunicationwearmobile.common.ST_ACTIVITY_RESUMED
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
@@ -51,7 +55,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                 val msgBytes: ByteArray =
                     intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
-
+                putActivityForeground()
 
                 when (path) {
                     SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
@@ -61,7 +65,21 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-     fun removeAllMsg() {
+    private fun putActivityForeground() {
+        if((MainActivity.stateActivity!= ST_ACTIVITY_RESUMED)or(MainActivity.stateActivity== ST_ACTIVITY_NO_CREATED)){
+            val activityIntent = Intent(appContext,MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+            try {
+                // Iniciar la Activity
+                pendingIntent.send()
+            } catch (e: PendingIntent.CanceledException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun removeAllMsg() {
         _stateListNotif.value?.alertsList?.forEach { msgAlert ->
             val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
             if (indexList != -1) {
