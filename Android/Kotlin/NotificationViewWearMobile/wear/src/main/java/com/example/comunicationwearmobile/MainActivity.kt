@@ -29,10 +29,16 @@ class MainActivity : ComponentActivity() {
     companion object{
         var stateActivity:Int= ST_ACTIVITY_NO_CREATED
     }
+
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         model = ViewModelProvider(this).get(AlertsViewModel::class.java)
+        model?.setLifecycleOwner(this)
+
         Log.d(TAG," Ejecuta  OnCreate")
         setContent {
             //Aplica el theme
@@ -55,6 +61,7 @@ class MainActivity : ComponentActivity() {
 
         stateActivity = ST_ACTIVITY_NO_CREATED
         model?.removeAllMsg()
+        model?.setNotCompleteRecomposition()
         Log.d(TAG," Ejecuta  Ondestroy")
     }
 

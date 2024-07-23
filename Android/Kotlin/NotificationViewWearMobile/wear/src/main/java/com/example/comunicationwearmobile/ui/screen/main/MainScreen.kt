@@ -4,6 +4,7 @@ package com.example.comunicationwearmobile.ui.screen.main
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.PowerManager
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -73,6 +75,8 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
             SharedData.TypeNotification.Alert -> FloatingActionButtonAlert(page,alertsViewModel)
             SharedData.TypeNotification.WithoutNotifications -> FloatingActionButtonNoNotification()
         }
+
+
     }
 }
 
@@ -126,6 +130,8 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
     val pageCount = state.alertsList?.size
 
+    alertsViewModel.setNotCompleteRecomposition()
+
     // Obtener el KeyguardManager
     val keyguardManager = LocalContext.current.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     val powerManager = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -142,6 +148,14 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
         }
     } else {
         DefaultView()
+    }
+
+    //cuando se termina de recomponer toda la vista le avisa al viewmodel sobre esto
+    SideEffect {
+        Log.d("MainScreen","Se completo recomposition")
+        Log.d("MainScreen","MainScreen"+" thread: " + Thread.currentThread().getId())
+
+        alertsViewModel.setCompleteRecomposition()
     }
 }
 
@@ -162,7 +176,9 @@ fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
         HorizontalPager(
             count = pageCount,
             state = pagerState,
-            modifier = Modifier.fillMaxSize().background(Color.White)
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
         ) { page ->
             val msgAlert = state.alertsList?.get(page)
             if (msgAlert != null) {

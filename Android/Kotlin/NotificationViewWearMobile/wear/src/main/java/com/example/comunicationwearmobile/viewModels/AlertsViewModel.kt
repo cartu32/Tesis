@@ -6,13 +6,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
-import com.example.comunicationwearmobile.common.ST_ACTIVITY_NO_CREATED
-import com.example.comunicationwearmobile.common.ST_ACTIVITY_RESUMED
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
@@ -25,10 +26,20 @@ se gira la pantalla, o no se quiere guardar el estado de las mismas sin la neces
 objeto bundle
  */
 class AlertsViewModel(application: Application) : AndroidViewModel(application) {
+
+   companion object {
+       private var msgBytesDestroyed: ByteArray? = null
+   }
     private val appContext: Context = application.applicationContext
+
+    private var lifecycleOwner: LifecycleOwner? = null
 
     private val _stateListNotif = MutableLiveData<MsgAlertState>()
     val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
+
+    var pendingAction: (() -> Unit)? = null
+
+    var completeRecompositionActivity:Boolean =false
 
     init {
         initLocalBroadcast()
@@ -52,22 +63,61 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                 val path: String =
                     intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
 
-                val msgBytes: ByteArray =
-                    intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
+                val msgBytes: ByteArray =  intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
-                putActivityForeground()
+               /* if(completeRecompositionActivity) {
+                    //si esta completa la recomposicion de la Actvity, entonces la pongo en primer
+                    //plano*/
+                    putActivityForeground()
+                /*}
+                else {
+                    //si no esta en primer plano la retraso la muestra por pantalla hasta que termien
+                    //la recomposicion
+                    pendingAction = { putActivityForeground() }
+                }*/
 
-                when (path) {
-                    SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
-                    SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+                if(lifecycleOwner?.lifecycle?.currentState!=Lifecycle.State.DESTROYED) {
+                    when (path) {
+                        SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
+                        SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+                    }
+                }else{
+                    msgBytesDestroyed=msgBytes
                 }
             }
         }
     }
 
+    fun setCompleteRecomposition(){
+        completeRecompositionActivity=true
+        msgBytesDestroyed?.let {
+            addMsgAlertList(it)
+            msgBytesDestroyed=null
+        }
+        Log.d("AlertViewModel","Se completo recomposition")
+    }
+    fun setNotCompleteRecomposition(){
+        completeRecompositionActivity=false
+    }
+
+    fun setLifecycleOwner(owner: LifecycleOwner) {
+        lifecycleOwner = owner
+    }
+
+
+
     private fun putActivityForeground() {
-        if((MainActivity.stateActivity!= ST_ACTIVITY_RESUMED)or(MainActivity.stateActivity== ST_ACTIVITY_NO_CREATED)){
-            val activityIntent = Intent(appContext,MainActivity::class.java)
+        Log.d("AlertsViewmodels","AlertViewmodels"+" thread: " + Thread.currentThread().getId())
+
+
+        val currentSate = lifecycleOwner?.lifecycle?.currentState
+
+        if((currentSate!=Lifecycle.State.RESUMED)or(currentSate!=Lifecycle.State.DESTROYED)){
+
+            val activityIntent = Intent(appContext,MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            }
+
             val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             try {
@@ -79,6 +129,11 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun executePendingAction() {
+        pendingAction?.invoke()
+        pendingAction = null
+        Log.d("AlertViewModel","Ejecuta Pendinfg Action")
+    }
     fun removeAllMsg() {
         _stateListNotif.value?.alertsList?.forEach { msgAlert ->
             val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
