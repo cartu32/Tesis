@@ -37,9 +37,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     private val _stateListNotif = MutableLiveData<MsgAlertState>()
     val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
 
-    var pendingAction: (() -> Unit)? = null
 
-    var completeRecompositionActivity:Boolean =false
 
     init {
         initLocalBroadcast()
@@ -64,17 +62,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                     intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
 
                 val msgBytes: ByteArray =  intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
-
-               /* if(completeRecompositionActivity) {
-                    //si esta completa la recomposicion de la Actvity, entonces la pongo en primer
-                    //plano*/
-                    putActivityForeground()
-                /*}
-                else {
-                    //si no esta en primer plano la retraso la muestra por pantalla hasta que termien
-                    //la recomposicion
-                    pendingAction = { putActivityForeground() }
-                }*/
+                putActivityForeground()
 
                 if(lifecycleOwner?.lifecycle?.currentState!=Lifecycle.State.DESTROYED) {
                     when (path) {
@@ -89,16 +77,13 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setCompleteRecomposition(){
-        completeRecompositionActivity=true
         msgBytesDestroyed?.let {
             addMsgAlertList(it)
             msgBytesDestroyed=null
         }
         Log.d("AlertViewModel","Se completo recomposition")
     }
-    fun setNotCompleteRecomposition(){
-        completeRecompositionActivity=false
-    }
+
 
     fun setLifecycleOwner(owner: LifecycleOwner) {
         lifecycleOwner = owner
@@ -129,11 +114,6 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun executePendingAction() {
-        pendingAction?.invoke()
-        pendingAction = null
-        Log.d("AlertViewModel","Ejecuta Pendinfg Action")
-    }
     fun removeAllMsg() {
         _stateListNotif.value?.alertsList?.forEach { msgAlert ->
             val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1

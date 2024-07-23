@@ -130,7 +130,6 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
     val pageCount = state.alertsList?.size
 
-    alertsViewModel.setNotCompleteRecomposition()
 
     // Obtener el KeyguardManager
     val keyguardManager = LocalContext.current.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
@@ -147,16 +146,10 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
             NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel)
         }
     } else {
-        DefaultView()
+        DefaultView(alertsViewModel = alertsViewModel)
     }
 
-    //cuando se termina de recomponer toda la vista le avisa al viewmodel sobre esto
-    SideEffect {
-        Log.d("MainScreen","Se completo recomposition")
-        Log.d("MainScreen","MainScreen"+" thread: " + Thread.currentThread().getId())
 
-        alertsViewModel.setCompleteRecomposition()
-    }
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -218,9 +211,20 @@ fun CustomRow(content: @Composable () -> Unit) {
     }
 }
 
-@Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
+
 @Composable
-fun DefaultView() {
+fun CheckCompleteRecomposition(alertsViewModel: AlertsViewModel) {
+    //cuando se termina de recomponer toda la vista le avisa al viewmodel sobre esto
+    SideEffect {
+        Log.d("MainScreen","Se completo recomposition")
+        Log.d("MainScreen","MainScreen"+" thread: " + Thread.currentThread().getId())
+
+        alertsViewModel.setCompleteRecomposition()
+    }
+}
+//@Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
+@Composable
+fun DefaultView(alertsViewModel:AlertsViewModel) {
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
@@ -233,8 +237,9 @@ fun DefaultView() {
             )
             FloatingActionButtonNoNotification()
         }
-
     }
+
+    CheckCompleteRecomposition(alertsViewModel)
 }
 
 /**************************************************************************************
