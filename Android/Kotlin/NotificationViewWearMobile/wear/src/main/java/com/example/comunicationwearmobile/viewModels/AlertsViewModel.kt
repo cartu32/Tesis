@@ -95,11 +95,11 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setCompleteRecomposition(){
-        msgBytesDestroyed?.let {
-            addMsgAlertList(it)
-            msgBytesDestroyed=null
-
-
+        if(msgBytesDestroyed!=null) {
+            if (msgBytesDestroyed!!.isNotEmpty()) {
+                addMsgAlertList(msgBytesDestroyed!!)
+                msgBytesDestroyed = null
+            }
         }
         Log.d(TAG,"Se completo recomposition")
     }
