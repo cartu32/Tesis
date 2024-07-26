@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
         Log.d(TAG," Ejecuta  OnCreate")
 
         setContent {
+
             //Aplica el theme
             WearApp{
                 //llama a la funcion que crea la pantalla
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+
         Log.d(TAG," Ejecuta  OnStart")
     }
     override fun onDestroy() {
@@ -59,6 +61,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+
         Log.d(TAG," Ejecuta  OnPause")
     }
 

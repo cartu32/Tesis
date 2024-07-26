@@ -1,6 +1,9 @@
 package com.example.comunicationwearmobile.common
 
+import android.app.Application
+import android.app.KeyguardManager
 import android.content.Context
+import android.os.PowerManager
 import android.widget.Toast
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,4 +35,15 @@ fun getDate(dateTime: LocalTime):String{
     val formatterDate=dateTime.format(formatter)
 
     return formatterDate
+}
+
+
+fun isScreenOn(application: Application): Boolean {
+    val powerManager = application.getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isInteractive
+}
+
+fun isScreenLock(application: Application): Boolean {
+    val keyguardManager = application.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+    return keyguardManager.isKeyguardLocked
 }

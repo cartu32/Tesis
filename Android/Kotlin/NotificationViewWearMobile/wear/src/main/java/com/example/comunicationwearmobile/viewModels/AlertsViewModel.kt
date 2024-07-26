@@ -14,6 +14,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.common.isScreenLock
+import com.example.comunicationwearmobile.common.isScreenOn
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
@@ -25,11 +27,14 @@ Los viewmodels se usan para mantener el estado de las variables. Esto sirve mas 
 se gira la pantalla, o no se quiere guardar el estado de las mismas sin la necesidad de usar un
 objeto bundle
  */
-class AlertsViewModel(application: Application) : AndroidViewModel(application) {
+class AlertsViewModel(app: Application) : AndroidViewModel(app) {
 
    companion object {
        private var msgBytesDestroyed: ByteArray? = null
    }
+
+    private  val application=app
+    private val TAG: String = "AlertViewModel"
     private val appContext: Context = application.applicationContext
 
     private var lifecycleOwner: LifecycleOwner? = null
@@ -62,13 +67,17 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                     intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
 
                 val msgBytes: ByteArray =  intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
-                putActivityForeground()
 
-                if(lifecycleOwner?.lifecycle?.currentState!=Lifecycle.State.DESTROYED) {
-                    when (path) {
-                        SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
-                        SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
-                    }
+                val currenActivitytSate = lifecycleOwner?.lifecycle?.currentState
+
+                if(currenActivitytSate==Lifecycle.State.INITIALIZED)
+                    return
+
+                if(currenActivitytSate!=Lifecycle.State.RESUMED && !isScreenLock(application)&& isScreenOn(application)){
+                     putActivityForeground(currenActivitytSate)
+                }
+                if(currenActivitytSate!=Lifecycle.State.DESTROYED) {
+                    analizepath(path,msgBytes)
                 }else{
                     msgBytesDestroyed=msgBytes
                 }
@@ -76,12 +85,23 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+
+    private fun analizepath(path: String , msgBytes: ByteArray) {
+        when (path) {
+            SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
+            SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+            else->Log.d (TAG,"Error de path al analizar el path")
+        }
+    }
+
     fun setCompleteRecomposition(){
         msgBytesDestroyed?.let {
             addMsgAlertList(it)
             msgBytesDestroyed=null
+
+
         }
-        Log.d("AlertViewModel","Se completo recomposition")
+        Log.d(TAG,"Se completo recomposition")
     }
 
 
@@ -91,17 +111,15 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
 
 
 
-    private fun putActivityForeground() {
+    private fun putActivityForeground(currentSate: Lifecycle.State?) {
         Log.d("AlertsViewmodels","AlertViewmodels"+" thread: " + Thread.currentThread().getId())
 
-
-        val currentSate = lifecycleOwner?.lifecycle?.currentState
-
-        if((currentSate!=Lifecycle.State.RESUMED)or(currentSate!=Lifecycle.State.DESTROYED)){
+            //if((currentSate!=Lifecycle.State.RESUMED)or(currentSate!=Lifecycle.State.DESTROYED)){
 
             val activityIntent = Intent(appContext,MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
+
 
             val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -111,7 +129,6 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             } catch (e: PendingIntent.CanceledException) {
                 e.printStackTrace()
             }
-        }
     }
 
     fun removeAllMsg() {

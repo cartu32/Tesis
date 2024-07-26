@@ -1,9 +1,7 @@
 package com.example.comunicationwearmobile.ui.screen.main
 
 
-import android.app.KeyguardManager
-import android.content.Context
-import android.os.PowerManager
+import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +38,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.comunicationwearmobile.common.isScreenLock
+import com.example.comunicationwearmobile.common.isScreenOn
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
@@ -47,6 +47,8 @@ import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+
+val TAG: String="MainScreen"
 
 /**************************************************************************************
  ************************** FUNCIONES QUE CREAN LA VIEW********************************
@@ -124,32 +126,27 @@ fun FloatingActionButtonNoNotification() {
         Icon(Icons.Filled.ThumbUp, "Floating action button.")
     }
 }
+
+
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+
     val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
-    val pageCount = state.alertsList?.size
-
-
-    // Obtener el KeyguardManager
-    val keyguardManager = LocalContext.current.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-    val powerManager = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager
-
-    // Verificar si la pantalla está desbloqueada y no esta apagada
-    val isScreenUnlocked = !keyguardManager.isKeyguardLocked
-    val isScreenOn = powerManager.isInteractive
+    val pageCount = state.alertsList?.size ?: return
 
     if (pageCount != 0) {
         //si la pantalla esta bloqueada o apagada no se actualiza la view con el listado, hasta que
         //se desbloquee o encienda nuevamente
-        if (pageCount != null && isScreenUnlocked && isScreenOn) {
-            NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel)
+        if ((!isScreenLock(application)) and (isScreenOn(application))) {
+            NotificationPagerView(pageCount = pageCount , alertsViewModel = alertsViewModel)
         }
     } else {
         DefaultView(alertsViewModel = alertsViewModel)
     }
-
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -216,8 +213,8 @@ fun CustomRow(content: @Composable () -> Unit) {
 fun CheckCompleteRecomposition(alertsViewModel: AlertsViewModel) {
     //cuando se termina de recomponer toda la vista le avisa al viewmodel sobre esto
     SideEffect {
-        Log.d("MainScreen","Se completo recomposition")
-        Log.d("MainScreen","MainScreen"+" thread: " + Thread.currentThread().getId())
+        Log.d(TAG,"Se completo recomposition")
+        Log.d(TAG,"MainScreen"+" thread: " + Thread.currentThread().getId())
 
         alertsViewModel.setCompleteRecomposition()
     }
