@@ -6,7 +6,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -14,6 +16,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.common.generateVibration
 import com.example.comunicationwearmobile.common.isScreenLock
 import com.example.comunicationwearmobile.common.isScreenOn
 import com.example.comunicationwearmobile.models.MobileDataListenerService
@@ -42,6 +45,7 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
     private val _stateListNotif = MutableLiveData<MsgAlertState>()
     val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
 
+    private var previousActivityState= Lifecycle.State.DESTROYED
 
 
     init {
@@ -62,6 +66,7 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun createBroadcastReceiver(): BroadcastReceiver {
         return object : BroadcastReceiver() {
+            @RequiresApi(Build.VERSION_CODES.S)
             override fun onReceive(context: Context? , intent: Intent?) {
                 val path: String =
                     intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
@@ -81,23 +86,35 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
                 }else{
                     msgBytesDestroyed=msgBytes
                 }
+                if (currenActivitytSate != null) {
+                    previousActivityState=currenActivitytSate
+                }
             }
         }
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun analizepath(path: String , msgBytes: ByteArray) {
         when (path) {
-            SharedData.PATH_ADD_NOTIFICATION -> addMsgAlertList(msgBytes)
+            SharedData.PATH_ADD_NOTIFICATION -> {
+                addMsgAlertList(msgBytes)
+                generateVibration(app = application)
+            }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
             else->Log.d (TAG,"Error de path al analizar el path")
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun setCompleteRecomposition(){
+        if(previousActivityState!=Lifecycle.State.DESTROYED)
+            return
+
         if(msgBytesDestroyed!=null) {
             if (msgBytesDestroyed!!.isNotEmpty()) {
                 addMsgAlertList(msgBytesDestroyed!!)
+                generateVibration(app = application)
                 msgBytesDestroyed = null
             }
         }

@@ -11,7 +11,6 @@ import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.WearableDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
-import com.example.shared_library.toByteArray
 
 
 class MainActivityPresenter(interMainView: InterfaceMainAct) {
