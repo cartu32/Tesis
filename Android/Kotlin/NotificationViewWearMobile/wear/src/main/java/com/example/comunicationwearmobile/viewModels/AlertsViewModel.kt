@@ -1,5 +1,6 @@
 package com.example.comunicationwearmobile.viewModels
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -25,28 +26,21 @@ import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
 
-/*
-Los viewmodels se usan para mantener el estado de las variables. Esto sirve mas que nada para cuando
-se gira la pantalla, o no se quiere guardar el estado de las mismas sin la necesidad de usar un
-objeto bundle
- */
-class AlertsViewModel(app: Application) : AndroidViewModel(app) {
 
-   companion object {
-       private var msgBytesDestroyed: ByteArray? = null
-   }
+class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
-    private  val application=app
     private val TAG: String = "AlertViewModel"
-    private val appContext: Context = application.applicationContext
 
+    private val appContext: Context = app.applicationContext
     private var lifecycleOwner: LifecycleOwner? = null
-
     private val _stateListNotif = MutableLiveData<MsgAlertState>()
     val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
 
     private var previousActivityState= Lifecycle.State.DESTROYED
 
+    companion object {
+        private var msgBytesDestroyed: ByteArray? = null
+    }
 
     init {
         initLocalBroadcast()
@@ -59,65 +53,80 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
         LocalBroadcastManager.getInstance(appContext).registerReceiver(
             receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name)
         )
-
-        val serviceIntent = Intent(appContext , MobileDataListenerService::class.java)
-        appContext.startService(serviceIntent)
+        appContext.startService( Intent(appContext , MobileDataListenerService::class.java))
     }
 
     private fun createBroadcastReceiver(): BroadcastReceiver {
         return object : BroadcastReceiver() {
             @RequiresApi(Build.VERSION_CODES.S)
             override fun onReceive(context: Context? , intent: Intent?) {
-                val path: String =
-                    intent?.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)!!
+                intent?.let {
+                    val path: String? = it.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)
+                    val msgBytes: ByteArray? = it.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)
 
-                val msgBytes: ByteArray =  intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
-
-                val currenActivitytSate = lifecycleOwner?.lifecycle?.currentState
-
-                if(currenActivitytSate==Lifecycle.State.INITIALIZED)
-                    return
-
-                if(currenActivitytSate!=Lifecycle.State.RESUMED && !isScreenLock(application)&& isScreenOn(application)){
-                     putActivityForeground(currenActivitytSate)
-                }
-                if(currenActivitytSate!=Lifecycle.State.DESTROYED) {
-                    analizepath(path,msgBytes)
-                }else{
-                    msgBytesDestroyed=msgBytes
-                }
-                if (currenActivitytSate != null) {
-                    previousActivityState=currenActivitytSate
+                    analizeStateActvity(path,msgBytes)
                 }
             }
+
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun analizeStateActvity(path: String? , msgBytes: ByteArray?)
+    {
+        val currentActivityState = lifecycleOwner?.lifecycle?.currentState
+
+        if(currentActivityState==Lifecycle.State.INITIALIZED)
+            return
+
+        isActivitiyInBackground(currentActivityState)
+        isActivitiyStateNotDestoyed(currentActivityState,path,msgBytes)
+
+        currentActivityState?.let{ previousActivityState= it}
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun isActivitiyStateNotDestoyed(currentActivityState: Lifecycle.State? , path: String? , msgBytes: ByteArray?) {
+        if(currentActivityState!=Lifecycle.State.DESTROYED) {
+            msgBytes?.let { analizepath(path.toString() , it) }
+        }else{
+            msgBytesDestroyed=msgBytes
+        }
+    }
+
+    private fun isActivitiyInBackground(currentActivityState: Lifecycle.State?) {
+        if(currentActivityState!=Lifecycle.State.RESUMED && !isScreenLock(app)&& isScreenOn(app)){
+            putActivityForeground()
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun analizepath(path: String , msgBytes: ByteArray) {
         when (path) {
             SharedData.PATH_ADD_NOTIFICATION -> {
                 addMsgAlertList(msgBytes)
-                generateVibration(app = application)
+                generateVibration(app)
             }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
             else->Log.d (TAG,"Error de path al analizar el path")
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
+    //@RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("NewApi")
     fun setCompleteRecomposition(){
         if(previousActivityState!=Lifecycle.State.DESTROYED)
             return
 
-        if(msgBytesDestroyed!=null) {
+        msgBytesDestroyed?.let {
             if (msgBytesDestroyed!!.isNotEmpty()) {
                 addMsgAlertList(msgBytesDestroyed!!)
-                generateVibration(app = application)
+                generateVibration(app)
                 msgBytesDestroyed = null
             }
         }
+
         Log.d(TAG,"Se completo recomposition")
     }
 
@@ -128,24 +137,17 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
 
 
 
-    private fun putActivityForeground(currentSate: Lifecycle.State?) {
-        Log.d("AlertsViewmodels","AlertViewmodels"+" thread: " + Thread.currentThread().getId())
-
-            //if((currentSate!=Lifecycle.State.RESUMED)or(currentSate!=Lifecycle.State.DESTROYED)){
-
+    private fun putActivityForeground() {
+        try {
             val activityIntent = Intent(appContext,MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
-
-
             val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-            try {
-                // Iniciar la Activity
-                pendingIntent.send()
-            } catch (e: PendingIntent.CanceledException) {
-                e.printStackTrace()
-            }
+            // Iniciar la Activity
+            pendingIntent.send()
+        } catch (e: PendingIntent.CanceledException) {
+            e.printStackTrace()
+        }
     }
 
     fun removeAllMsg() {
@@ -169,12 +171,12 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun updateRemoveMsg(indexList: Int) {
-        _stateListNotif.value?.let { currentState ->
-            val currentAlertsList = currentState.alertsList?.toMutableList()
+        _stateListNotif.value?.let {
+            val currentAlertsList = it.alertsList?.toMutableList()
             if (currentAlertsList != null) {
                 if (indexList in currentAlertsList.indices) {
                     currentAlertsList.removeAt(indexList)
-                    _stateListNotif.value = currentState.copy(alertsList = currentAlertsList)
+                    _stateListNotif.value = it.copy(alertsList = currentAlertsList)
                 }
             }
         }
@@ -190,12 +192,12 @@ class AlertsViewModel(app: Application) : AndroidViewModel(app) {
         appContext.startService(serviceIntent)
     }
 
-    fun addMsgAlertList(msgBytes: ByteArray) {
+    private fun addMsgAlertList(msgBytes: ByteArray) {
         val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
-        _stateListNotif.value?.let { currentState ->
-            val currentAlertsList = currentState.alertsList?.toMutableList()
+        _stateListNotif.value?.let {
+            val currentAlertsList = it.alertsList?.toMutableList()
             currentAlertsList?.add(msgAlert)
-            _stateListNotif.value = currentState.copy(alertsList = currentAlertsList)
+            _stateListNotif.value = it.copy(alertsList = currentAlertsList)
         }
     }
 }

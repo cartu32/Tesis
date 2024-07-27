@@ -11,7 +11,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import com.example.comunicationwearmobile.ui.WearApp
 import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
@@ -19,15 +19,14 @@ import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val TAG: String? ="MainActivvity"
-    private var model: AlertsViewModel? = null
+    private val TAG: String ="MainActivvity"
+    private val model: AlertsViewModel by viewModels()
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        model = ViewModelProvider(this).get(AlertsViewModel::class.java)
-        model?.setLifecycleOwner(this)
-
+        model.setLifecycleOwner(this)
         Log.d(TAG," Ejecuta  OnCreate")
 
         setContent {
@@ -35,7 +34,7 @@ class MainActivity : ComponentActivity() {
             //Aplica el theme
             WearApp{
                 //llama a la funcion que crea la pantalla
-                HorizontalPagerWithDotsIndicatorScreen(model!!)
+                HorizontalPagerWithDotsIndicatorScreen(model)
 
             }
         }
@@ -49,7 +48,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        model?.removeAllMsg()
+        model.removeAllMsg()
         Log.d(TAG," Ejecuta  Ondestroy")
     }
 
