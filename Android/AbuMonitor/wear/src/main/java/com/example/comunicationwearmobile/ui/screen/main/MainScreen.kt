@@ -1,0 +1,218 @@
+package com.example.comunicationwearmobile.ui.screen.main
+
+
+import android.app.Application
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.comunicationwearmobile.common.isScreenLock
+import com.example.comunicationwearmobile.common.isScreenOn
+import com.example.comunicationwearmobile.models.MsgAlertState
+import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
+import com.example.comunicationwearmobile.viewModels.AlertsViewModel
+import com.example.shared_library.SharedData
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+
+const val TAG: String="MainScreen"
+
+/**************************************************************************************
+ ************************** FUNCIONES QUE CREAN LA VIEW********************************
+ **************************************************************************************
+ */
+@Composable
+fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel: AlertsViewModel) {
+    CustomColumn {
+        Text(text = msgAlert.title, color = Color.Red, fontSize = 15.sp)
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = msgAlert.message)
+        Spacer(modifier = Modifier.height(10.dp))
+        CustomRow {
+            Text(text = msgAlert.date)
+            Spacer(modifier = Modifier.width(35.dp))
+            Text(text = msgAlert.hour)
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+
+        when (msgAlert.typeNotification) {
+            SharedData.TypeNotification.Reminder ->
+                CustomFloatingActionButton(Icons.Filled.DateRange, "Floating action button.", Color.Green) {
+                    alertsViewModel.removeMsgAlertList(page) }
+
+            SharedData.TypeNotification.Alert ->
+                CustomFloatingActionButton(Icons.Filled.Warning, "Floating action button.", Color.Red) {
+                    alertsViewModel.removeMsgAlertList(page) }
+
+            SharedData.TypeNotification.WithoutNotifications ->
+                CustomFloatingActionButton(Icons.Filled.ThumbUp, "Floating action button.", Color.Blue) {}
+
+        }
+    }
+}
+
+@Composable
+fun CustomFloatingActionButton(
+    icon: ImageVector ,
+    description: String ,
+    color: Color ,
+    onClick: () -> Unit
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        shape = CircleShape,
+        containerColor = color,
+        contentColor = Color.White,
+        modifier = Modifier.size(50.dp),
+        elevation = FloatingActionButtonDefaults.elevation(8.dp),
+    ) {
+        Icon(icon, description)
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
+    val pagerState = rememberPagerState()
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
+
+    LaunchedEffect(pageCount) {
+        if (pageCount > 0) {
+            pagerState.scrollToPage(pageCount - 1)
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        HorizontalPager(
+            count = pageCount,
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) { page ->
+            val msgAlert = state.alertsList?.get(page)
+            msgAlert?.let { PageContent(page = page, msgAlert = it, alertsViewModel = alertsViewModel) }
+        }
+
+        ViewPagerDotsIndicator(
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            pageCount = pageCount,
+            currentPage = pagerState.currentPage
+        )
+    }
+}
+
+@Composable
+fun CustomColumn(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun CustomRow(content: @Composable () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        content()
+    }
+}
+
+
+@Composable
+fun CheckCompleteRecomposition(alertsViewModel: AlertsViewModel) {
+    //cuando se termina de recomponer toda la vista le avisa al viewmodel sobre esto
+    SideEffect {
+        Log.d(TAG,"Se completo recomposition")
+        Log.d(TAG,"MainScreen"+" thread: " + Thread.currentThread().id)
+
+        alertsViewModel.setCompleteRecomposition()
+    }
+}
+
+@Composable
+fun DefaultView(alertsViewModel: AlertsViewModel) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CustomColumn {
+            Text(
+                text = "No hay Alertas disponibles",
+                modifier = Modifier.padding(16.dp),
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
+            CustomFloatingActionButton(
+                Icons.Filled.ThumbUp, "Floating action button.", Color.Blue, onClick = {}
+            )
+        }
+    }
+
+    CheckCompleteRecomposition(alertsViewModel)
+}
+
+@Composable
+fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
+    val pageCount = state.alertsList?.size ?: 0
+
+    if (pageCount != 0 && !isScreenLock(application) && isScreenOn(application)) {
+        NotificationPagerView(pageCount = pageCount, alertsViewModel = alertsViewModel)
+    } else {
+        DefaultView(alertsViewModel = alertsViewModel)
+    }
+}
+/**************************************************************************************
+ ************** FUNCIONES QUE LLAMAN A LAS QUE CREAN LA VIEW***************************
+ **************************************************************************************
+ */
+
+
+@Preview(showBackground = true, device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
+@Composable
+fun PreviewUsuarioScreenLV() {
+// Simulación de ViewModel para la vista previa
+   // val model = remember { AlertsViewModel() }
+   // HorizontalPagerWithDotsIndicatorScreen(model)
+}
