@@ -17,8 +17,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c4ecd846-8c3d-48c9-86ac-c19190b8cb2c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/MainActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/AlertsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/AlertsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventsMonitor/.gradle/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../EventsMonitor/.gradle/config.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventsMonitor/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../EventsMonitor/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventsMonitor/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../EventsMonitor/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,21 +82,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Android App.mobile.executor&quot;: &quot;Run&quot;,
-    &quot;Android App.wear.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Pruebas&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Tesis/Android/Compose/Viemodel&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.mobile.executor": "Run",
+    "Android App.wear.executor": "Debug",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "DetectorCaidas",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Tesis/Android/Kotlin/NotificationViewWearMobile"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Tesis\Android\Kotlin\NotificationViewWearMobile\wear\src\main\java\com\example\comunicationwearmobile\ui\screen\main" />
@@ -167,9 +169,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
       <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
-      <method v="2">
-        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-      </method>
+      <method v="2" />
     </configuration>
     <configuration name="wear" type="AndroidRunConfigurationType" factoryName="Android App">
       <module name="NotificationViewWearMobile.wear.main" />
@@ -234,9 +234,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
       <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
-      <method v="2">
-        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-      </method>
+      <method v="2" />
     </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
