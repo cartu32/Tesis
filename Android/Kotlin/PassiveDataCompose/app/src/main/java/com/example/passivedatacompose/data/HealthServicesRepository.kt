@@ -32,8 +32,9 @@ import kotlinx.coroutines.flow.flow
 class HealthServicesRepository(context: Context) {
     private val healthServicesClient = HealthServices.getClient(context)
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
-    private val dataTypes = setOf(DataType.HEART_RATE_BPM)
+    private val dataTypes = setOf(DataType.HEART_RATE_BPM)//indico que se va a detectar el puslo cardiaco
 
+    //Aca se registra que se va a detecar el pulso cardiaco de forma pasiva
     private val passiveListenerConfig = PassiveListenerConfig(
         dataTypes = dataTypes,
         shouldUserActivityInfoBeRequested = false,
@@ -46,10 +47,11 @@ class HealthServicesRepository(context: Context) {
         return DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring
     }
 
+    //Aca registro quien va a ser el liestener que va a llamar cuando cambien el valor de ls pulsos
     suspend fun registerForHeartRateData() {
         Log.i(TAG, "Registering listener")
         passiveMonitoringClient.setPassiveListenerServiceAsync(
-            PassiveDataService::class.java,
+            PassiveDataService::class.java,//esta clase tiene el listener
             passiveListenerConfig
         ).await()
     }

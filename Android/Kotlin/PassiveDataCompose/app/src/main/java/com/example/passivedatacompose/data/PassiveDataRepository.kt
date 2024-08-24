@@ -28,16 +28,23 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "passive_data")
 
 class PassiveDataRepository(private val context: Context) {
+    //esto seria como el get del sharedpreferences y que retorna el valr de passiverdata_enalbed, que esta en el sharedpref
+    //alamcenado. Pero aca no hace un return, lo que hace es asociarlo a un flow, que es como un observer que cuando se modifica
+    // prefs[PASSIVE_DATA_ENABLED] en el pref
     val passiveDataEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[PASSIVE_DATA_ENABLED] ?: false
     }
 
+    //Esta metodo set PASSIVE_DATA_ENABLED en el sharedpref
     suspend fun setPassiveDataEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[PASSIVE_DATA_ENABLED] = enabled
         }
     }
 
+    //esto metdodo seria  como el get del sharedpreferences y que retorna el valr de LATEST_HEART_RATE, que esta en el sharedpref
+    //alamcenado. Pero aca no hace un return, lo que hace es asociarlo a un flow, que es como un observer que cuando se modifica
+    // prefs[LATEST_HEART_RATE] en el pref
     val latestHeartRate: Flow<Double> = context.dataStore.data.map { prefs ->
         prefs[LATEST_HEART_RATE] ?: 0.0
     }

@@ -16,6 +16,7 @@
 package com.example.passivedatacompose.service
 
 import androidx.health.services.client.PassiveListenerService
+
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import com.example.passivedatacompose.data.PassiveDataRepository
@@ -31,6 +32,9 @@ import kotlinx.coroutines.runBlocking
 class PassiveDataService : PassiveListenerService() {
     private val repository = PassiveDataRepository(this)
 
+    //este metodo se llama cada vez que se que se leen nuevos datos de pulso cardiaco-
+    //Este recibe como parametro de datacointer, que  es una estructura que contiene varios campos de una mediccion
+    //Por ej. Tiene valor del puslo, Tiempo en que se tomo la muesyta,etc
     override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
         runBlocking {
             dataPoints.getData(DataType.HEART_RATE_BPM).latestHeartRate()?.let {

@@ -34,6 +34,10 @@ class PassiveDataViewModel(
     // Provides a hot flow of the latest HR value read from Data Store whilst there is an active
     // UI subscription. HR values are written to the Data Store in the [PassiveDataService] each
     // time an update is provided by Health Services.
+
+    //Aca estoy vinculando que cuando cambie latestHeartRate en el sharedpref qu esta en passiveDataRepository,
+    //automaticamente se va a actualizar la ui. Esto es porque en la ui esta hrvalue.ascoollectstate.
+    //Notat que lastheartrate es un flow. pr es se actualiza automaticamente con asscollecstate.
     val hrValue = passiveDataRepository.latestHeartRate
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Double.NaN)
 
