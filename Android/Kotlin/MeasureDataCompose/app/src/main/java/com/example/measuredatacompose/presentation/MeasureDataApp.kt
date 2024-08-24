@@ -44,7 +44,9 @@ fun MeasureDataApp(
                     healthServicesRepository = healthServicesRepository
                 )
             )
-            val enabled by viewModel.enabled.collectAsState()
+            //Por medio del viewmodel cuando se actualiza alguna de estas
+            // varibles se recompone la vista
+            val enabled by viewModel.enabled.collectAsState() //esto me sirve para observar un mutablestateflow
             val hr by viewModel.hr
             val availability by viewModel.availability
             val uiState by viewModel.uiState

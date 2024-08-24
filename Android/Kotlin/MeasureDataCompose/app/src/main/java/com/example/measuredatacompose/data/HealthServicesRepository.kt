@@ -54,6 +54,8 @@ class HealthServicesRepository(context: Context) {
      */
     fun heartRateMeasureFlow() = callbackFlow {
         val callback = object : MeasureCallback {
+            //este metodo onAvailabilityChanged se llama cuando deja poder leerse el pulso cardiaco.
+            //Por ej. cuando se saca el reloj el usuario. Tambien se llama cuando se empieza a leer el puslo
             override fun onAvailabilityChanged(
                 dataType: DeltaDataType<*, *>,
                 availability: Availability
@@ -63,7 +65,7 @@ class HealthServicesRepository(context: Context) {
                     trySendBlocking(MeasureMessage.MeasureAvailability(availability))
                 }
             }
-
+            //se llama a este metodo por cada lectura del pulso cardiaco
             override fun onDataReceived(data: DataPointContainer) {
                 val heartRateBpm = data.getData(DataType.HEART_RATE_BPM)
                 trySendBlocking(MeasureMessage.MeasureData(heartRateBpm))
@@ -71,6 +73,9 @@ class HealthServicesRepository(context: Context) {
         }
 
         Log.d(TAG, "Registering for data")
+
+        //aca se le dice al Healthservicemanager que me avise en el measurecallbakc cuando cambia el sensor heart_Rate
+        //Osea cuando cambia me llama al callback
         measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
 
         awaitClose {

@@ -48,11 +48,18 @@ class MeasureDataViewModel(
             }
         }
 
+        // Esta corutina recibe los datos que envia HeatlhServiceRepository cuando ejecuta trySendBlocking
         viewModelScope.launch {
+            //se suscribe al mutableabelstateflow de enabled. Osea cada vez que cambie de valor enabled se va a
+            //a llamar a este collect
             enabled.collect {
+                //este if preguntasi enabled es ==true
                 if (it) {
+                    //aca se llama al metodo heartRateMeasureFlow que me activa el callback dentro de healthService reposiroy
+                    //Osea se sucribe a la recolleccion de datos de pulso cardiaco
                     healthServicesRepository.heartRateMeasureFlow()
-                        .takeWhile { enabled.value }
+                        .takeWhile { enabled.value } //esto dice que unicamente se van a recibir datos del pulso cardiaco cuando enabled ==true}
+                        //el collect es el que se usa para recibir los datos que envia trysendblocking
                         .collect { measureMessage ->
                             when (measureMessage) {
                                 is MeasureMessage.MeasureData -> {
