@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.samsung.android.eventsmonitor.app-merged_res-5:/layout_activity_main.xml.flat",
+        "source": "com.samsung.android.eventsmonitor.app-main-7:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.samsung.android.eventsmonitor.app-merged_res-5:/drawable_ic_launcher.png.flat",
+        "source": "com.samsung.android.eventsmonitor.app-main-7:/drawable/ic_launcher.png"
+    },
+    {
+        "merged": "com.samsung.android.eventsmonitor.app-merged_res-5:/drawable_button_background.xml.flat",
+        "source": "com.samsung.android.eventsmonitor.app-main-7:/drawable/button_background.xml"
+    }
+]

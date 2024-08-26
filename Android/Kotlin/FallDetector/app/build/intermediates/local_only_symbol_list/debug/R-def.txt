@@ -1,0 +1,20 @@
+R_DEF: Internal format may change without notice
+local
+dimen constraintLayout_layout_padding
+drawable button_background
+drawable ic_launcher
+id app_name
+id btnSubscribe
+id textEventTimeDesc
+id textEventTimeValue
+id textEventTypeDesc
+id textEventTypeValue
+layout activity_main
+string app_name
+string empty_label
+string event_time_desc_label
+string event_type_desc_label
+string not_all_health_events_available
+string not_all_permissions_granted
+string subscribe_label
+string unsubscribe_label

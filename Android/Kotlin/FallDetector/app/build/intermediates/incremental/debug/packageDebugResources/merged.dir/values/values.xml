@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="constraintLayout_layout_padding">15dp</dimen>
+    <string name="app_name">Events Monitor</string>
+    <string description="Empty value" name="empty_label"> </string>
+    <string description="Event timestamp" name="event_time_desc_label">Timestamp: </string>
+    <string description="Event type" name="event_type_desc_label">Event: </string>
+    <string description="Some health events not available" name="not_all_health_events_available">Some health events not available.</string>
+    <string description="Some of permissions not granted" name="not_all_permissions_granted">Not all permissions granted.</string>
+    <string description="Text on subscribe/unsubscribe button" name="subscribe_label">Subscribe</string>
+    <string description="Text on subscribe/unsubscribe button" name="unsubscribe_label">Unsubscribe</string>
+</resources>
