@@ -1,4 +1,4 @@
-#Sun Aug 25 20:53:07 ART 2024
+#Sun Aug 25 22:20:01 ART 2024
 base.0=C\:\\Tesis\\Android\\Kotlin\\FallDetector\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\Tesis\\Android\\Kotlin\\FallDetector\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
 base.2=C\:\\Tesis\\Android\\Kotlin\\FallDetector\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
