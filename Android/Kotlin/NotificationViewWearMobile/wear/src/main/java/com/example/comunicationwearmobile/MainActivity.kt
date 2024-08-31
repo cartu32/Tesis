@@ -36,36 +36,26 @@ class MainActivity : ComponentActivity() {
         permissionManager= PermissionManager(this)
         model.setLifecycleOwner(this)
 
-        lifecycleScope.launch {
-            if (!permissionManager!!.checkPermissionGiven()) {
-                showToast(applicationContext , "Permisos no otrogados")
-                return@launch
+        lifecycleScope.launch{
+            val hasPermissionsAndCapabilities = model.checkPermissionsAndCapabilities(permissionManager!!)
+
+            if(!hasPermissionsAndCapabilities ){
+                showToast(applicationContext, "Permisos no otorgados o el reloj no puede detectar caídas")
             }
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-        //lifecycleScope.launch{
-            if (!HealthServicesManager.getInstance(applicationContext)
-                    .hasHealthEventsCapability()
-            ) {
-                showToast(applicationContext,"Reloj no puede detectar caidas")
-                return@launch
-            }
-            HealthServicesManager.run { getInstance(applicationContext).registerForHealthEventsData() }
-
-
-        }
         setContent {
-
             //Aplica el theme
             WearApp{
-
                 //llama a la funcion que crea la pantalla
                 HorizontalPagerWithDotsIndicatorScreen(model)
-
             }
         }
     }
 
+    public override fun onDestroy() {
+        super.onDestroy()
+        model.removeAllMsg()
+    }
 }
 

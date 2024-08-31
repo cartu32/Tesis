@@ -38,7 +38,6 @@ class PermissionManager(activity: ComponentActivity) {
         if (permissionsToRequest.isEmpty()) {
             // Todos los permisos necesarios están otorgados
             // Aquí puedes realizar la acción que requiere permisos
-            showToast(activity, "Permisos otorgados")
             permissionGaranted=true
 
         } else {
