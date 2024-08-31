@@ -1,0 +1,203 @@
+package com.example.comunicationwearmobile.viewModels
+
+import android.annotation.SuppressLint
+import android.app.Application
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.common.generateVibration
+import com.example.comunicationwearmobile.common.isScreenLock
+import com.example.comunicationwearmobile.common.isScreenOn
+import com.example.comunicationwearmobile.models.MobileDataListenerService
+import com.example.comunicationwearmobile.models.MsgAlertState
+import com.example.shared_library.SharedData
+import com.example.shared_library.fromByteArray
+import com.example.shared_library.toByteArray
+
+
+class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
+
+    private val TAG: String = "AlertViewModel"
+
+    private val appContext: Context = app.applicationContext
+    private var lifecycleOwner: LifecycleOwner? = null
+    private val _stateListNotif = MutableLiveData<MsgAlertState>()
+    val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
+
+    private var previousActivityState= Lifecycle.State.DESTROYED
+
+    companion object {
+        private var msgBytesDestroyed: ByteArray? = null
+    }
+
+    init {
+        initLocalBroadcast()
+        _stateListNotif.value = MsgAlertState()
+    }
+
+    private fun initLocalBroadcast() {
+        val receiver = createBroadcastReceiver()
+
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(
+            receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name)
+        )
+        appContext.startService( Intent(appContext , MobileDataListenerService::class.java))
+    }
+
+    private fun createBroadcastReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            @RequiresApi(Build.VERSION_CODES.S)
+            override fun onReceive(context: Context? , intent: Intent?) {
+                intent?.let {
+                    val path: String? = it.getStringExtra(SharedData.ParamIntent.MESSAGE_PATH.name)
+                    val msgBytes: ByteArray? = it.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)
+
+                    analizeStateActvity(path,msgBytes)
+                }
+            }
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun analizeStateActvity(path: String? , msgBytes: ByteArray?)
+    {
+        val currentActivityState = lifecycleOwner?.lifecycle?.currentState
+
+        if(currentActivityState==Lifecycle.State.INITIALIZED)
+            return
+
+        isActivitiyInBackground(currentActivityState)
+        isActivitiyStateNotDestoyed(currentActivityState,path,msgBytes)
+
+        currentActivityState?.let{ previousActivityState= it}
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun isActivitiyStateNotDestoyed(currentActivityState: Lifecycle.State? , path: String? , msgBytes: ByteArray?) {
+        if(currentActivityState!=Lifecycle.State.DESTROYED) {
+            msgBytes?.let { analizepath(path.toString() , it) }
+        }else{
+            msgBytesDestroyed=msgBytes
+        }
+    }
+
+    private fun isActivitiyInBackground(currentActivityState: Lifecycle.State?) {
+        if(currentActivityState!=Lifecycle.State.RESUMED && !isScreenLock(app)&& isScreenOn(app)){
+            putActivityForeground()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun analizepath(path: String , msgBytes: ByteArray) {
+        when (path) {
+            SharedData.PATH_ADD_NOTIFICATION -> {
+                addMsgAlertList(msgBytes)
+                generateVibration(app)
+            }
+            SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+            else->Log.d (TAG,"Error de path al analizar el path")
+        }
+    }
+
+    //@RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("NewApi")
+    fun setCompleteRecomposition(){
+        if(previousActivityState!=Lifecycle.State.DESTROYED)
+            return
+
+        msgBytesDestroyed?.let {
+            if (msgBytesDestroyed!!.isNotEmpty()) {
+                addMsgAlertList(msgBytesDestroyed!!)
+                generateVibration(app)
+                msgBytesDestroyed = null
+            }
+        }
+
+        Log.d(TAG,"Se completo recomposition")
+    }
+
+
+    fun setLifecycleOwner(owner: LifecycleOwner) {
+        lifecycleOwner = owner
+    }
+
+
+
+    private fun putActivityForeground() {
+        try {
+            val activityIntent = Intent(appContext,MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            }
+            val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            // Iniciar la Activity
+            pendingIntent.send()
+        } catch (e: PendingIntent.CanceledException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun removeAllMsg() {
+        _stateListNotif.value?.alertsList?.forEach { msgAlert ->
+            val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
+            if (indexList != -1) {
+                removeMsgAlertList(indexList)
+            }
+        }
+    }
+
+
+    private fun removeMsgAlert(msgBytes: ByteArray) {
+        val indexList: Int = fromByteArray(msgBytes)
+        updateRemoveMsg(indexList)
+    }
+
+    fun removeMsgAlertList(indexList: Int) {
+        updateRemoveMsg(indexList)
+        sendMsgRemoveMobile(indexList)
+    }
+
+    private fun updateRemoveMsg(indexList: Int) {
+        _stateListNotif.value?.let {
+            val currentAlertsList = it.alertsList?.toMutableList()
+            if (currentAlertsList != null) {
+                if (indexList in currentAlertsList.indices) {
+                    currentAlertsList.removeAt(indexList)
+                    _stateListNotif.value = it.copy(alertsList = currentAlertsList)
+                }
+            }
+        }
+    }
+
+
+    private fun sendMsgRemoveMobile(idMsg: Int) {
+        val byteArrayData: ByteArray = toByteArray(idMsg)
+        val serviceIntent = Intent(appContext , MobileDataListenerService::class.java).apply {
+            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , SharedData.PATH_VIEWED_NOTIFICATION)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , byteArrayData)
+        }
+        appContext.startService(serviceIntent)
+    }
+
+    private fun addMsgAlertList(msgBytes: ByteArray) {
+        val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
+        _stateListNotif.value?.let {
+            val currentAlertsList = it.alertsList?.toMutableList()
+            currentAlertsList?.add(msgAlert)
+            _stateListNotif.value = it.copy(alertsList = currentAlertsList)
+        }
+    }
+}
