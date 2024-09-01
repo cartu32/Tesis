@@ -9,10 +9,9 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.HealthEvent
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.getCapabilities
-import com.example.comunicationwearmobile.common.FallDetectorDataStore
+import com.example.comunicationwearmobile.models.FallDetectorDataStore
 import com.example.comunicationwearmobile.common.showNotification
-import com.example.comunicationwearmobile.common.showToast
-import com.example.comunicationwearmobile.models.EventData
+import com.example.comunicationwearmobile.models.FallEventData
 import com.example.comunicationwearmobile.models.PassiveHealthEventService
 import com.example.comunicationwearmobile.models.SingletonHolder
 import com.example.comunicationwearmobile.ui.screen.main.TAG
@@ -51,7 +50,7 @@ class HealthServicesManager private constructor(val context: Context) {
     }
 
     suspend fun registerFallDetectorEventsData(){
-        val stateDetector:Boolean=FallDetectorDataStore.getDetectorActivateState(context).first()
+        val stateDetector:Boolean= FallDetectorDataStore.getDetectorActivateState(context).first()
 
         if (!stateDetector) {
             Log.d(TAG,"El detector de caidas no estaba registrado")
@@ -94,8 +93,8 @@ class HealthServicesManager private constructor(val context: Context) {
         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.ENGLISH)
             .withZone(ZoneId.systemDefault())
-        val eventData = EventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
-        showNotification(context)
+        val eventData = FallEventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
+        showNotification(context,eventData)
         Log.d(TAG, "Caida Detectada")
     }
 }

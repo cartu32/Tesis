@@ -10,25 +10,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="79f2ac7d-5c74-48cd-bc2f-464e9fb333c0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../FallDetector/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../FallDetector/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.6/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.6/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/checksums/md5-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.6/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/libs.versions.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wear/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/wear/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/MainActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/AlertsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/AlertsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/common/FallDetectorDataStore.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/models/FallDetectorDataStore.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/common/Notification.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/common/Notification.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/common/utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/common/Utils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/models/EventData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/models/FallEventData.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/HealthServicesManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/HealthServicesManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/res/drawable/splash_icon.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wear/src/main/res/values/styles.xml" beforeDir="false" afterPath="$PROJECT_DIR$/wear/src/main/res/values/styles.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +89,7 @@
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "DetectorCaidas",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Tesis/Android/Kotlin/NotificationViewWearMobile",
+    "last_opened_file_path": "C:/Tesis/Android/Kotlin/NotificationViewWearMobile/wear/src/main/res/drawable",
     "project.structure.last.edited": "SDK Location",
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.0"
@@ -103,10 +97,12 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Tesis\Android\Kotlin\NotificationViewWearMobile\wear\src\main\java\com\example\comunicationwearmobile\common" />
       <recent name="C:\Tesis\Android\Kotlin\NotificationViewWearMobile\wear\src\main\res\drawable" />
+      <recent name="C:\Tesis\Android\Kotlin\NotificationViewWearMobile\wear\src\main\java\com\example\comunicationwearmobile\common" />
     </key>
     <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
+      <recent name="com.example.comunicationwearmobile.models" />
+      <recent name="com.example.comunicationwearmobile.common" />
       <recent name="com.example.comunicationwearmobile.viewModels" />
       <recent name="com.example.comunicationwearmobile" />
     </key>
@@ -273,7 +269,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/wear/src/main/java/com/example/comunicationwearmobile/viewModels/HealthServicesManager.kt</url>
-          <line>55</line>
+          <line>54</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
