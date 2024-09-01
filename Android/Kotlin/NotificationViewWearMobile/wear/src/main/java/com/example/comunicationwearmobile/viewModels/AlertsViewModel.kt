@@ -87,7 +87,8 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         }
 
         // Registrar para eventos de salud
-        healthServicesManager.registerForHealthEventsData()
+        healthServicesManager.registerFallDetectorEventsData()
+
         return true
 
     }

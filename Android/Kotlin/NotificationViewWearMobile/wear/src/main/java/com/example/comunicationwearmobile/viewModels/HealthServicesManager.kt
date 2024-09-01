@@ -9,12 +9,14 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.HealthEvent
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.getCapabilities
+import com.example.comunicationwearmobile.common.FallDetectorDataStore
 import com.example.comunicationwearmobile.common.showNotification
 import com.example.comunicationwearmobile.common.showToast
 import com.example.comunicationwearmobile.models.EventData
 import com.example.comunicationwearmobile.models.PassiveHealthEventService
 import com.example.comunicationwearmobile.models.SingletonHolder
 import com.example.comunicationwearmobile.ui.screen.main.TAG
+import kotlinx.coroutines.flow.first
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -48,9 +50,23 @@ class HealthServicesManager private constructor(val context: Context) {
         return true
     }
 
+    suspend fun registerFallDetectorEventsData(){
+        val stateDetector:Boolean=FallDetectorDataStore.getDetectorActivateState(context).first()
+
+        if (!stateDetector) {
+            Log.d(TAG,"El detector de caidas no estaba registrado")
+            registerForHealthEventsData()
+            FallDetectorDataStore.saveDetectorActivateState(context,true)
+            Log.d(TAG,"Detecto de caidas registrado")
+        }
+        else{
+            Log.d(TAG,"El detector de caidas ya estaba registrado")
+        }
+
+    }
     //este metodo inicia un servicio para detectar los eventos de la caida en segundo plano.
     suspend fun registerForHealthEventsData() {
-        Log.i(TAG, "Registering listener")
+        Log.d(TAG, "Registering listener")
         val passiveListenerConfig = PassiveListenerConfig.builder()
             .setHealthEventTypes(healthEventTypes)
             .build()
@@ -64,7 +80,7 @@ class HealthServicesManager private constructor(val context: Context) {
     }
 
     suspend fun unregisterHealthEventsData() {
-        Log.i(TAG, "Unregistering listeners")
+        Log.d(TAG, "Unregistering listeners")
         passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
         registered = false
     }
@@ -80,6 +96,6 @@ class HealthServicesManager private constructor(val context: Context) {
             .withZone(ZoneId.systemDefault())
         val eventData = EventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
         showNotification(context)
-        Log.i(TAG, "Caida Detectada")
+        Log.d(TAG, "Caida Detectada")
     }
 }
