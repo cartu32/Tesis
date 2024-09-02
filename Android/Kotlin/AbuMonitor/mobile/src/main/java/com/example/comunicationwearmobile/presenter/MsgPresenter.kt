@@ -13,7 +13,7 @@ import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 
 
-class MainActivityPresenter(interMainView: InterfaceMainAct) {
+class MsgPresenter(interMainView: InterfaceMainAct) {
 
     private var interMainView: InterfaceMainAct? = interMainView
     private val mContext: Context? = interMainView as? Context
