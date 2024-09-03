@@ -5,6 +5,7 @@ package com.example.comunicationwearmobile.common
 import android.app.Application
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import android.os.VibrationEffect
@@ -12,14 +13,19 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.example.comunicationwearmobile.models.MobileDataListenerService
+import com.example.shared_library.SharedData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+private val mutex = Mutex()
 
 fun showToast(mcontext: Context, msg: String){
     Toast.makeText(mcontext,msg, Toast.LENGTH_SHORT).show()
@@ -39,6 +45,15 @@ fun getHour(dateTime: LocalDate):String{
     return formatterDate
 }
 
+suspend fun sendMessageMobile(context: Context,path:String,body:ByteArray){
+    mutex.withLock {
+        val serviceIntent = Intent(context , MobileDataListenerService::class.java).apply {
+            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , path)
+            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , body)
+        }
+        context.startService(serviceIntent)
+    }
+}
 
 fun getDate(dateTime: LocalTime):String{
     val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")

@@ -15,18 +15,23 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
 import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.generateVibration
 import com.example.comunicationwearmobile.common.isScreenLock
 import com.example.comunicationwearmobile.common.isScreenOn
+import com.example.comunicationwearmobile.common.sendMessageMobile
 import com.example.comunicationwearmobile.common.showToast
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
@@ -187,11 +192,20 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         updateRemoveMsg(indexList)
     }
 
+
+
     fun removeMsgAlertList(indexList: Int) {
         updateRemoveMsg(indexList)
-        sendMsgRemoveMobile(indexList)
+        viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
+            try {
+                sendMessageMobile(app, SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
+            } finally {
+                println("Limpieza al finalizar la corutina")
+            }
+        }
     }
-
     private fun updateRemoveMsg(indexList: Int) {
         _stateListNotif.value?.let {
             val currentAlertsList = it.alertsList?.toMutableList()
@@ -204,15 +218,6 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         }
     }
 
-
-    private fun sendMsgRemoveMobile(idMsg: Int) {
-        val byteArrayData: ByteArray = toByteArray(idMsg)
-        val serviceIntent = Intent(app , MobileDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , SharedData.PATH_VIEWED_NOTIFICATION)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , byteArrayData)
-        }
-        app.startService(serviceIntent)
-    }
 
     private fun addMsgAlertList(msgBytes: ByteArray) {
         val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
