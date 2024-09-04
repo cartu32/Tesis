@@ -23,14 +23,12 @@ import com.example.comunicationwearmobile.common.generateVibration
 import com.example.comunicationwearmobile.common.isScreenLock
 import com.example.comunicationwearmobile.common.isScreenOn
 import com.example.comunicationwearmobile.common.sendMessageMobile
-import com.example.comunicationwearmobile.common.showToast
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 

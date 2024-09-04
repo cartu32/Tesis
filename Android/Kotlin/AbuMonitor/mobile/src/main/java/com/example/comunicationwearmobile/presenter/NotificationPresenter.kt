@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.telephony.SmsManager
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
@@ -20,6 +21,9 @@ import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 
 class NotificationPresenter private constructor(context: Context) {
+
+    val numberPhone:String= "1134926279"
+    val msgSMS:String     = "AbuMonitor ha detectado una caida "
 
     private val GROUP_ID: Int            = 0
     private val KEY_LIST_NOTIFICATION_SP = "KEY_LIST_NOTIFICATION_SP"
@@ -58,10 +62,26 @@ class NotificationPresenter private constructor(context: Context) {
                 val msgBytes: ByteArray = intent.getByteArrayExtra(SharedData.ParamIntent.MESSAGE_BODY.name)!!
 
 
+
                 when(path){
                     SharedData.PATH_VIEWED_NOTIFICATION -> onDataReceived(msgBytes)
+                    SharedData.PATH_FALL_DETECTION -> sendSMS(numberPhone,msgBytes)
                 }
             }
+        }
+    }
+
+    fun sendSMS(phoneNumber: String , message: ByteArray) {
+        try {
+            val msgFallDetection:SharedData.MsgFallDetection= fromByteArray(message)
+
+            val smsManager = SmsManager.getDefault()
+            smsManager.sendTextMessage(phoneNumber, null,msgFallDetection.message + msgFallDetection.fechaHora, null, null)
+
+            println("SMS enviado exitosamente.")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Error al enviar el SMS: ${e.message}")
         }
     }
 

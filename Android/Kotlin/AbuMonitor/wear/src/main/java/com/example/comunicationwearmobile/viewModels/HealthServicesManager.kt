@@ -15,6 +15,8 @@ import com.example.comunicationwearmobile.models.FallEventData
 import com.example.comunicationwearmobile.models.PassiveHealthEventService
 import com.example.comunicationwearmobile.models.SingletonHolder
 import com.example.comunicationwearmobile.ui.screen.main.TAG
+import com.example.shared_library.SharedData
+import com.example.shared_library.toByteArray
 import kotlinx.coroutines.flow.first
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -90,11 +92,20 @@ class HealthServicesManager private constructor(val context: Context) {
 
 
     fun recordHealthEvent(healthEvent: HealthEvent) {
+        var msgFallDetection: SharedData.MsgFallDetection? =null
+
         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.ENGLISH)
             .withZone(ZoneId.systemDefault())
         val eventData = FallEventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
-        showNotification(context,eventData)
+
+        msgFallDetection =SharedData.MsgFallDetection(
+            title = "AbuMonitor",
+            message = "Abumonitor ha detectado una caida",
+            fechaHora = eventData.eventTime
+        )
+
+        showNotification(context, msgFallDetection)
         Log.d(TAG, "Caida Detectada")
     }
 }

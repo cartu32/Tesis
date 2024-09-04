@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-private val mutex = Mutex()
+val mutex = Mutex()
 
 fun showToast(mcontext: Context, msg: String){
     Toast.makeText(mcontext,msg, Toast.LENGTH_SHORT).show()
@@ -45,7 +45,7 @@ fun getHour(dateTime: LocalDate):String{
     return formatterDate
 }
 
-suspend fun sendMessageMobile(context: Context,path:String,body:ByteArray){
+suspend fun sendMessageMobile(context: Context , path:String , body: ByteArray?){
     mutex.withLock {
         val serviceIntent = Intent(context , MobileDataListenerService::class.java).apply {
             putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , path)

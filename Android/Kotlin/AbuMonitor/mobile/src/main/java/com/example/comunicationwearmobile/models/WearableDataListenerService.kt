@@ -61,7 +61,7 @@ class WearableDataListenerService : WearableListenerService() {
 
         intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, messageEvent.data)
         intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name, messageEvent.path)
-
+        Log.d(TAG,"LLego mensaje:"+messageEvent.data+messageEvent.path)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
