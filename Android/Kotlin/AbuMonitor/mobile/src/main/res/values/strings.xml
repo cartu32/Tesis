@@ -6,6 +6,11 @@
     <string name="txt_msg_from_wear">Msg From Wear</string>
     <string name="txt_cuerpo_mensaje">cuerpo mensaje</string>
     <string name="txt_titulo_mensaje">titulo mensaje</string>
-    <string name="cmd_button">Enviar a wear</string>
+    <string name="cmd_enviar_wear">Enviar a wear</string>
     <string name="txt_date">dd/mm/aa</string>
+    <string name="txt_telephone_number">Ingrese numero de telefono</string>
+    <string name="cmd_save_number">Guardar telefono</string>
+    <string name="Contacto">Contacto\n</string>
+    <string name="configurar_contacto">Configurar Contacto</string>
+
 </resources>

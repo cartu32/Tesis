@@ -16,14 +16,17 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
+import com.example.comunicationwearmobile.models.ContactDataStore
 import com.example.comunicationwearmobile.models.SpListNotificactionId
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 class NotificationPresenter private constructor(context: Context) {
 
-    val numberPhone:String= "1134926279"
-    val msgSMS:String     = "AbuMonitor ha detectado una caida "
 
     private val GROUP_ID: Int            = 0
     private val KEY_LIST_NOTIFICATION_SP = "KEY_LIST_NOTIFICATION_SP"
@@ -65,25 +68,33 @@ class NotificationPresenter private constructor(context: Context) {
 
                 when(path){
                     SharedData.PATH_VIEWED_NOTIFICATION -> onDataReceived(msgBytes)
-                    SharedData.PATH_FALL_DETECTION -> sendSMS(numberPhone,msgBytes)
+                    SharedData.PATH_FALL_DETECTION -> sendSMS(msgBytes)
                 }
             }
         }
     }
-
-    fun sendSMS(phoneNumber: String , message: ByteArray) {
+    fun sendSMS(message: ByteArray) {
         try {
-            val msgFallDetection:SharedData.MsgFallDetection= fromByteArray(message)
+            val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
 
-            val smsManager = SmsManager.getDefault()
-            smsManager.sendTextMessage(phoneNumber, null,msgFallDetection.message + msgFallDetection.fechaHora, null, null)
+            // Necesitas correr esto en una corutina para poder recolectar el valor del Flow
+            CoroutineScope(Dispatchers.IO).launch {
+                val phoneNumber = ContactDataStore.getTelephoneNumber(context = appContext).firstOrNull()
 
-            println("SMS enviado exitosamente.")
+                if (phoneNumber != null && phoneNumber.isNotBlank()) {
+                    val smsManager = SmsManager.getDefault()
+                    smsManager.sendTextMessage(phoneNumber, null, msgFallDetection.message + msgFallDetection.fechaHora, null, null)
+                    println("SMS enviado exitosamente.")
+                } else {
+                    println("Número de teléfono no disponible o vacío.")
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error al enviar el SMS: ${e.message}")
         }
     }
+
 
     fun onDataReceived(msgBytes: ByteArray) {
         val indexList:Int = fromByteArray(msgBytes)
