@@ -167,7 +167,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
             val activityIntent = Intent(app,MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
-            val pendingIntent = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             // Iniciar la Activity
             pendingIntent.send()
         } catch (e: PendingIntent.CanceledException) {
