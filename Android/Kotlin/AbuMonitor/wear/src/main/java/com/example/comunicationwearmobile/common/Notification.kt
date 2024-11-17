@@ -8,8 +8,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.screen.main.TAG
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 import kotlinx.coroutines.CoroutineScope
@@ -22,28 +24,42 @@ fun showNotification(context: Context ,msgFallDetection: SharedData.MsgFallDetec
     val notificationId = 1
     val channelId = "health_event_channel"
 
-    val intent = Intent(context, BroadcastAcceptNotification::class.java)
-    intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,SharedData.PATH_FALL_DETECTION )
-    intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , toByteArray(msgFallDetection))
+    try {
+        val intent = Intent(context , BroadcastAcceptNotification::class.java)
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , SharedData.PATH_FALL_DETECTION)
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , toByteArray(msgFallDetection))
 
-    val pendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val pendingIntent: PendingIntent = PendingIntent.getBroadcast(
+            context ,
+            0 ,
+            intent ,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
 
-    // Crear canal de notificación para versiones de Android O y superiores
-    val channel = NotificationChannel(channelId, "Eventos de Salud", NotificationManager.IMPORTANCE_HIGH).apply {
-        description = "AbuMonitor"
+        // Crear canal de notificación para versiones de Android O y superiores
+        val channel = NotificationChannel(
+            channelId ,
+            "Eventos de Salud" ,
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "AbuMonitor"
 
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        val notificationBuilder = NotificationCompat.Builder(context , channelId)
+            .setSmallIcon(R.drawable.ic_old_people)
+            .setContentTitle(msgFallDetection.title)
+            .setContentText(msgFallDetection.message + " " + msgFallDetection.fechaHora)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+
+        notificationManager.notify(notificationId , notificationBuilder.build())
     }
-    notificationManager.createNotificationChannel(channel)
-
-    val notificationBuilder = NotificationCompat.Builder(context, channelId)
-        .setSmallIcon(R.drawable.ic_old_people)
-        .setContentTitle(msgFallDetection.title)
-        .setContentText(msgFallDetection.message+ " "+msgFallDetection.fechaHora)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setContentIntent(pendingIntent)
-
-    notificationManager.notify(notificationId, notificationBuilder.build())
+    catch (e:Exception){
+        Log.i(TAG,"Error al generar la notificacion"+e.message)
+    }
 }
 
 

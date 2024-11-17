@@ -1,7 +1,7 @@
 [versions]
 accompanistPager = "0.24.0-alpha"
 accompanistPagerIndicators = "0.24.0-alpha"
-agp = "8.4.1"
+agp = "8.6.0"
 coreKtxVersion = "1.6.0"
 gson = "2.8.5"
 healthServicesClient = "1.0.0-rc02"

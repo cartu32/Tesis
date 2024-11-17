@@ -30,9 +30,14 @@ class PassiveHealthEventService : PassiveListenerService() {
         //ver si se puede eliminar runBlocking, porque parece que es innecesario, ya que no ejecuta
         // ninugna corutina
         runBlocking {
-            Log.i(TAG, "onHealthEventReceived received with type: ${event.type}")
-            HealthServicesManager.getInstance(applicationContext).recordHealthEvent(event)
-            super.onHealthEventReceived(event)
+            try{
+                Log.i(TAG, "onHealthEventReceived received with type: ${event.type}")
+                HealthServicesManager.getInstance(applicationContext).recordHealthEvent(event)
+                super.onHealthEventReceived(event)
+            }catch (e : Exception){
+                Log.i(TAG, "Error al detectar caida${e.message}")
+            }
+
         }
     }
 }

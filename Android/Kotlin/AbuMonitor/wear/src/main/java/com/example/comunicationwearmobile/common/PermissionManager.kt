@@ -17,9 +17,10 @@ class PermissionManager(activity: ComponentActivity) {
     private val activity:ComponentActivity = activity
     private var continuation: Continuation<Boolean>? = null
 
-    @RequiresApi(Build.VERSION_CODES.S)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     val PERMISSON = arrayOf(
-        Manifest.permission.ACTIVITY_RECOGNITION
+        Manifest.permission.ACTIVITY_RECOGNITION,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     @SuppressLint("NewApi")

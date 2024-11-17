@@ -83,7 +83,7 @@ dependencies {
     implementation ("com.google.guava:guava:31.0.1-android")
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
-    implementation (libs.androidx.health.services.client)
+    implementation ("androidx.health:health-services-client:1.1.0-alpha03")
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
     androidTestImplementation(libs.androidx.ui.test.junit4)
