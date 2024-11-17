@@ -19,9 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NotificationViewWearMobile"
-include(":mobile")
-include(":wear")
+rootProject.name = "AbuMonitor"
+include(":mobile", ":wear", ":shared_library")
 
-
-include(":shared_library")

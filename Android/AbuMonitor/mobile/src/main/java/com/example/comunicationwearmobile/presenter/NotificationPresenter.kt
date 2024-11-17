@@ -82,7 +82,7 @@ class NotificationPresenter private constructor(context: Context) {
                 val phoneNumber = ContactDataStore.getTelephoneNumber(context = appContext).firstOrNull()
 
                 if (phoneNumber != null && phoneNumber.isNotBlank()) {
-                    val smsManager = SmsManager.getDefault()
+                    val smsManager = appContext.getSystemService(SmsManager::class.java)
                     smsManager.sendTextMessage(phoneNumber, null, msgFallDetection.message + msgFallDetection.fechaHora, null, null)
                     println("SMS enviado exitosamente.")
                 } else {

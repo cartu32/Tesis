@@ -25,7 +25,7 @@ class PermissionManager(activity: ComponentActivity) {
 
     @SuppressLint("NewApi")
     suspend fun checkPermissionGiven(): Boolean {
-        var permissionGaranted=false
+        var permissionGaranted: Boolean
 
         val permissionsToRequest = mutableListOf<String>()
 

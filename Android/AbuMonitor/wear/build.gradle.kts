@@ -8,7 +8,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.NotificationViewWearMobile"
+        applicationId = "com.example.AbuMonitor"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
@@ -94,8 +94,4 @@ dependencies {
 
     //dependencias de librerias compartidas entre wear y mobile
     implementation(project(":shared_library"))
-
-
-    wearApp(project(":wear"))
-
 }

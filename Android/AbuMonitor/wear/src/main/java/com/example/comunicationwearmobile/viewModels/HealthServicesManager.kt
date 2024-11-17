@@ -92,7 +92,7 @@ class HealthServicesManager private constructor(val context: Context) {
 
 
     fun recordHealthEvent(healthEvent: HealthEvent) {
-        var msgFallDetection: SharedData.MsgFallDetection? =null
+        var msgFallDetection: SharedData.MsgFallDetection?
 
         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.ENGLISH)
