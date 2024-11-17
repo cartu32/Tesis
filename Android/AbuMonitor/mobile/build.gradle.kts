@@ -39,6 +39,7 @@ android {
 dependencies {
     implementation(libs.androidx.activity.compose)
 
+
     implementation(libs.androidx.compose.material)
     implementation (libs.material)
     implementation(libs.androidx.compose.foundation)
@@ -48,9 +49,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.fragment.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.datastore.core.android)
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
     //dependencias  agregadas para wear os
     implementation (libs.play.services.wearable)

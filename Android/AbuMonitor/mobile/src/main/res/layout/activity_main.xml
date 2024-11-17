@@ -5,100 +5,64 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/material_dynamic_tertiary70"
     tools:context=".ui.MainActivity">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="284dp"
+        android:layout_height="326dp"
+        android:background="@drawable/border_image"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.13"
+        app:srcCompat="@drawable/logo" />
+
     <Button
-        android:id="@+id/cmdSendWear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enviar a wear"
+        android:id="@+id/cmdSendAlerts"
+        android:layout_width="237dp"
+        android:layout_height="49dp"
+        android:background="@drawable/round_button"
+        android:text="@string/config_alerts"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.395"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.707" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.105" />
 
-    <EditText
-        android:id="@+id/txtMsgTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:minHeight="48dp"
-        android:text="titulo mensaje"
+    <Button
+        android:id="@+id/cmdSmsConfig"
+        android:layout_width="235dp"
+        android:layout_height="52dp"
+        android:background="@drawable/round_button"
+        android:text="@string/configurar_contacto"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.149"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.2" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.343" />
 
-    <EditText
-        android:id="@+id/txtMsg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:minHeight="48dp"
-        android:text="cuerpo mensaje"
+    <Button
+        android:id="@+id/cmdShowGeofences"
+        android:layout_width="235dp"
+        android:layout_height="52dp"
+        android:background="@drawable/round_button"
+        android:text="@string/show_geofences"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.149"
+        app:layout_constraintHorizontal_bias="0.505"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.282" />
-
-    <TextView
-        android:id="@+id/txtMsgFromWear"
-        android:layout_width="315dp"
-        android:layout_height="80dp"
-        android:background="@color/white"
-        android:text="Msg From Wear"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.614"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.087" />
-
-    <TextView
-        android:id="@+id/txtClock"
-        android:layout_width="150dp"
-        android:layout_height="27dp"
-        android:text="hora"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.114"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.517" />
-
-    <TextView
-        android:id="@+id/txtDate"
-        android:layout_width="150dp"
-        android:layout_height="36dp"
-        android:text="dd/mm/aa"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.114"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.438" />
-
-    <Spinner
-        android:id="@+id/spTypeNotification"
-        android:layout_width="176dp"
-        android:layout_height="57dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.842"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.437" />
-
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.606" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

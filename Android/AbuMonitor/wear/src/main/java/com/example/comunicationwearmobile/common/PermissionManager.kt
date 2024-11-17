@@ -9,32 +9,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 
 class PermissionManager(activity: ComponentActivity) {
     private val activity:ComponentActivity = activity
+    private var continuation: Continuation<Boolean>? = null
 
-    @RequiresApi(Build.VERSION_CODES.S)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     val PERMISSON = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.BLUETOOTH,
-        Manifest.permission.BLUETOOTH_ADMIN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_ADVERTISE,
-        Manifest.permission.WAKE_LOCK,
-        Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
-        Manifest.permission.READ_PHONE_STATE,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.SEND_SMS,
-        Manifest.permission.READ_PHONE_STATE
+        Manifest.permission.ACTIVITY_RECOGNITION,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     @SuppressLint("NewApi")
-    fun checkPermissionGiven() {
-
+    suspend fun checkPermissionGiven(): Boolean {
+        var permissionGaranted=false
 
         val permissionsToRequest = mutableListOf<String>()
 
@@ -48,31 +39,35 @@ class PermissionManager(activity: ComponentActivity) {
         if (permissionsToRequest.isEmpty()) {
             // Todos los permisos necesarios están otorgados
             // Aquí puedes realizar la acción que requiere permisos
-            Utils.showToast(activity, "Permisos otorgados")
+            permissionGaranted=true
+
         } else {
             // Al menos un permiso no está otorgado
             // Solicitar los permisos que faltan
-            launchMultiPermission(permissionsToRequest.toTypedArray())
+             permissionGaranted=launchMultiPermission(permissionsToRequest.toTypedArray())
+        }
+        return permissionGaranted
+    }
+    @SuppressLint("NewApi")
+    suspend fun launchMultiPermission(toTypedArray: Array<String>): Boolean {
+        return suspendCancellableCoroutine { cont ->
+            requestMultiplePermissions.launch(toTypedArray)
+            this.continuation = cont
         }
     }
 
-    @SuppressLint("NewApi")
-    public fun launchMultiPermission(toTypedArray: Array<String>) {
-        requestMultiplePermissions.launch(toTypedArray)
-    }
+
     private val requestMultiplePermissions = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-        var allPermissionsGranted = true  // Variable para rastrear si se otorgaron todos
+        var allPermissionsGranted = true
+
         permissions.entries.forEach {
             if (!it.value) {
                 allPermissionsGranted = false
-                Utils.showToast(activity, "Permiso no otorgado: ${it.key}")
                 Log.e("DEBUG", "${it.key} = ${it.value}")
             }
+        }
 
-        }
-        if (allPermissionsGranted) {
-            Utils.showToast(activity,"Todos los permisos otorgados")
-        }
+        continuation?.resume(allPermissionsGranted)
     }
 
 }

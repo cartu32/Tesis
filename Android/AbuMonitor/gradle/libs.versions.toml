@@ -1,9 +1,10 @@
 [versions]
 accompanistPager = "0.24.0-alpha"
 accompanistPagerIndicators = "0.24.0-alpha"
-agp = "8.4.1"
+agp = "8.6.0"
 coreKtxVersion = "1.6.0"
 gson = "2.8.5"
+healthServicesClient = "1.0.0-rc02"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 java-library = { id = "java-library" }
@@ -28,12 +29,17 @@ coreSplashscreen = "1.0.1"
 material3Android = "1.2.1"
 uiToolingPreview = "1.6.7"
 runtimeLivedata = "1.6.8"
+datastoreCoreAndroid = "1.1.1"
+lifecycleLivedataKtx = "2.8.4"
+lifecycleViewmodelKtx = "2.8.4"
+fragmentKtx = "1.7.1"
 
 [libraries]
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v160 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
+androidx-health-services-client = { module = "androidx.health:health-services-client", version.ref = "healthServicesClient" }
 androidx-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
@@ -63,6 +69,10 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

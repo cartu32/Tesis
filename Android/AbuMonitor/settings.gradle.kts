@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AbuMonitor"
+rootProject.name = "NotificationViewWearMobile"
 include(":mobile")
 include(":wear")
 

@@ -50,6 +50,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.datastore.core.android)
     val lifecycle_version = "2.8.0"
 
 
@@ -78,6 +79,11 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("androidx.concurrent:concurrent-futures-ktx:1.1.0")
+    implementation ("com.google.guava:guava:31.0.1-android")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation ("androidx.health:health-services-client:1.1.0-alpha03")
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
     androidTestImplementation(libs.androidx.ui.test.junit4)

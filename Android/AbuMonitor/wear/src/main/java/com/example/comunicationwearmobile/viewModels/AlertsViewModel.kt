@@ -15,23 +15,29 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.generateVibration
 import com.example.comunicationwearmobile.common.isScreenLock
 import com.example.comunicationwearmobile.common.isScreenOn
+import com.example.comunicationwearmobile.common.sendMessageMobile
 import com.example.comunicationwearmobile.models.MobileDataListenerService
 import com.example.comunicationwearmobile.models.MsgAlertState
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private val TAG: String = "AlertViewModel"
 
-    private val appContext: Context = app.applicationContext
+    private val healthServicesManager = HealthServicesManager.getInstance(app)
+
     private var lifecycleOwner: LifecycleOwner? = null
     private val _stateListNotif = MutableLiveData<MsgAlertState>()
     val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
@@ -50,10 +56,10 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     private fun initLocalBroadcast() {
         val receiver = createBroadcastReceiver()
 
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(
+        LocalBroadcastManager.getInstance(app).registerReceiver(
             receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name)
         )
-        appContext.startService( Intent(appContext , MobileDataListenerService::class.java))
+        app.startService( Intent(app , MobileDataListenerService::class.java))
     }
 
     private fun createBroadcastReceiver(): BroadcastReceiver {
@@ -69,6 +75,25 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
             }
 
         }
+    }
+
+    // Método suspendido para manejar la lógica de negocios
+    suspend fun checkPermissionsAndCapabilities(permissionManager:PermissionManager):Boolean{
+        // Verificar permisos
+        if (!permissionManager.checkPermissionGiven()) {
+            return false
+        }
+
+        // Verificar capacidades de eventos de salud
+        if (!healthServicesManager.hasHealthEventsCapability()) {
+            return false
+        }
+
+        // Registrar para eventos de salud
+        healthServicesManager.registerFallDetectorEventsData()
+
+        return true
+
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -139,10 +164,10 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private fun putActivityForeground() {
         try {
-            val activityIntent = Intent(appContext,MainActivity::class.java).apply {
+            val activityIntent = Intent(app,MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
-            val pendingIntent = PendingIntent.getActivity(appContext, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             // Iniciar la Activity
             pendingIntent.send()
         } catch (e: PendingIntent.CanceledException) {
@@ -165,11 +190,20 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         updateRemoveMsg(indexList)
     }
 
+
+
     fun removeMsgAlertList(indexList: Int) {
         updateRemoveMsg(indexList)
-        sendMsgRemoveMobile(indexList)
+        viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
+            try {
+                sendMessageMobile(app, SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
+            } finally {
+                println("Limpieza al finalizar la corutina")
+            }
+        }
     }
-
     private fun updateRemoveMsg(indexList: Int) {
         _stateListNotif.value?.let {
             val currentAlertsList = it.alertsList?.toMutableList()
@@ -182,15 +216,6 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         }
     }
 
-
-    private fun sendMsgRemoveMobile(idMsg: Int) {
-        val byteArrayData: ByteArray = toByteArray(idMsg)
-        val serviceIntent = Intent(appContext , MobileDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , SharedData.PATH_VIEWED_NOTIFICATION)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , byteArrayData)
-        }
-        appContext.startService(serviceIntent)
-    }
 
     private fun addMsgAlertList(msgBytes: ByteArray) {
         val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)

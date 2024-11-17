@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- ESTOS SON PERMISOS PARA EL MOBILE -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
-    <!-- ESTOS SON PERMISOS PARA ENVIAR DATOS A WEAR OS -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- ESTOS SON PERMISOS PARA ENVIAR DATOS A WEAR OS -->
     <uses-permission android:name="com.google.android.gms.permission.WEARABLE_DATA_CHANGED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <!-- ESTOS SON PERMISOS PARA USAR BLUETOOTH -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- ESTOS SON PERMISOS PARA USAR BLUETOOTH -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
@@ -44,22 +46,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".ui.MsgConfigActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.SmsConfigActivity"
+            android:exported="true">
+        </activity>
         <service
             android:name=".models.WearableDataListenerService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+
                 <data
                     android:host="*"
                     android:pathPrefix="/"
                     android:scheme="wear" />
-             </intent-filter>
+            </intent-filter>
         </service>
+
         <receiver android:name=".presenter.NotificationCancelReceiver" />
-
-
     </application>
 
 </manifest>
