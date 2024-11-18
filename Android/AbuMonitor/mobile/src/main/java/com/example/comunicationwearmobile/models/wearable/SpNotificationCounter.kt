@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.models
+package com.example.comunicationwearmobile.models.wearable
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -7,7 +7,7 @@ import com.google.gson.reflect.TypeToken
 
 class SpListNotificactionId private constructor(context: Context) {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREF_FILE_NAME , Context.MODE_PRIVATE)
     private val gson = Gson()
 
     companion object {

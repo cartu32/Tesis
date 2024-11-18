@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui
+package com.example.comunicationwearmobile.ui.Activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -41,6 +41,13 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent
                 )
             }
+            R.id.cmdShowGeofences -> {
+                // Acción para el botón cmdSendAlert
+                val intent =Intent(this, MapsActivity::class.java)
+                startActivity(intent
+                )
+            }
+
 
             R.id.cmdSmsConfig -> {
                 // Acción para el botón cmdSmSConfig

@@ -13,4 +13,19 @@
     <string name="Contacto">Contacto\n</string>
     <string name="configurar_contacto">Configurar Contacto</string>
 
+    <string name="title_activity_maps">AbuMonitor</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="cmdLimpiar">Limpiar Mapa</string>
+    <string name="cmdConfirmar">Confirmar Geofences</string>
+    <string name="cmdCalcularRuta">Calcular Ruta</string>
+    <string name="lblTextoDistancia">Distancia(Mts):</string>
+    <string name="lblMetros">0</string>
+    <string-array name="geofenceAreas">
+        <item>Ruta Z</item>
+        <item>A</item>
+        <item>B</item>
+        <item>C</item>
+    </string-array>
+
 </resources>

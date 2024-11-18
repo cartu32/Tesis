@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui
+package com.example.comunicationwearmobile.ui.Activities
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
@@ -16,15 +16,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.common.InterfaceMainAct
+import com.example.comunicationwearmobile.Interface.InterfaceMainAct
 import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.Utils
-import com.example.comunicationwearmobile.presenter.MsgPresenter
+import com.example.comunicationwearmobile.presenter.notificationWear.MsgPresenter
 import com.example.shared_library.SharedData
 import java.text.SimpleDateFormat
 
 @Suppress("NAME_SHADOWING")
-class MsgConfigActivity : AppCompatActivity(),InterfaceMainAct {
+class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
 
     private var cmdSendWear: Button? = null
     private var txtMsgFromWear: TextView? = null
@@ -54,7 +54,7 @@ class MsgConfigActivity : AppCompatActivity(),InterfaceMainAct {
 
 
         permissionManager= PermissionManager(this)
-        mainActivityPresenter=MsgPresenter(this)
+        mainActivityPresenter= MsgPresenter(this)
 
         loadSpiner()
 

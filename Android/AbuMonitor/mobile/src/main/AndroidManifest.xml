@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- ESTOS SON PERMISOS PARA USAR BLUETOOTH -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
@@ -27,6 +29,8 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -37,8 +41,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight"
         tools:targetApi="31">
+
+        <!--
+        The API key for Google Maps-based APIs is defined as a string resource.
+        (See the file "res/values/google_maps_api.xml").
+        Note that the API key is linked to the encryption key used to sign the APK.
+        You need a different API key for each encryption key, including the release key that is used to
+        sign the APK for publishing.
+        You can define the keys for the debug and release targets in src/debug/ and src/release/.
+        -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.Activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,15 +65,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.MsgConfigActivity"
+            android:name=".ui.Activities.MapsActivity"
             android:exported="true">
         </activity>
         <activity
-            android:name=".ui.SmsConfigActivity"
+            android:name=".ui.Activities.MsgConfigActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.Activities.SmsConfigActivity"
             android:exported="true">
         </activity>
         <service
-            android:name=".models.WearableDataListenerService"
+            android:name=".models.wearable.WearableDataListenerService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -67,8 +89,14 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
+        <service
+            android:enabled="true"
+            android:name=".presenter.maps.GeofenceTransitionService"
+            android:label="Geofences Intent Service">
+        </service>
 
-        <receiver android:name=".presenter.NotificationCancelReceiver" />
+
+        <receiver android:name=".presenter.notificationWear.NotificationCancelReceiver" />
     </application>
 
 </manifest>

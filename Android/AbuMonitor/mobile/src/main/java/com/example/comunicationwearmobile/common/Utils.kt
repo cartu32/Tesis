@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import com.example.comunicationwearmobile.models.WearableDataListenerService
+import com.example.comunicationwearmobile.models.wearable.WearableDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 

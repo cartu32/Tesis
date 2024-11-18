@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.presenter
+package com.example.comunicationwearmobile.presenter.notificationWear
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -16,8 +16,8 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
-import com.example.comunicationwearmobile.models.ContactDataStore
-import com.example.comunicationwearmobile.models.SpListNotificactionId
+import com.example.comunicationwearmobile.models.contacts.ContactDataStore
+import com.example.comunicationwearmobile.models.wearable.SpListNotificactionId
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import kotlinx.coroutines.CoroutineScope
@@ -246,7 +246,7 @@ class NotificationCancelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
         val notificationId= intent.getIntExtra(SharedData.PARAM_PENDING_INTENT_NOTIFICATION_ID,0    )
-        val notificationPresenter =NotificationPresenter.getInstance(context)
+        val notificationPresenter = NotificationPresenter.getInstance(context)
         val posNotificationId = notificationPresenter.removeByNotificationId(notificationId)
 
         // Decrementar el contador de notificaciones activas

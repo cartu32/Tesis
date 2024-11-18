@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.common
+package com.example.comunicationwearmobile.Interface
 
 interface InterfaceMainAct {
     fun showToast(msg:String)

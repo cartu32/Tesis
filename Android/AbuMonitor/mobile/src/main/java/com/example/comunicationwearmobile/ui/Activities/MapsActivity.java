@@ -1,4 +1,6 @@
-package com.example.geofencing.Views.Activities;
+package com.example.comunicationwearmobile.ui.Activities;
+
+import com.example.comunicationwearmobile.R;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -16,9 +18,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.FragmentActivity;
 
-import com.example.geofencing.Interface.InterfaceConfigGeofence;
-import com.example.geofencing.Presenter.MapsActivtyPresenter;
-import com.example.geofencing.R;
+import com.example.comunicationwearmobile.Interface.InterfaceConfigGeofence;
+import com.example.comunicationwearmobile.presenter.maps.MapsActivtyPresenter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -62,14 +63,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
 
         mMap = googleMap;
 
         int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
             Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, resultCode, RC_HANDLE_GMS);
-            dlg.show();
+            if (dlg != null) {
+                dlg.show();
+            }
         }
 
         mMap.setOnMapLongClickListener(this);
@@ -87,6 +90,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mapsActivtyPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
     }

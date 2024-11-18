@@ -1,27 +1,27 @@
 
-package com.example.comunicationwearmobile.presenter
+package com.example.comunicationwearmobile.presenter.notificationWear
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.comunicationwearmobile.common.InterfaceMainAct
+import com.example.comunicationwearmobile.Interface.InterfaceMainAct
 import com.example.comunicationwearmobile.common.Utils
-import com.example.comunicationwearmobile.models.WearableDataListenerService
+import com.example.comunicationwearmobile.models.wearable.WearableDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 
 
-class MsgPresenter(interMainView: InterfaceMainAct) {
+class MainActivityPresenter(interMainView: InterfaceMainAct) {
 
     private var interMainView: InterfaceMainAct? = interMainView
     private val mContext: Context? = interMainView as? Context
-    private var notification:NotificationPresenter?=null;
+    private var notification: NotificationPresenter?=null;
 
     init{
 
-        notification=NotificationPresenter.getInstance(mContext!!)
+        notification= NotificationPresenter.getInstance(mContext!!)
 
         val receiver =createBroadcastReceiver()
 
