@@ -2,7 +2,7 @@ package com.example.comunicationwearmobile.models.maps;
 
 import java.io.Serializable;
 
-public class Geofence implements Serializable
+public class iGeofence implements Serializable
 {
     private String idArea;
     private Double latitude;

@@ -1,5 +1,6 @@
 package com.example.comunicationwearmobile.presenter.maps;
 
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -33,7 +34,7 @@ public class GeofenceHelper extends ContextWrapper {
 
     public void addGeofenceList(String ID, double latitude, double longitude, float radius, int transitionTypes) {
         geofenceList.add(new Geofence.Builder()
-                 .setCircularRegion(latitude,longitude, radius)
+                .setCircularRegion(latitude,longitude, radius)
                 .setRequestId(ID)
                 .setTransitionTypes(transitionTypes)
                 .setLoiteringDelay(5000)
@@ -52,7 +53,7 @@ public class GeofenceHelper extends ContextWrapper {
         }
         Intent intent = new Intent(this, GeofenceTransitionService.class);
         intent.putExtra("Operation", Tools.GEOFENCE_TRANSITION);
-        pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_MUTABLE);
 
 
         return pendingIntent;
@@ -66,13 +67,13 @@ public class GeofenceHelper extends ContextWrapper {
             ApiException apiException = (ApiException) e;
             switch (apiException.getStatusCode()) {
                 case GeofenceStatusCodes
-                        .GEOFENCE_NOT_AVAILABLE:
+                             .GEOFENCE_NOT_AVAILABLE:
                     return "GEOFENCE_NOT_AVAILABLE";
                 case GeofenceStatusCodes
-                        .GEOFENCE_TOO_MANY_GEOFENCES:
+                             .GEOFENCE_TOO_MANY_GEOFENCES:
                     return "GEOFENCE_TOO_MANY_GEOFENCES";
                 case GeofenceStatusCodes
-                        .GEOFENCE_TOO_MANY_PENDING_INTENTS:
+                             .GEOFENCE_TOO_MANY_PENDING_INTENTS:
                     return "GEOFENCE_TOO_MANY_PENDING_INTENTS";
             }
         }

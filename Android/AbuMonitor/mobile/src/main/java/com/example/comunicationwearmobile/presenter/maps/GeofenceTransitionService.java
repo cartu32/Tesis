@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+
 public class GeofenceTransitionService extends IntentService {
     private static final String TAG = GeofenceTransitionService.class.getSimpleName();
     private static final int OFFSET_ARRAY = 1;
@@ -76,7 +77,7 @@ public class GeofenceTransitionService extends IntentService {
         msg="Persona fuera de ruta";
 
         // Retrieve GeofenceTrasition
-         notificationHelper = NotificationHelper.getInstance(getApplicationContext());
+        notificationHelper = NotificationHelper.getInstance(getApplicationContext());
         // Send notification details as a String
         notificationHelper.sendHighPriorityNotification("Evento detectado", msg, MapsActivity.class);
 
@@ -93,7 +94,7 @@ public class GeofenceTransitionService extends IntentService {
         geofencingEvent = GeofencingEvent.fromIntent(intent);
 
         // Handling errors
-        if (Objects.requireNonNull(geofencingEvent).hasError()) {
+        if (geofencingEvent.hasError()) {
             msg = getErrorString(geofencingEvent.getErrorCode());
             Log.e(TAG, msg);
             return;
@@ -140,7 +141,7 @@ public class GeofenceTransitionService extends IntentService {
         listRoute=SharedPreferencesRoutes.getStringArrayPref(getApplicationContext(),idActual);
 
         //Si me la encontro dentro del archivo entonces quiere decir que es la nueva ruta activa.
-        if(!listRoute.isEmpty()) {
+        if(listRoute.size()!=0) {
             setActiveRoute(idActual,listRoute);
         }else{
             clearActiveRoute(idActual);
@@ -168,7 +169,7 @@ public class GeofenceTransitionService extends IntentService {
     private int getPosNumberId(String id){
         int index;
         char auxChar;
-        boolean flag=false;
+        Boolean flag=false;
 
         index=id.length()-OFFSET_ARRAY;
         do{
