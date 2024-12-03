@@ -69,7 +69,7 @@ class GeofenceTransitionService : Service() {
         // Retrieve GeofenceTrasition
         val notificationHelper = NotificationHelper.getInstance(applicationContext)
         // Send notification details as a String
-        notificationHelper.sendHighPriorityNotification(
+        notificationHelper?.sendHighPriorityNotification(
             "Evento detectado" ,
             msg ,
             MapsActivity::class.java
@@ -105,7 +105,7 @@ class GeofenceTransitionService : Service() {
         // Retrieve GeofenceTrasition
         val notificationHelper = NotificationHelper.getInstance(applicationContext)
         // Send notification details as a String
-        notificationHelper.sendHighPriorityNotification(
+        notificationHelper?.sendHighPriorityNotification(
             "Evento detectado" ,
             msg ,
             MapsActivity::class.java
@@ -176,8 +176,6 @@ class GeofenceTransitionService : Service() {
         //calculo cual deberia ser el id del gefecence Destino.
         //Este deberia ser Origen+1
         val idActiveDestination = prepareNextId() ?: return
-
-        //idActiveDestination= prepareNextId(idActiveArea); 
 
         //Si el id del Geofence actual es igual al que se estimo,
         //entonces estoy en el final de la ruta.

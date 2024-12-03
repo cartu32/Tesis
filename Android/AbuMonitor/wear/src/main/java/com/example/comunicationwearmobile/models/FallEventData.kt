@@ -16,7 +16,7 @@
 
 package com.example.comunicationwearmobile.models
 
-class FallEventData constructor(eType: String , eTime: String) {
+class FallEventData(eType: String , eTime: String) {
     var eventType: String = eType
     var eventTime: String = eTime
 }

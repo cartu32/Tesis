@@ -13,7 +13,7 @@ import com.example.comunicationwearmobile.R
 class MainActivity : AppCompatActivity() {
     private lateinit var cmdSendAlert: Button
     private lateinit var cmdShowGeofence: Button
-    private lateinit var cmdSmsConfig:Button
+    private lateinit var cmdSmsConfig: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,9 +24,9 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left , systemBars.top , systemBars.right , systemBars.bottom)
             insets
         }
-        cmdSendAlert    = findViewById(R.id.cmdSendAlerts)
+        cmdSendAlert = findViewById(R.id.cmdSendAlerts)
         cmdShowGeofence = findViewById(R.id.cmdShowGeofences)
-        cmdSmsConfig    = findViewById(R.id.cmdSmsConfig)
+        cmdSmsConfig = findViewById(R.id.cmdSmsConfig)
 
         cmdSendAlert.setOnClickListener(botonesListeners)
         cmdShowGeofence.setOnClickListener(botonesListeners)
@@ -37,24 +37,29 @@ class MainActivity : AppCompatActivity() {
         when (v?.id) {
             R.id.cmdSendAlerts -> {
                 // Acción para el botón cmdSendAlert
-                val intent =Intent(this, MsgConfigActivity::class.java)
-                startActivity(intent
+                val intent = Intent(this , MsgConfigActivity::class.java)
+                startActivity(
+                    intent
                 )
             }
+
             R.id.cmdShowGeofences -> {
                 // Acción para el botón cmdSendAlert
-                val intent =Intent(this, MapsActivity::class.java)
-                startActivity(intent
+                val intent = Intent(this , MapsActivity::class.java)
+                startActivity(
+                    intent
                 )
             }
 
 
             R.id.cmdSmsConfig -> {
                 // Acción para el botón cmdSmSConfig
-                val intent =Intent(this, SmsConfigActivity::class.java)
-                startActivity(intent
+                val intent = Intent(this , SmsConfigActivity::class.java)
+                startActivity(
+                    intent
                 )
             }
+
             R.id.cmdShowGeofences -> {
                 // Acción para el botón cmdShowGeofence
             }

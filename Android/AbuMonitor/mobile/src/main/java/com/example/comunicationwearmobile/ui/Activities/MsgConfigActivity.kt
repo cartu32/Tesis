@@ -61,7 +61,7 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
         txtDate?.setOnClickListener(listenerDate)
         txtTime?.setOnClickListener(listenerTime)
         cmdSendWear?.setOnClickListener(listenerButton)
-        spTypeNotification?.setOnItemSelectedListener(listenerSpinner)
+        spTypeNotification?.onItemSelectedListener = listenerSpinner
 
 
         permissionManager!!.checkPermissionGiven()
@@ -124,7 +124,7 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
         val listener = DatePickerDialog.OnDateSetListener{
             view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
 
-            txtDate?.setText("$dayOfMonth/${month+1}/$year")
+            txtDate?.text = "$dayOfMonth/${month+1}/$year"
         }
         val datePickerDialog= DatePickerDialog(this,listener,year,month,day)
 
@@ -148,11 +148,6 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
 
     }
 
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-    }
 
     override fun showToast(msg: String) {
         Toast.makeText(this,msg, Toast.LENGTH_SHORT).show()

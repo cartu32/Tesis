@@ -14,7 +14,7 @@ object Utils
         Toast.makeText(activity, s, Toast.LENGTH_SHORT).show()
     }
 
-    public inline fun<reified T> sendMessageToService(mContext:Context,path: String , data:T){
+    inline fun<reified T> sendMessageToService(mContext:Context,path: String , data:T){
         val byteArrayData:ByteArray = toByteArray(data)
         val serviceIntent = Intent(mContext, WearableDataListenerService::class.java).apply {
             putExtra(SharedData.ParamIntent.MESSAGE_PATH.name,path)

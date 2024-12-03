@@ -57,7 +57,7 @@ class PermissionManager(activity: ComponentActivity) {
     }
 
     @SuppressLint("NewApi")
-    public fun launchMultiPermission(toTypedArray: Array<String>) {
+    fun launchMultiPermission(toTypedArray: Array<String>) {
         requestMultiplePermissions.launch(toTypedArray)
     }
     private val requestMultiplePermissions = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
