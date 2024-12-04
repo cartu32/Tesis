@@ -138,11 +138,11 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        mMap!!.isMyLocationEnabled = true
-        mMap!!.uiSettings.setAllGesturesEnabled(true)
-        mMap!!.uiSettings.isMyLocationButtonEnabled = true
-        mMap!!.uiSettings.isZoomControlsEnabled = true
-        mMap!!.uiSettings.isMapToolbarEnabled = true
+        mMap?.isMyLocationEnabled = true
+        mMap?.uiSettings?.setAllGesturesEnabled(true)
+        mMap?.uiSettings?.isMyLocationButtonEnabled = true
+        mMap?.uiSettings?.isZoomControlsEnabled = true
+        mMap?.uiSettings?.isMapToolbarEnabled = true
 
         location
     }

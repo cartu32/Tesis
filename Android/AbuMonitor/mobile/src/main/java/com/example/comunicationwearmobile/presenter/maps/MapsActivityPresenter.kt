@@ -10,7 +10,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
-import android.location.LocationManager
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -20,15 +19,13 @@ import com.example.comunicationwearmobile.models.maps.iGeofence
 import com.example.comunicationwearmobile.ui.Activities.MapsActivity
 import com.example.comunicationwearmobile.ui.Fragments.fragment_config_geofence
 import com.example.comunicationwearmobile.utils.maps.Tools
-import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import java.util.Objects
 
 class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) constructor(private var activity: MapsActivity?) {
     companion object {
+
         const val TAG: String = "MapsActivityPresenter"
         const val SELECT_ORIGIN_POINT: Int = 1
         const val SELECT_DESTINATION_POINT: Int = 2
@@ -36,19 +33,11 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         const val MIN_TIME_BW_UPDATES: Long = (1000 * 30 ).toLong()
     }
 
+    private var locationManagerHelper:LocationManagerHelper?=null
     private var geofenceHelper: GeofenceHelper? = null
-    private var geofencingClient: GeofencingClient ?= null
 
 
-    private val hashMapId = HashMap<String , Int>()
 
-    /*Se declara una variable de tipo LocationManager encargada de proporcionar acceso al servicio de localización del sistema.*/
-    private var locationManager: LocationManager? = null
-
-    /*Se declara una variable de tipo Location que accederá a la última posición conocida proporcionada por el proveedor.*/
-    private var location: Location? = null
-    private var isGPSEnabled = false
-    private var isNetworkEnabled: Boolean? = false
 
     private var idAreaActiva = Tools.DEFAULT_ACTIVE_AREA
 
@@ -62,7 +51,6 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
     private var waypointsActiveRoute: List<LatLng>? = null
 
     private var filtro: IntentFilter? = null
-    private var filtroExterno: IntentFilter? = null
     private val receiver: ReceptorOperation = ReceptorOperation()
 
 
@@ -72,7 +60,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
     init {
         geofenceHelper = GeofenceHelper(activity)
-        geofencingClient = LocationServices.getGeofencingClient(activity!!)
+        locationManagerHelper =LocationManagerHelper(activity)
         mapsRoute = MapsRoute(activity)
         configureBroadcastReciever()
     }
@@ -114,79 +102,10 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         //se asocia(registra) la  accion RESPUESTA_OPERACION, para que cuando el Servicio de recepcion la ejecute
         //se invoque automaticamente el OnRecive del objeto receiver
         filtro = IntentFilter("com.example.intentservice.intent.action.RESPUESTA_OPERACION")
-        filtroExterno =IntentFilter("com.example.intentservice.intent.action.NOTIFICACION_FIREBASE")
 
         filtro!!.addCategory(Intent.CATEGORY_DEFAULT)
-        filtroExterno!!.addCategory(Intent.CATEGORY_ALTERNATIVE)
 
         activity!!.applicationContext.registerReceiver(receiver , filtro , Context.RECEIVER_EXPORTED)
-    }
-
-    fun getLocation(): Location {
-        try {
-            if (checkconnection()) {
-                // Si no hay proveedor habilitado
-                //solicito que active el gps
-                activity!!.alertNoGps()
-            }
-
-            // if GPS Enabled get lat/long using GPS Services
-            if (isGPSEnabled) {
-                setPositionGPS()
-            } else if (isNetworkEnabled!!) {
-                setPositionNetwork()
-            }
-        } catch (e: Exception) {
-            Log.e("getLocation" , e.message.toString())
-        }
-        return location!!
-    }
-
-
-    fun setPositionGPS() {
-        if (location == null) {
-            if (ActivityCompat.checkSelfPermission(activity!! , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(activity!! , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
-            locationManager!!.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER ,
-                MIN_TIME_BW_UPDATES ,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES.toFloat() , activity!!
-            )
-
-            // Si location es mutable globalmente, asignamos el valor de locationManager a location de manera segura
-            locationManager?.let { manager ->
-                location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                location?.let { currentLocation ->
-                    activity?.positionUpdate(currentLocation)
-                }
-            } ?: run {
-                println("locationManager es nulo")
-            }
-
-        }
-    }
-
-    private fun setPositionNetwork() {
-        if (ActivityCompat.checkSelfPermission(activity!! , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(activity!! , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-        locationManager!!.requestLocationUpdates(
-            LocationManager.NETWORK_PROVIDER ,
-            MIN_TIME_BW_UPDATES ,
-            MIN_DISTANCE_CHANGE_FOR_UPDATES.toFloat() , activity!!
-        )
-        locationManager?.let { manager->
-            location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            location?.let { currentLocation ->
-                activity!!.positionUpdate(currentLocation)
-            }
-        }
-
     }
 
 
@@ -208,57 +127,29 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         }
     }
 
-    private fun generateGeofences(listLastGeofence: java.util.ArrayList<iGeofence>): Boolean {
+    private fun generateGeofences(listLastGeofence: java.util.ArrayList<iGeofence>): Boolean? {
         //Creo el identificador de cada zona de goefoence que empiece por una letra identifcadora.
 
-
-        var idAux: Int
-
-        if (listLastGeofence.isEmpty()) return false
-
-        if (checkconnection()) {
+        if (locationManagerHelper?.checkconnection() == true) {
             activity!!.showMessage("No hay conexion de GPS o Red")
             return false
         }
 
-        Log.d("Alerta" , "Entrando en For")
-        for (i in listLastGeofence.indices) {
-            //cantGeofences++;
-            idAux = createHashMapId(listLastGeofence[i].idArea.toString())
-            geofenceHelper!!.addGeofenceList(
-                listLastGeofence[i].idArea + idAux ,
-                listLastGeofence[i].latitud!! ,
-                listLastGeofence[i].longitud!! ,
-                listLastGeofence[i].radius ,
-                Geofence.GEOFENCE_TRANSITION_ENTER
-            )
-            Log.d("Alerta" , "Ejecutando For")
-        }
 
-        return activateGefenceRequest()
+        return geofenceHelper?.generateGeofences(listLastGeofence)
     }
 
-
-    private fun createHashMapId(idArea: String): Int {
-        // Usamos el operador getOrDefault para obtener el valor de la clave o un valor por defecto si es null
-        var cantId = hashMapId.getOrDefault(idArea, 0)
-
-        // Si no es nulo, incrementamos el valor
-        cantId++
-
-        // Actualizamos el valor en el mapa
-        hashMapId[idArea] = cantId
-
-        return cantId
-    }
 
 
     private fun getHashMapIdOrigin(idArea: String): Int {
         var idOrigin: Int
         val DESTINO = 1
 
-        idOrigin = hashMapId[idArea]!!
+        idOrigin = geofenceHelper?.getHashMapId(idArea) ?: -1
 
+        if(idOrigin<0){
+            return -1
+        }
         //como este metodo es invocado cuando se genera la ruta, entonces
         //entonces en el Hashmap hay grabados dos ID. El primero el origen y despues el destino
         //Con lo cual para obtener el idOrigen correcto, debo restarle 1 para poder obtenerlo. Porque
@@ -268,23 +159,6 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         return idOrigin
     }
 
-    private fun activateGefenceRequest(): Boolean {
-        val geofencingRequest = geofenceHelper!!.geofencingRequest
-
-        if (ActivityCompat.checkSelfPermission(activity!! , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return false
-        }
-        geofencingClient!!.addGeofences(geofencingRequest , geofenceHelper!!.pendingIntent!!)
-            .addOnSuccessListener {
-                Log.d(TAG , "onSuccess: Geofence Added...")
-            }
-            .addOnFailureListener { e ->
-                val errorMessage = geofenceHelper!!.getErrorString(e)
-                Log.d(TAG , "onFailure: $errorMessage")
-                activity!!.showMessage("on Failure$errorMessage")
-            }
-        return true
-    }
 
 
     fun saveRouteInFile(listRoute: List<LatLng?>? , idArea: String) {
@@ -297,19 +171,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         SharedPreferencesRoutes.clearSharedPreferences(this.activity)
     }
 
-    private fun clearGeofencesIntent() {
-        geofencingClient!!.removeGeofences(geofenceHelper!!.pendingIntent!!)
-            .addOnSuccessListener(activity!!) { // Geofences removed
-                // ...
-                Log.d(TAG , "se borraron todos los geofences")
-            }
-            .addOnFailureListener(activity!!) { // Failed to remove geofences
-                Log.d(TAG , "Error al borrar todos los geofences")
-            }
 
-        hashMapId.clear()
-        geofenceHelper!!.clearGeofenceList()
-    }
 
     private fun createRetrofitGeofence(id: String? , latLng: LatLng , radius: Float): iGeofence {
         val obj = iGeofence()
@@ -336,21 +198,6 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
     }
 
 
-    private fun checkconnection(): Boolean {
-        activity!!.applicationContext
-        locationManager = activity!!.applicationContext
-            .getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        locationManager?.let{manager->
-            // getting GPS status
-            isGPSEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-            // getting network status
-            isNetworkEnabled = manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        }
-        return (!isGPSEnabled &&  !isNetworkEnabled!!)
-    }
-
     private fun closeFragment() {
         val prev = activity!!.supportFragmentManager.findFragmentById(
             frag!!.id
@@ -371,7 +218,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
 
     fun generateGeofencesManual() {
-        if (generateGeofences(listAreaAddedManual)) {
+        if (generateGeofences(listAreaAddedManual) == true) {
             closeFragment()
             activity!!.showMessage("geofences agregadas")
         } else {
@@ -423,6 +270,9 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         }
     }
 
+    fun setPositionGPS() {
+        locationManagerHelper?.setPositionGPS()
+    }
     fun generateRouteManual() {
         generateGeofencesManual()
         mapsRoute!!.getWaypoints(originPoint!! , destinationPoint!! , idAreaActiva)
@@ -461,7 +311,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
     fun clearGeofenceMaps() {
         selectPoint = SELECT_ORIGIN_POINT
-        clearGeofencesIntent()
+        geofenceHelper?.clearGeofencesIntent()
         listAreaAddedManual.clear()
         activity!!.clearMaps()
     }
@@ -476,6 +326,11 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         selectPoint = SELECT_DESTINATION_POINT
         waypointsActiveRoute = null
     }
+
+    fun getLocation(): Location? {
+        return locationManagerHelper?.getLocation()
+    }
+
 
     inner class ReceptorOperation : BroadcastReceiver() {
         override fun onReceive(context: Context , intent: Intent) {
