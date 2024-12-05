@@ -1,12 +1,12 @@
-package com.example.comunicationwearmobile.presenter.maps
+package com.example.comunicationwearmobile.presenter.maps.helper
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import android.util.Log
-import com.example.comunicationwearmobile.presenter.maps.MapsActivityPresenter.Companion.MIN_DISTANCE_CHANGE_FOR_UPDATES
-import com.example.comunicationwearmobile.presenter.maps.MapsActivityPresenter.Companion.MIN_TIME_BW_UPDATES
+import com.example.comunicationwearmobile.presenter.maps.MapsPresenter.Companion.MIN_DISTANCE_CHANGE_FOR_UPDATES
+import com.example.comunicationwearmobile.presenter.maps.MapsPresenter.Companion.MIN_TIME_BW_UPDATES
 import com.example.comunicationwearmobile.ui.Activities.MapsActivity
 
 /**

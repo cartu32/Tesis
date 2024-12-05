@@ -91,12 +91,12 @@
         </service>
         <service
             android:enabled="true"
-            android:name=".presenter.maps.GeofenceTransitionService"
+            android:name=".presenter.maps.GeofenceService"
             android:label="Geofences Intent Service">
         </service>
 
 
-        <receiver android:name=".presenter.notificationWear.NotificationCancelReceiver" />
+        <receiver android:name=".presenter.notificationWear.helper.NotificationCancelReceiver" />
     </application>
 
 </manifest>

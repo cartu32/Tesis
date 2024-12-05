@@ -9,11 +9,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.Interface.InterfaceMainAct
 import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.wearable.WearableDataListenerService
+import com.example.comunicationwearmobile.presenter.notificationWear.helper.NotificationPresenter
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 
 
-class MainActivityPresenter(interMainView: InterfaceMainAct) {
+class MsgConfigPresenter(interMainView: InterfaceMainAct) {
 
     private var interMainView: InterfaceMainAct? = interMainView
     private val mContext: Context? = interMainView as? Context

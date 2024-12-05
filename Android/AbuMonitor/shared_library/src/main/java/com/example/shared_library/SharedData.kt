@@ -16,6 +16,7 @@ object SharedData
     //constante que se utilizan para que el wearabledatalistener le avise ala view de los datos
     //recibidios
     enum class Broadcast{
+        alertGeofence,
         fromWearData,
         fromMobileData,
     }

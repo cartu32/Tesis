@@ -60,9 +60,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
 
-            R.id.cmdShowGeofences -> {
-                // Acción para el botón cmdShowGeofence
-            }
         }
     }
 }

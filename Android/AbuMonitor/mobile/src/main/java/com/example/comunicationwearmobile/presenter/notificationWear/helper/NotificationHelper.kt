@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.presenter.notificationWear
+package com.example.comunicationwearmobile.presenter.notificationWear.helper
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -17,7 +17,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.contacts.ContactDataStore
-import com.example.comunicationwearmobile.models.wearable.SpListNotificactionId
+import com.example.comunicationwearmobile.models.wearable.NotificationIDCounterFile
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import kotlinx.coroutines.CoroutineScope
@@ -120,7 +120,7 @@ class NotificationPresenter private constructor(context: Context) {
     }
 
     private fun getNotificationId():Int{
-        val preferences= SpListNotificactionId.getInstance(appContext)
+        val preferences= NotificationIDCounterFile.getInstance(appContext)
         val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
         var newId=1
 
@@ -137,7 +137,7 @@ class NotificationPresenter private constructor(context: Context) {
     //esta funcion elimina el notification id del shared preference. Atencion la eliminacion de la
     //bandeja de entrada se hace automaticamente con el pending intent, ya esta implicito
     fun removeByNotificationId(idNotification:Int):Int{
-        val preferences= SpListNotificactionId.getInstance(appContext)
+        val preferences= NotificationIDCounterFile.getInstance(appContext)
         val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
 
         val posList= listNotification.indexOf(idNotification)
@@ -149,7 +149,7 @@ class NotificationPresenter private constructor(context: Context) {
     }
 
     private fun removeByPositionId(indexList:Int):Pair<Int,Boolean>{
-        val preferences= SpListNotificactionId.getInstance(appContext)
+        val preferences= NotificationIDCounterFile.getInstance(appContext)
         val listNotification=preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
 
         val notificationId= listNotification[indexList]

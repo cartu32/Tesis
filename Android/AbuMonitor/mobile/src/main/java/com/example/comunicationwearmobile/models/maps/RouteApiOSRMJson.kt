@@ -2,7 +2,7 @@ package com.example.comunicationwearmobile.models.maps
 
 import com.google.gson.annotations.SerializedName
 
-class JsonRoutePojo {
+class RouteApiOSRMJson {
     @JvmField
     @SerializedName("code")
     var code: String? = null

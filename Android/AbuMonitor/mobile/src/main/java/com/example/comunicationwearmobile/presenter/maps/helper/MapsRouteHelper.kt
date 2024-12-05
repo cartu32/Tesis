@@ -1,9 +1,9 @@
-package com.example.comunicationwearmobile.presenter.maps
+package com.example.comunicationwearmobile.presenter.maps.helper
 
 import android.util.Log
 import com.example.comunicationwearmobile.Interface.InterfaceConfigGeofence
 import com.example.comunicationwearmobile.Interface.RouteMaker
-import com.example.comunicationwearmobile.models.maps.JsonRoutePojo
+import com.example.comunicationwearmobile.models.maps.RouteApiOSRMJson
 import com.example.comunicationwearmobile.models.maps.RoutesList
 import com.example.comunicationwearmobile.utils.maps.PolylineDecoder.decode
 import com.google.android.gms.maps.model.LatLng
@@ -13,7 +13,13 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class MapsRoute(activity: InterfaceConfigGeofence?) {
+class MapsRouteHelper(activity: InterfaceConfigGeofence?) {
+
+    companion object {
+        private const val TAG = "MapsRoute"
+
+        private const val BASE_URL = "https://router.project-osrm.org/route/v1/foot/"
+    }
     private var caller: InterfaceConfigGeofence? = null
 
     init {
@@ -37,9 +43,9 @@ class MapsRoute(activity: InterfaceConfigGeofence?) {
         val service = retrofit.create(RouteMaker::class.java)
 
         val response = service.getAllWayPoints(url)
-        response!!.enqueue(object : Callback<JsonRoutePojo?> {
+        response!!.enqueue(object : Callback<RouteApiOSRMJson?> {
 
-            override fun onResponse(call: Call<JsonRoutePojo?> , response: Response<JsonRoutePojo?>) {
+            override fun onResponse(call: Call<RouteApiOSRMJson?> , response: Response<RouteApiOSRMJson?>) {
                 val route: List<RoutesList>?
                 val latLngList: List<LatLng?>?
                 val geometry: String?
@@ -56,17 +62,12 @@ class MapsRoute(activity: InterfaceConfigGeofence?) {
                     caller!!.graphRoute(latLngList , idArea)
                 }            }
 
-            override fun onFailure(call: Call<JsonRoutePojo?> , t: Throwable) {
+            override fun onFailure(call: Call<RouteApiOSRMJson?> , t: Throwable) {
                 Log.e(TAG , "Error " + t.message)
                 caller!!.showMessage("Error " + t.message)
             }
         })
     }
 
-    companion object {
-        private const val TAG = "MapsRoute"
-
-        private const val BASE_URL = "https://router.project-osrm.org/route/v1/foot/"
-    }
 }
 

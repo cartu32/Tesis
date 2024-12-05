@@ -16,7 +16,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.FragmentActivity
 import com.example.comunicationwearmobile.Interface.InterfaceConfigGeofence
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.presenter.maps.MapsActivityPresenter
+import com.example.comunicationwearmobile.presenter.maps.MapsPresenter
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -35,7 +35,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     OnMapClickListener , LocationListener , InterfaceConfigGeofence {
     private var mMap: GoogleMap? = null
     private var alert: AlertDialog? = null
-    private var mapsActivtyPresenter: MapsActivityPresenter? = null
+    private var mapsActivtyPresenter: MapsPresenter? = null
     private var circle: Circle? = null
     private var geoFenceMarker: MarkerOptions? = null
 
@@ -50,7 +50,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         mapFragment!!.getMapAsync(this)
 
 
-        mapsActivtyPresenter = MapsActivityPresenter(this)
+        mapsActivtyPresenter = MapsPresenter(this)
     }
 
 

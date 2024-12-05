@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.presenter.maps
+package com.example.comunicationwearmobile.presenter.maps.helper
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -6,8 +6,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Log
-import com.example.comunicationwearmobile.models.maps.iGeofence
-import com.example.comunicationwearmobile.presenter.maps.MapsActivityPresenter.Companion.TAG
+import com.example.comunicationwearmobile.models.maps.AreaGeofence
+import com.example.comunicationwearmobile.presenter.maps.GeofenceService
+import com.example.comunicationwearmobile.presenter.maps.MapsPresenter.Companion.TAG
 import com.example.comunicationwearmobile.utils.maps.Tools
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.Geofence
@@ -28,7 +29,7 @@ class GeofenceHelper(base: Context?) : ContextWrapper(base) {
             if (field != null) {
                 return field
             }
-            val intent = Intent(this , GeofenceTransitionService::class.java)
+            val intent = Intent(this , GeofenceService::class.java)
             intent.putExtra("Operation" , Tools.GEOFENCE_TRANSITION)
             field = PendingIntent.getService(
                 this ,
@@ -99,7 +100,7 @@ class GeofenceHelper(base: Context?) : ContextWrapper(base) {
     }
 
 
-    fun generateGeofences(listLastGeofence: java.util.ArrayList<iGeofence>): Boolean {
+    fun generateGeofences(listLastGeofence: java.util.ArrayList<AreaGeofence>): Boolean {
         //Creo el identificador de cada zona de goefoence que empiece por una letra identifcadora.
 
 

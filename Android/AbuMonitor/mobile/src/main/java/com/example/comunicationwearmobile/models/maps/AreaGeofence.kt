@@ -2,7 +2,7 @@ package com.example.comunicationwearmobile.models.maps
 
 import java.io.Serializable
 
-class iGeofence : Serializable {
+class AreaGeofence : Serializable {
     @JvmField
     var idArea: String? = null
     var latitud: Double? = null

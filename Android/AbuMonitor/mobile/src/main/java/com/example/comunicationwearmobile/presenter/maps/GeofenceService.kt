@@ -1,6 +1,5 @@
 package com.example.comunicationwearmobile.presenter.maps
 
-import android.app.IntentService
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
@@ -21,7 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.io.Serializable
 
-class GeofenceTransitionService : Service() {
+class GeofenceService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
     private val requestChannel = Channel<Intent>(Channel.UNLIMITED) // Cola de peticiones
 
@@ -228,7 +227,7 @@ class GeofenceTransitionService : Service() {
     }
 
     companion object {
-        private val TAG: String = GeofenceTransitionService::class.java.simpleName
+        private val TAG: String = GeofenceService::class.java.simpleName
         private const val OFFSET_ARRAY = 1
         private var controlingRoute = false
         private var idActiveOrigin: String? = null

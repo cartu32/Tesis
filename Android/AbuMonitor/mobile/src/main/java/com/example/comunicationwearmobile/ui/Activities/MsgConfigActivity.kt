@@ -19,7 +19,7 @@ import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.Interface.InterfaceMainAct
 import com.example.comunicationwearmobile.common.PermissionManager
 import com.example.comunicationwearmobile.common.Utils
-import com.example.comunicationwearmobile.presenter.notificationWear.MsgPresenter
+import com.example.comunicationwearmobile.presenter.notificationWear.MsgConfigPresenter
 import com.example.shared_library.SharedData
 import java.text.SimpleDateFormat
 
@@ -36,7 +36,7 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
     private var spTypeNotification:Spinner?=null
 
     private var permissionManager: PermissionManager? =null
-    private var mainActivityPresenter: MsgPresenter? =null
+    private var mainActivityPresenter: MsgConfigPresenter? =null
 
     private var  selectedItemSP:SharedData.TypeNotification = SharedData.TypeNotification.WithoutNotifications
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +54,7 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
 
 
         permissionManager= PermissionManager(this)
-        mainActivityPresenter= MsgPresenter(this)
+        mainActivityPresenter= MsgConfigPresenter(this)
 
         loadSpiner()
 

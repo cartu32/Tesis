@@ -14,13 +14,13 @@ import android.widget.Spinner
 import android.widget.TextView
 import com.example.comunicationwearmobile.Interface.InterfaceConfigGeofence
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.presenter.maps.MapsActivityPresenter
+import com.example.comunicationwearmobile.presenter.maps.MapsPresenter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class fragment_config_geofence(
-    private val mapsActivtyPresenter: MapsActivityPresenter ,
+class ConfigGeofenceFragment(
+    private val mapsActivtyPresenter: MapsPresenter ,
     private var radius: Float ,
     EnableGeofenceButton: Boolean
 ) : BottomSheetDialogFragment() {
@@ -109,11 +109,11 @@ class fragment_config_geofence(
                     dismiss()
                 }
             }
-            Log.d(fragment_config_geofence::class.java.simpleName , state!!)
+            Log.d(ConfigGeofenceFragment::class.java.simpleName , state!!)
         }
 
         override fun onSlide(bottomSheet: View , slideOffset: Float) {
-            Log.d(fragment_config_geofence::class.java.simpleName , slideOffset.toString())
+            Log.d(ConfigGeofenceFragment::class.java.simpleName , slideOffset.toString())
         }
     }
 

@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class SpListNotificactionId private constructor(context: Context) {
+class NotificationIDCounterFile private constructor(context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_FILE_NAME , Context.MODE_PRIVATE)
     private val gson = Gson()
@@ -13,11 +13,11 @@ class SpListNotificactionId private constructor(context: Context) {
     companion object {
         private const val PREF_FILE_NAME = "PREF_FILE_NAME"
         @Volatile
-        private var INSTANCE: SpListNotificactionId? = null
+        private var INSTANCE: NotificationIDCounterFile? = null
 
-        fun getInstance(context: Context): SpListNotificactionId {
+        fun getInstance(context: Context): NotificationIDCounterFile {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SpListNotificactionId(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: NotificationIDCounterFile(context.applicationContext).also { INSTANCE = it }
             }
         }
     }

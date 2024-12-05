@@ -15,15 +15,18 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.comunicationwearmobile.models.maps.SharedPreferencesRoutes
-import com.example.comunicationwearmobile.models.maps.iGeofence
+import com.example.comunicationwearmobile.models.maps.AreaGeofence
+import com.example.comunicationwearmobile.presenter.maps.helper.GeofenceHelper
+import com.example.comunicationwearmobile.presenter.maps.helper.LocationManagerHelper
+import com.example.comunicationwearmobile.presenter.maps.helper.MapsRouteHelper
 import com.example.comunicationwearmobile.ui.Activities.MapsActivity
-import com.example.comunicationwearmobile.ui.Fragments.fragment_config_geofence
+import com.example.comunicationwearmobile.ui.Fragments.ConfigGeofenceFragment
 import com.example.comunicationwearmobile.utils.maps.Tools
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import java.util.Objects
 
-class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) constructor(private var activity: MapsActivity?) {
+class MapsPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) constructor(private var activity: MapsActivity?) {
     companion object {
 
         const val TAG: String = "MapsActivityPresenter"
@@ -33,7 +36,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         const val MIN_TIME_BW_UPDATES: Long = (1000 * 30 ).toLong()
     }
 
-    private var locationManagerHelper:LocationManagerHelper?=null
+    private var locationManagerHelper: LocationManagerHelper?=null
     private var geofenceHelper: GeofenceHelper? = null
 
 
@@ -46,8 +49,8 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
     private var originPoint: LatLng? = null
     private var destinationPoint: LatLng? = null
 
-    private var frag: fragment_config_geofence? = null
-    private var mapsRoute: MapsRoute? = null
+    private var frag: ConfigGeofenceFragment? = null
+    private var mapsRoute: MapsRouteHelper? = null
     private var waypointsActiveRoute: List<LatLng>? = null
 
     private var filtro: IntentFilter? = null
@@ -55,13 +58,13 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
 
     //Array que contiene las areas de Geofencing agregadas manualmente por el usuario
-    private val listAreaAddedManual = ArrayList<iGeofence>()
+    private val listAreaAddedManual = ArrayList<AreaGeofence>()
 
 
     init {
         geofenceHelper = GeofenceHelper(activity)
-        locationManagerHelper =LocationManagerHelper(activity)
-        mapsRoute = MapsRoute(activity)
+        locationManagerHelper = LocationManagerHelper(activity)
+        mapsRoute = MapsRouteHelper(activity)
         configureBroadcastReciever()
     }
 
@@ -119,7 +122,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
             if (!resp) {
                 val intent = Intent(
                     activity!!.applicationContext ,
-                    GeofenceTransitionService::class.java
+                    GeofenceService::class.java
                 )
                 intent.putExtra("Operation" , Tools.GEOFENCE_ROUTE)
                 activity!!.startService(intent)
@@ -127,7 +130,7 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
         }
     }
 
-    private fun generateGeofences(listLastGeofence: java.util.ArrayList<iGeofence>): Boolean? {
+    private fun generateGeofences(listLastGeofence: java.util.ArrayList<AreaGeofence>): Boolean? {
         //Creo el identificador de cada zona de goefoence que empiece por una letra identifcadora.
 
         if (locationManagerHelper?.checkconnection() == true) {
@@ -173,8 +176,8 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
 
 
-    private fun createRetrofitGeofence(id: String? , latLng: LatLng , radius: Float): iGeofence {
-        val obj = iGeofence()
+    private fun createRetrofitGeofence(id: String? , latLng: LatLng , radius: Float): AreaGeofence {
+        val obj = AreaGeofence()
         obj.idArea = id
         obj.radius = radius
         obj.latitud = latLng.latitude
@@ -212,8 +215,8 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
 
         activity?.addMarkerGeofence(latLng, GEOFENCE_RADIUS_DEFAULT)
 
-        frag = fragment_config_geofence(this, GEOFENCE_RADIUS_DEFAULT, true)
-        activity?.let { frag?.show(it.supportFragmentManager, fragment_config_geofence::class.java.simpleName) }
+        frag = ConfigGeofenceFragment(this, GEOFENCE_RADIUS_DEFAULT, true)
+        activity?.let { frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
     }
 
 
@@ -259,10 +262,10 @@ class MapsActivityPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) con
                 )
 
                 //abro el menu fragment
-                frag = fragment_config_geofence(this , GEOFENCE_RADIUS_DEFAULT , false)
+                frag = ConfigGeofenceFragment(this , GEOFENCE_RADIUS_DEFAULT , false)
                 frag?.show(
                     activity!!.supportFragmentManager ,
-                    fragment_config_geofence::class.java.simpleName
+                    ConfigGeofenceFragment::class.java.simpleName
                 )
             }
 
