@@ -220,7 +220,7 @@ class MapsPresenter @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) constructor
     }
 
 
-    fun generateGeofencesManual() {
+    fun  generateGeofencesManual() {
         if (generateGeofences(listAreaAddedManual) == true) {
             closeFragment()
             activity!!.showMessage("geofences agregadas")

@@ -103,6 +103,7 @@ class GeofenceService : Service() {
 
         // Retrieve GeofenceTrasition
         val notificationHelper = NotificationHelper.getInstance(applicationContext)
+
         // Send notification details as a String
         notificationHelper?.sendHighPriorityNotification(
             "Evento detectado" ,
@@ -111,7 +112,7 @@ class GeofenceService : Service() {
         )
     }
 
-    private suspend fun determineRouteActive(geoFenceTransition: Int , idArea: String) {
+    private suspend fun determineRouteActive(geoFenceTransition: Int , idArea: Strixng) {
         if (!idArea.contains(Tools.WORD_INITIAL)) return
 
         if (geoFenceTransition != Geofence.GEOFENCE_TRANSITION_ENTER) {

@@ -1,0 +1,16 @@
+package com.example.abumonitor.data.datasource.local
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.abumonitor.data.model.EntityFirstTimeState
+
+@Dao
+interface FirstTimeStateDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(firstTimeState: EntityFirstTimeState)
+
+    @Query("SELECT * FROM first_time_state LIMIT 1")
+    suspend fun getFirstTimeState(): EntityFirstTimeState?
+}
