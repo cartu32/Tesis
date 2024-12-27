@@ -14,6 +14,7 @@ import com.example.abumonitor.data.model.EntityFirstTimeState
 import com.example.abumonitor.data.model.EntityPriority
 import com.example.abumonitor.data.model.EntityReminder
 import com.example.abumonitor.data.model.EntityTypeArea
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.utils.Converters
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
     entities = [EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
         EntityEvent::class, EntityPriority::class, EntityReminder::class,
         EntityTypeArea::class, EntityFirstTimeState::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -37,12 +38,13 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entityPriorityDao(): DaoPriority
     abstract fun entityReminderDao(): DaoReminder
     abstract fun entityTypeAreaDao(): DaoTypeArea
-    abstract fun firstTimeStateDao(): FirstTimeStateDao
+    abstract fun firstTimeStateDao(): DaoFirstTimeState
+    abstract fun joinAreaGeofence(): DaoJoinAreaGeofence
 
     companion object {
         @Volatile
         private var INSTANCE: AbuMonitorDatabase? = null
-        private val firstTimeStateDao:FirstTimeStateDao?=null
+        private val firstTimeStateDao:DaoFirstTimeState?=null
 
         suspend fun getDatabase(context: Context , scope: CoroutineScope): AbuMonitorDatabase? {
             val callback = DatabaseCallback(scope)

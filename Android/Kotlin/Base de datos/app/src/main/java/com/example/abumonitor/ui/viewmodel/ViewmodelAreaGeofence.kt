@@ -5,10 +5,12 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaGeofence
 import kotlinx.coroutines.launch
 
@@ -22,13 +24,25 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
     val isInitialized: LiveData<Boolean> get() = _isInitialized
 
 
+    val listJoinAreaGeofence: MediatorLiveData<List<JoinAreaGeofence>> = MediatorLiveData()
+
     init {
         viewModelScope.launch {
-            val daoAreaGeofence= AbuMonitorDatabase.getDatabase(application,this)
-                ?.entityAreaGeofenceDao()
+            val database = AbuMonitorDatabase.getDatabase(application, this)
+            val daoAreaGeofence = database?.entityAreaGeofenceDao()
+            val daoJoinAreaGeofence = database?.joinAreaGeofence()
+            repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
 
-            repositoryArea=RepositoryAreaGeofence(daoAreaGeofence)
+            //aca asocio el list del repository con el observer del main Thread.
+            //Esto lo hago mediante el MediatorLiveData.
+            //Esto lo hice porque sino no se llegaba a inicializar el listJoin antes de que el
+            //MainThread lo use y por eso tiraba error.
+            val liveDataFromRepo = repositoryArea.listJoinAreaGeofence
+            listJoinAreaGeofence.addSource(liveDataFromRepo) {
+                listJoinAreaGeofence.value = it
+            }
             _isInitialized.postValue(true)
+
         }
     }
 
@@ -50,7 +64,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
     }
 
     fun deleteAreaGeofence(idArea:Int){
-        var rowEliminated:Int=0
+        var rowEliminated:Int
         try {
             viewModelScope.launch {
                 rowEliminated= repositoryArea.deleteAreaWithId(idArea)!!
@@ -66,7 +80,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
     }
 
     fun updateAreaGeofence(entityAreaGeofence: EntityAreaGeofence) {
-        var rowModified=0
+        var rowModified:Int
         try {
             viewModelScope.launch {
                 rowModified= repositoryArea.updateArea(entityAreaGeofence)!!
@@ -80,5 +94,6 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
             Log.e(TAG,"Error: No se pudo modificar el area.${e.message}")
         }
     }
+
 
 }

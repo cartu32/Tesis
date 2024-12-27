@@ -7,7 +7,7 @@ import androidx.room.Query
 import com.example.abumonitor.data.model.EntityFirstTimeState
 
 @Dao
-interface FirstTimeStateDao {
+interface DaoFirstTimeState {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(firstTimeState: EntityFirstTimeState)
 

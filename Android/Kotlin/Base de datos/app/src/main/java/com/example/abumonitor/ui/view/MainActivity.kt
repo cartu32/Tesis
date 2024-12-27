@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var factory: ViewModelFactory
     private lateinit var cmdDelete:Button
     private lateinit var cmdModify:Button
-
+    private val TAG = "ViewmodelMain"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         configView()
@@ -44,6 +44,19 @@ class MainActivity : AppCompatActivity() {
 
         configObserverShowMessage()
         configObserverInsertRegister()
+        configObserverListJoinAreaGeofence()
+    }
+
+    private fun configObserverListJoinAreaGeofence() {
+        viewmodelAreaGeofence.listJoinAreaGeofence.observe(this){ listJoin->
+            listJoin.forEach{
+                Log.i(TAG,"latitude:${it.latitude}\\n" +
+                               "longitude:${it.longitude} \\n" +
+                               "meters:${it.meters} \\n" +
+                               "color:${it.name_color} \\n\\n")
+            }
+
+        }
     }
 
     private fun configObserverInsertRegister() {
@@ -89,7 +102,7 @@ class MainActivity : AppCompatActivity() {
             security_zone = true,
             dwell_time = Time.valueOf("00:50:00"),
             id_contact = 1,
-            id_priority = 3
+            id_priority = 1
         )
         viewmodelAreaGeofence.insertAreaGeofence(entityAreaGeofence2)
     }

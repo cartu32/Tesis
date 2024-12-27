@@ -2,10 +2,16 @@ package com.example.abumonitor.data.repository
 
 import androidx.lifecycle.LiveData
 import com.example.abumonitor.data.datasource.local.DaoAreaGeofence
+import com.example.abumonitor.data.datasource.local.DaoJoinAreaGeofence
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.JoinAreaGeofence
 
-class RepositoryAreaGeofence(private val daoAreaGeofence: DaoAreaGeofence?) {
+class RepositoryAreaGeofence(
+    val daoAreaGeofence: DaoAreaGeofence? ,
+    val daoJoinAreaGeofence: DaoJoinAreaGeofence? ,
+) {
     val listAreaGeofence:LiveData<List<EntityAreaGeofence>> = daoAreaGeofence!!.getAllAreas()
+    val listJoinAreaGeofence:LiveData<List<JoinAreaGeofence>> = daoJoinAreaGeofence!!.getJoinAreaGeofence()
 
     suspend fun insertAreaGeonfence(area:EntityAreaGeofence ) {
       daoAreaGeofence?.insertAreaGeofence(area)
@@ -27,4 +33,5 @@ class RepositoryAreaGeofence(private val daoAreaGeofence: DaoAreaGeofence?) {
     suspend fun updateArea(area: EntityAreaGeofence): Int? {
         return daoAreaGeofence?.updateArea(area)
     }
+
 }
