@@ -63,6 +63,24 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
 
     }
 
+    fun getAreaWithId(idArea: Int){
+        var areaGeofence:EntityAreaGeofence?
+        try{
+            viewModelScope.launch {
+                areaGeofence= repositoryArea.getAreaWithId(idArea)
+
+                if (areaGeofence!=null)
+                    showMessage("Lat:${areaGeofence?.latitude} Long:${areaGeofence?.latitude}")
+                else
+                    showMessage("No se encontro el Id del Area")
+            }
+
+        }catch (e:Exception){
+            showMessage("Error:No se pudo buscar el area")
+            Log.e(TAG,"Error: No se pudo buscar el area.${e.message}")
+        }
+    }
+
     fun deleteAreaGeofence(idArea:Int){
         var rowEliminated:Int
         try {

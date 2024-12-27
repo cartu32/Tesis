@@ -17,9 +17,8 @@ class RepositoryAreaGeofence(
       daoAreaGeofence?.insertAreaGeofence(area)
     }
 
-    suspend fun getAreaWithId(areaId:Int):EntityAreaGeofence{
-        return daoAreaGeofence?.getAreaWithId(areaId) ?:
-        throw NoSuchElementException("Id de Area No Encontrada $areaId")
+    suspend fun getAreaWithId(areaId:Int):EntityAreaGeofence?{
+        return daoAreaGeofence?.getAreaWithId(areaId)
     }
 
     suspend fun deleteArea(area: EntityAreaGeofence){

@@ -63,8 +63,13 @@ class MainActivity : AppCompatActivity() {
         viewmodelAreaGeofence.isInitialized.observe(this){isInititliazed->
             if (isInititliazed){
                 insertNewAreaGeofence()
+                consultAreaGeofence()
             }
         }
+    }
+
+    private fun consultAreaGeofence() {
+        viewmodelAreaGeofence.getAreaWithId(1)
     }
 
     private fun configObserverShowMessage() {
