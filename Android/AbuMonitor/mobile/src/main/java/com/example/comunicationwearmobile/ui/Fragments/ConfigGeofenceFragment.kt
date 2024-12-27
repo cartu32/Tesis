@@ -6,31 +6,22 @@ import android.content.DialogInterface
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
-import android.widget.Spinner
 import android.widget.TextView
-import com.example.comunicationwearmobile.Interface.InterfaceConfigGeofence
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.presenter.maps.MapsPresenter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class ConfigGeofenceFragment(
-    private val mapsActivtyPresenter: MapsPresenter ,
     private var radius: Float ,
     EnableGeofenceButton: Boolean
 ) : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
     private var cmdConfirmar: Button? = null
-    private var cmdLimpiar: Button? = null
-    private var cmdCalcularRuta: Button? = null
     private var lblMetros: TextView? = null
-    private val caller: InterfaceConfigGeofence? = null
-    private var spSpinner: Spinner? = null
     private var actualAction = 0
 
     override fun onCancel(dialog: DialogInterface) {
@@ -52,45 +43,12 @@ class ConfigGeofenceFragment(
 
         seekBar = contentView.findViewById(R.id.seekBar)
         cmdConfirmar = contentView.findViewById(R.id.cmdConfirmar)
-        cmdLimpiar = contentView.findViewById(R.id.cmdLimpiar)
-        cmdCalcularRuta = contentView.findViewById(R.id.cmdCalcularRuta)
         lblMetros = contentView.findViewById(R.id.lblMetros)
-        spSpinner = contentView.findViewById(R.id.spinner)
 
         seekBar?.setOnSeekBarChangeListener(listenerSeekBar)
         cmdConfirmar?.setOnClickListener(listenerCmdConfirmar)
-        cmdCalcularRuta?.setOnClickListener(listenerCmdCalcularRuta)
-        cmdLimpiar?.setOnClickListener(listenerCmdLimpiar)
-        spSpinner?.onItemSelectedListener = listenerSpinner
         seekBar?.progress = radius.toInt()
 
-        configSpinner()
-
-        setStateControlGeofences(actualAction == ACTION_GEOFENCE)
-    }
-
-    private fun configSpinner() {
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        val adapter = ArrayAdapter.createFromResource(
-            requireContext() ,
-            R.array.geofenceAreas , android.R.layout.simple_spinner_item
-        )
-
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        // Apply the adapter to the spinner
-        spSpinner!!.adapter = adapter
-
-        spSpinner!!.setSelection(positionIdArea)
-    }
-
-    private fun setStateControlGeofences(state: Boolean) {
-        cmdConfirmar!!.isEnabled = state
-        spSpinner!!.isEnabled = state
-        seekBar!!.isEnabled = state
-
-        cmdCalcularRuta!!.isEnabled = !state
     }
 
     private val mBottomSheetBehaviorCallback: BottomSheetCallback = object : BottomSheetCallback() {
@@ -118,12 +76,11 @@ class ConfigGeofenceFragment(
     }
 
     private val listenerCmdConfirmar =
-        View.OnClickListener { mapsActivtyPresenter.generateGeofencesManual() }
+        View.OnClickListener {
+             val i:Int =0
+            //mapsActivtyPresenter.generateGeofencesManual()
+            }
 
-    private val listenerCmdLimpiar = View.OnClickListener { mapsActivtyPresenter.clearGeofences() }
-
-    private val listenerCmdCalcularRuta =
-        View.OnClickListener { mapsActivtyPresenter.generateRouteManual() }
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar , progress: Int , b: Boolean) {
@@ -133,7 +90,7 @@ class ConfigGeofenceFragment(
 
             lblMetros!!.text = progress.toString()
 
-            mapsActivtyPresenter.updateCircleRadius(radius)
+            //mapsActivtyPresenter.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -154,9 +111,9 @@ class ConfigGeofenceFragment(
                 if (actualAction != ACTION_GEOFENCE) return
 
                 positionIdArea = position
-                mapsActivtyPresenter.saveSelectedGeofencesArea(
+              /*  mapsActivtyPresenter.saveSelectedGeofencesArea(
                     parent.getItemAtPosition(position).toString()
-                )
+                )*/
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {

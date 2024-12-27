@@ -17,11 +17,11 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/lblTextosDistancia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="@string/lblTextoDistancia"
+            android:text="@string/lbl_texto_distancia"
             android:textColor="@color/design_default_color_on_secondary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="@string/lblMetros"
+            android:text="@string/lbl_metros"
             android:textSize="20sp" />
     </LinearLayout>
 
@@ -47,30 +47,10 @@
         android:layout_margin="10dp"
         android:max="300" />
 
-    <Spinner
-        android:id="@+id/spinner"
-        style="@style/Widget.AppCompat.Light.Spinner.DropDown.ActionBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbarStyle="outsideInset"
-        android:spinnerMode="dropdown" />
-
     <Button
         android:id="@+id/cmdConfirmar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/cmdConfirmar" />
-
-    <Button
-        android:id="@+id/cmdLimpiar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/cmdLimpiar" />
-
-    <Button
-        android:id="@+id/cmdCalcularRuta"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/cmdCalcularRuta" />
+        android:text="@string/cmd_confirm_geofences" />
 
 </LinearLayout>

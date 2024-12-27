@@ -68,35 +68,6 @@
             android:name=".ui.Activities.MapsActivity"
             android:exported="true">
         </activity>
-        <activity
-            android:name=".ui.Activities.MsgConfigActivity"
-            android:exported="true">
-        </activity>
-        <activity
-            android:name=".ui.Activities.SmsConfigActivity"
-            android:exported="true">
-        </activity>
-        <service
-            android:name=".models.wearable.WearableDataListenerService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-
-                <data
-                    android:host="*"
-                    android:pathPrefix="/"
-                    android:scheme="wear" />
-            </intent-filter>
-        </service>
-        <service
-            android:enabled="true"
-            android:name=".presenter.maps.GeofenceService"
-            android:label="Geofences Intent Service">
-        </service>
-
-
-        <receiver android:name=".presenter.notificationWear.helper.NotificationCancelReceiver" />
     </application>
 
 </manifest>
