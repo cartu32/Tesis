@@ -1,13 +1,13 @@
 package com.example.abumonitor.ui.viewmodel
 
 import android.app.Application
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
@@ -58,7 +58,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
             }
         }catch(e:Exception){
             showMessage("Error:No se puedo inserta el area de geofence")
-            Log.e(TAG,"Error: No se pudo insertar el area.${e.message}")
+            Log.e(Definition.TAG_DEBUG,"Error: No se pudo insertar el area.${e.message}")
         }
 
     }
@@ -77,7 +77,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
 
         }catch (e:Exception){
             showMessage("Error:No se pudo buscar el area")
-            Log.e(TAG,"Error: No se pudo buscar el area.${e.message}")
+            Log.e(Definition.TAG_DEBUG,"Error: No se pudo buscar el area.${e.message}")
         }
     }
 
@@ -93,7 +93,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
             }
         }catch (e:Exception){
             showMessage("Error:No se pudo eliminar el area")
-            Log.e(TAG,"Error: No se pudo eliminar el area.${e.message}")
+            Log.e(Definition.TAG_DEBUG,"Error: No se pudo eliminar el area.${e.message}")
         }
     }
 
@@ -109,7 +109,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
             }
         }catch (e:Exception){
             showMessage("Error:No se pudo modificar el area")
-            Log.e(TAG,"Error: No se pudo modificar el area.${e.message}")
+            Log.e(Definition.TAG_DEBUG,"Error: No se pudo modificar el area.${e.message}")
         }
     }
 

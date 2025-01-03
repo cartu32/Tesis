@@ -8,6 +8,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import com.example.comunicationwearmobile.R
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
@@ -19,10 +21,17 @@ import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickListener ,
     OnMapClickListener , LocationListener  {
-    private var mMap: GoogleMap? = null
-    private var alert: AlertDialog? = null
-    private var circle: Circle? = null
-    private var geoFenceMarker: MarkerOptions? = null
+    private lateinit var mMap: GoogleMap
+    private lateinit var alert: AlertDialog
+    private lateinit var circle: Circle
+    private lateinit var geoFenceMarker: MarkerOptions
+
+    companion object {
+        private const val TAG = "MapsActivity"
+
+        // intent request code to handle updating play services if needed.
+        private const val RC_HANDLE_GMS = 9001
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,8 +46,22 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
     }
 
-    override fun onMapReady(p0: GoogleMap) {
-        TODO("Not yet implemented")
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+            this
+        )
+        if (resultCode != ConnectionResult.SUCCESS) {
+            val dlg = GoogleApiAvailability.getInstance().getErrorDialog(
+                this , resultCode , RC_HANDLE_GMS
+            )
+            dlg?.show()
+        }
+
+        mMap.setOnMapLongClickListener(this)
+        mMap.setOnMapClickListener(this)
+
     }
 
     override fun onMapLongClick(p0: LatLng) {
