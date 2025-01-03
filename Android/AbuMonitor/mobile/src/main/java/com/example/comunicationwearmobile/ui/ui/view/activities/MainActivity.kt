@@ -1,7 +1,6 @@
-package com.example.abumonitor.ui.view
+package com.example.comunicationwearmobile.ui.ui.view.activities
 
-import android.content.ContentValues.TAG
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,23 +11,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import com.example.abumonitor.R
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.abumonitor.ui.viewmodel.ViewmodelAreaGeofence
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.comunicationwearmobile.R
 import java.sql.Time
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var cmdDefineAreas: Button
+    private lateinit var cmdDefineReminders: Button
+    private lateinit var cmdDefineRoutes: Button
+    private lateinit var cmdDefineContacts: Button
+
+
     private lateinit var viewmodelAreaGeofence: ViewmodelAreaGeofence
     private lateinit var factory: ViewModelFactory
-    private lateinit var cmdDelete:Button
-    private lateinit var cmdModify:Button
+
     private val TAG = "ViewmodelMain"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +83,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun insertNewAreaGeofence() {
-        val entityAreaGeofence=EntityAreaGeofence(
+        val entityAreaGeofence= EntityAreaGeofence(
             latitude = -34.681680,
             longitude = -58.554367,
             meters = 100,
@@ -122,12 +121,16 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left , systemBars.top , systemBars.right , systemBars.bottom)
             insets
         }
+        cmdDefineAreas     = findViewById(R.id.cmdDefineAreas)
+        cmdDefineRoutes    = findViewById(R.id.cmdDefineRoutes)
+        cmdDefineReminders = findViewById(R.id.cmdDefineReminder)
+        cmdDefineContacts  = findViewById(R.id.cmdDefineContacts)
 
-        cmdDelete=findViewById<Button>(R.id.cmdDelete)
-        cmdModify=findViewById<Button>(R.id.cmdModify)
+        cmdDefineAreas.setOnClickListener(listenerButton)
+        cmdDefineReminders.setOnClickListener(listenerButton)
+        cmdDefineContacts.setOnClickListener(listenerButton)
+        cmdDefineRoutes.setOnClickListener(listenerButton)
 
-        cmdDelete.setOnClickListener(listenerButton)
-        cmdModify.setOnClickListener(listenerButton)
     }
 
     private fun updateAreaGeofence() {
@@ -150,10 +153,34 @@ class MainActivity : AppCompatActivity() {
 
     // Crear un listener compartido
     val listenerButton = View.OnClickListener { view ->
-        val idAreaDelete = 1
+        //val idAreaDelete = 1
         when (view.id) {
-            R.id.cmdDelete -> viewmodelAreaGeofence.deleteAreaGeofence(idAreaDelete)
-            R.id.cmdModify -> updateAreaGeofence()
+//            R.id.cmdDelete -> viewmodelAreaGeofence.deleteAreaGeofence(idAreaDelete)
+ //           R.id.cmdModify -> updateAreaGeofence()
+            R.id.cmdDefineAreas -> {
+                // Acción para el botón cmdSendAlert
+                val intent = Intent(this , MapsActivity::class.java)
+                startActivity(intent)
+            }
+
+            R.id.cmdDefineRoutes -> {
+                // Acción para el botón cmdSendAlert
+                /* val intent = Intent(this , MapsActivity::class.java)
+                 startActivity(
+                     intent
+                 )*/
+            }
+
+
+            R.id.cmdDefineReminder -> {
+                // Acción para el botón cmdSmSConfig
+                /*      val intent = Intent(this , SmsConfigActivity::class.java)
+                      startActivity(
+                          intent
+                      )*/
+            }
+
         }
+
     }
 }

@@ -2,7 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-parcelize")
+    id("com.google.devtools.ksp")
+
 }
+val roomVersion = "2.6.1" // Verifica que esta versión esté disponible en los repositorios
 
 android {
     namespace = "com.example.comunicationwearmobile"
@@ -62,6 +65,16 @@ dependencies {
     implementation ("com.google.maps.android:android-maps-utils:2.2.3")
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Room
+
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion") // Extensiones Kotlin para Room
+    ksp("androidx.room:room-compiler:$roomVersion") // Procesador de anotaciones para Room
+
+    //Lifecycle
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
+
 
     //dependencias  agregadas para wear os
     implementation (libs.play.services.wearable)

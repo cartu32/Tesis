@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.Fragments
+package com.example.comunicationwearmobile.ui.ui.view.fragment
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -77,7 +77,7 @@ class ConfigGeofenceFragment(
 
     private val listenerCmdConfirmar =
         View.OnClickListener {
-             val i:Int =0
+             //val i:Int =0
             //mapsActivtyPresenter.generateGeofencesManual()
             }
 

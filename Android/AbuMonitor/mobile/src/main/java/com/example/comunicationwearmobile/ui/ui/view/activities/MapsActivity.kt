@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.Activities
+package com.example.comunicationwearmobile.ui.ui.view.activities
 
 import android.location.Location
 import android.location.LocationListener

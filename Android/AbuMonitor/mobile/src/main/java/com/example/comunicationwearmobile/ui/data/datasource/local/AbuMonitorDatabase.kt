@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
     entities = [EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
         EntityEvent::class, EntityPriority::class, EntityReminder::class,
         EntityTypeArea::class, EntityFirstTimeState::class],
-    version = 4,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

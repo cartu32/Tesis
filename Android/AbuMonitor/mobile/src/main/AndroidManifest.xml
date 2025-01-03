@@ -32,6 +32,7 @@
 
 
     <application
+        android:name="com.example.abumonitor.AbuMonitorApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -56,7 +57,7 @@
 
 
         <activity
-            android:name=".ui.Activities.MainActivity"
+            android:name=".ui.ui.view.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,7 +66,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.Activities.MapsActivity"
+            android:name=".ui.ui.view.activities.MapsActivity"
             android:exported="true">
         </activity>
     </application>
