@@ -1,5 +1,6 @@
 package com.example.comunicationwearmobile.ui.ui.view.activities
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,23 +22,56 @@ import com.example.comunicationwearmobile.ui.ui.viewmodel.ViewmodelMainActivity
 import java.sql.Time
 
 class MainActivity : AppCompatActivity() {
+    //atributos asociados a las componentes graficos(Frontend)
     private lateinit var cmdDefineAreas: Button
     private lateinit var cmdDefineReminders: Button
     private lateinit var cmdDefineRoutes: Button
     private lateinit var cmdDefineContacts: Button
 
-
+    //atributos asociados al viewmodel
     private lateinit var viewmodelAreaGeofence: ViewmodelAreaGeofence
     private lateinit var viewmodelMainActivity: ViewmodelMainActivity
-
     private lateinit var factory: ViewModelFactory
 
-    private val TAG = "ViewmodelMain"
+    val permissonNecesary = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.BLUETOOTH,
+        Manifest.permission.BLUETOOTH_ADMIN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_ADVERTISE,
+        Manifest.permission.WAKE_LOCK,
+        Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
+        Manifest.permission.READ_PHONE_STATE,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.SEND_SMS,
+        Manifest.permission.READ_PHONE_STATE
+    )
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        // Maneja los resultados de los permisos aquí
+        result.forEach { (permisson, granted) ->
+            if (granted) {
+                //Permiso concedido
+                Toast.makeText(this,"Permiso concedido${permisson}",Toast.LENGTH_SHORT).show()
+            } else {
+                // Permiso denegado
+                Toast.makeText(this,"Permiso no concedido${permisson}",Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         configView()
         configObserverLivedata()
 
+        viewmodelMainActivity.verifyPermisson(this,permissonNecesary)
      }
 
     private fun configObserverLivedata() {
@@ -45,9 +80,15 @@ class MainActivity : AppCompatActivity() {
         //viewmodelAreaGeofence=ViewModelProvider(this,factory)[ViewmodelAreaGeofence::class.java]
         viewmodelMainActivity=ViewModelProvider(this,factory)[ViewmodelMainActivity::class.java]
 
+        configObserverRequestPermisson()
 
     }
 
+    private fun configObserverRequestPermisson() {
+        viewmodelMainActivity.permissionRequest.observe(this){permissoNotGranted ->
+            requestPermissionLauncher.launch(permissoNotGranted.toTypedArray())
+        }
+    }
 
 
     private fun configView(){
