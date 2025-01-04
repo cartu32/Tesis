@@ -3,7 +3,10 @@ package com.example.abumonitor.data.datasource.local
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
-import androidx.room.*
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
@@ -14,7 +17,6 @@ import com.example.abumonitor.data.model.EntityFirstTimeState
 import com.example.abumonitor.data.model.EntityPriority
 import com.example.abumonitor.data.model.EntityReminder
 import com.example.abumonitor.data.model.EntityTypeArea
-import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.utils.Converters
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -92,7 +94,13 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
                 Log.e(TAG,"Error al guardar el estado de la base de datos")
             }
         }
+
+        fun closeDatabase() {
+            INSTANCE?.close()
+            INSTANCE = null
+        }
     }
+
 
     private class DatabaseCallback(private val scope: CoroutineScope) : RoomDatabase.Callback() {
 

@@ -40,6 +40,11 @@ class MainActivity : AppCompatActivity() {
 
      }
 
+    override fun onStop() {
+        super.onStop()
+       // viewmodelMainActivity.onDestroyed()
+       // Toast.makeText(this,"base de datos cerrada",Toast.LENGTH_SHORT).show()
+    }
 
     private fun configView(){
         enableEdgeToEdge()
