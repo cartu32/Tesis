@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.ui.view.fragment
+package com.example.comunicationwearmobile.ui.view.fragment
 
 import android.annotation.SuppressLint
 import android.app.Dialog

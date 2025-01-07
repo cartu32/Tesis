@@ -20,7 +20,9 @@
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:name="com.example.abumonitor.AbuMonitorApplication"
@@ -48,7 +50,7 @@
 
 
         <activity
-            android:name=".ui.ui.view.activities.MainActivity"
+            android:name=".ui.view.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,9 +59,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.ui.view.activities.MapsActivity"
+            android:name=".ui.view.activities.MapsActivity"
             android:exported="true">
         </activity>
+
+    <service
+        android:enabled="true"
+        android:name=".ui.utils.services.GeofencesServices"
+        android:label="Geofences Intent Service"
+        android:foregroundServiceType="location">
+    </service>
     </application>
 
 </manifest>

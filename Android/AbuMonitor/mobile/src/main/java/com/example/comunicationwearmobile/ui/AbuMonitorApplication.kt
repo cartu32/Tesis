@@ -2,18 +2,26 @@ package com.example.abumonitor
 
 
 import android.app.Application
+import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
 
 class AbuMonitorApplication: Application() {
+    private lateinit var geofencesServices: GeofencesServices
+
     override fun onCreate() {
         super.onCreate()
         Definition.application = this
 
-        val maxMemory = Runtime.getRuntime().maxMemory()
-        val maxMemoryMB = maxMemory / (1024 * 1024)
+        geofencesServices = GeofencesServices()
+  //      startGeofenceService()
+    }
 
-        Log.d(Definition.TAG_DEBUG , "Límite de memoria Heap: " + maxMemoryMB + "MB")
+    private fun startGeofenceService() {
+        val serviceIntent = Intent(this, GeofencesServices::class.java)
+
+        startService(serviceIntent)
     }
 }

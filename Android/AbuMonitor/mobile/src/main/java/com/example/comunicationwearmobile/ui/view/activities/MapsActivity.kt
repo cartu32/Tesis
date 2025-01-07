@@ -1,12 +1,18 @@
-package com.example.comunicationwearmobile.ui.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -49,19 +55,32 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-            this
-        )
+        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+
         if (resultCode != ConnectionResult.SUCCESS) {
-            val dlg = GoogleApiAvailability.getInstance().getErrorDialog(
-                this , resultCode , RC_HANDLE_GMS
-            )
+            val dlg = GoogleApiAvailability.getInstance().getErrorDialog(this , resultCode , RC_HANDLE_GMS)
             dlg?.show()
         }
 
         mMap.setOnMapLongClickListener(this)
         mMap.setOnMapClickListener(this)
 
+        enableFeatureMaps()
+    }
+
+    private fun enableFeatureMaps() {
+        if (ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            Toast.makeText(this,"No se han otorgados permisos de Ubicacion",Toast.LENGTH_SHORT).show()
+            Log.e(Definition.TAG_DEBUG,"Error:Faltan permisos de FINE O COARSE LOCATION")
+            return
+        }
+        mMap.isMyLocationEnabled = true
+        mMap.uiSettings.setAllGesturesEnabled(true)
+        mMap.uiSettings.isMyLocationButtonEnabled = true
+        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.uiSettings.isMapToolbarEnabled = true
     }
 
     override fun onMapLongClick(p0: LatLng) {
