@@ -15,13 +15,8 @@ class AbuMonitorApplication: Application() {
         super.onCreate()
         Definition.application = this
 
-        geofencesServices = GeofencesServices()
-  //      startGeofenceService()
+
     }
 
-    private fun startGeofenceService() {
-        val serviceIntent = Intent(this, GeofencesServices::class.java)
 
-        startService(serviceIntent)
-    }
 }

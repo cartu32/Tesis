@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.Manifest
 import android.app.Application
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.room.util.query
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import kotlinx.coroutines.launch
@@ -21,6 +23,9 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
 
     private val _backgroundPermissionRequired = MutableLiveData<Boolean>()
     val backgroundPermissionRequired: LiveData<Boolean> = _backgroundPermissionRequired
+
+    private val _allPermissionGranted = MutableLiveData<Boolean>()
+    val allPermissionGranted: LiveData<Boolean> = _allPermissionGranted
 
     init {
         viewModelScope.launch {
@@ -37,23 +42,43 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     fun checkPermissions() {
         val context = getApplication<Application>().applicationContext
 
+        val missingPermissions=checkGeneralPermissions(context)
+        checkFineLocation(context,missingPermissions)
+
+    }
+
+    private fun checkFineLocation(context: Context,missingPermissions: List<String>) {
+
+        if (missingPermissions.isNotEmpty()) {
+            _permissionsToRequest.value = missingPermissions
+        } else if (ContextCompat.checkSelfPermission(context , Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            checkBackgroundLocation(context)
+        }
+    }
+
+    private fun checkBackgroundLocation(context: Context) {
+        if(ContextCompat.checkSelfPermission(context , Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            //si Backgruond_location esta otorgado, entonces quiere decir que todos los permisos fueron otorgados
+            _allPermissionGranted.value=true
+        }else{
+            //si background_location no esta otorgado, entonces se solicita
+            _backgroundPermissionRequired.value = true
+        }
+
+    }
+
+    private fun checkGeneralPermissions(context: Context): List<String> {
         val missingPermissions = Definition.permissonNecesary.filter {
             if((it==Manifest.permission.FOREGROUND_SERVICE_LOCATION)&&
-              (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE))
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE))
                 false
             else if(ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED)
                 true
             else
                 false
         }
+        return missingPermissions
 
-        if (missingPermissions.isNotEmpty()) {
-            _permissionsToRequest.value = missingPermissions
-        } else if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) &&
-                   (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)){
-            // Solicitar ACCESS_BACKGROUND_LOCATION si ACCESS_FINE_LOCATION ya está otorgado
-            _backgroundPermissionRequired.value = true
-        }
     }
 
     fun onBackgroundPermissionHandled() {

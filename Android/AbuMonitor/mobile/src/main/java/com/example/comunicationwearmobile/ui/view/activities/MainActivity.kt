@@ -16,7 +16,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
+import com.google.android.gms.tasks.TaskCompletionSource
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,6 +41,15 @@ class MainActivity : AppCompatActivity() {
 
         // Verificar los permisos al iniciar
         viewmodelMainActivity.checkPermissions()
+
+    }
+
+    private fun startGeofenceService() {
+        val serviceIntent = Intent(this, GeofencesServices::class.java)
+        startService(serviceIntent)
+
+        Toast.makeText(this,"Geofenceservices esta ejecutandose en primer plano",Toast.LENGTH_LONG)
+            .show()
     }
 
     private fun configureInsets() {
@@ -77,6 +88,11 @@ class MainActivity : AppCompatActivity() {
         viewmodelMainActivity.backgroundPermissionRequired.observe(this) { isRequired ->
             if (isRequired) askPermissionForBackgroundUsage()
         }
+
+        viewmodelMainActivity.allPermissionGranted.observe(this) { isRequired ->
+            //Si se otorgaron todos los permisos, entonces se inicia el service
+            startGeofenceService()
+        }
     }
 
     private fun checkPermissions() {
@@ -97,8 +113,13 @@ class MainActivity : AppCompatActivity() {
     private val requestBackgroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        val message = if (isGranted) "ACCESS_BACKGROUND_LOCATION concedido" else "ACCESS_BACKGROUND_LOCATION denegado"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        if (isGranted) {
+            //Si se otorgaron todos los permisos, entonces se inicia el service
+            startGeofenceService()
+        }else {
+            val message = "ACCESS_BACKGROUND_LOCATION denegado"
+            Toast.makeText(this , message , Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun askPermissionForBackgroundUsage() {
