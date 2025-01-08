@@ -3,6 +3,7 @@ package com.example.comunicationwearmobile.ui.viewmodel
 import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -37,7 +38,13 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
         val context = getApplication<Application>().applicationContext
 
         val missingPermissions = Definition.permissonNecesary.filter {
-            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+            if((it==Manifest.permission.FOREGROUND_SERVICE_LOCATION)&&
+              (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE))
+                false
+            else if(ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED)
+                true
+            else
+                false
         }
 
         if (missingPermissions.isNotEmpty()) {

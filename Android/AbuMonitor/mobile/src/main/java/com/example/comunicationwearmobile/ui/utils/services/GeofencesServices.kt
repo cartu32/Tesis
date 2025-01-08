@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.helper.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

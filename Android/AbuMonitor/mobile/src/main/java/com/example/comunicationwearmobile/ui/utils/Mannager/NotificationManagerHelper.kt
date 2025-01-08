@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.helper
+package com.example.comunicationwearmobile.ui.utils.Mannager
 
 import android.app.Notification
 import android.app.NotificationChannel

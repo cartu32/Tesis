@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -73,6 +74,7 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion") // Procesador de anotaciones para Room
 
     //Lifecycle
+    implementation ("androidx.activity:activity-ktx:1.9.3")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
 
 

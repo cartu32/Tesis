@@ -31,6 +31,7 @@ object Definition {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.BLUETOOTH,
+
         Manifest.permission.BLUETOOTH_ADMIN,
         Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.BLUETOOTH_SCAN,
@@ -42,10 +43,8 @@ object Definition {
         Manifest.permission.SEND_SMS,
         Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.FOREGROUND_SERVICE,
-        //Manifest.permission.FOREGROUND_SERVICE_LOCATION,
+        Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.WAKE_LOCK,
-        //Manifest.permission.ACCESS_BACKGROUND_LOCATION
-
     )
 
     val factory: ViewModelFactory by lazy {
