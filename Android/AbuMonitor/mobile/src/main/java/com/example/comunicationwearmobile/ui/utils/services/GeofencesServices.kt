@@ -5,15 +5,8 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.example.comunicationwearmobile.ui.view.activities.EnableGpsDialog
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.Priority
-import com.google.android.gms.location.SettingsClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,21 +22,20 @@ class GeofencesServices: Service() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
     private var notificationManagerHelper:NotificationManagerHelper?= null
 
+    private lateinit var locationManagerHelper: LocationManagerHelper
+
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var settingsClient: SettingsClient
-    private lateinit var locationRequest: LocationRequest
-    private lateinit var locationSettingsRequest: LocationSettingsRequest
 
     override fun onCreate() {
         super.onCreate()
 
         notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
         notificationManagerHelper?.createChannelForegroundServices()
+        locationManagerHelper=LocationManagerHelper()
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
-        configCheckStatusGps()
+        locationManagerHelper.configCheckStatusGps()
         startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
         // Lector del Channel: consume las solicitudes encoladas
         serviceScope.launch {
@@ -57,39 +49,6 @@ class GeofencesServices: Service() {
         }
     }
 
-    private fun configCheckStatusGps() {
-        // Inicializar clientes
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        settingsClient = LocationServices.getSettingsClient(this)
-
-        // Crear una solicitud de ubicación
-        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).build()
-
-        // Crear configuración de ajustes
-        locationSettingsRequest = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-            .build()
-
-    }
-
-    private fun checkLocationSettings() {
-        settingsClient.checkLocationSettings(locationSettingsRequest)
-            .addOnSuccessListener {
-                // El GPS está activado
-                Log.d("LocationService", "GPS está activado")
-            }
-            .addOnFailureListener { exception ->
-                if (exception is ResolvableApiException) {
-                    // El GPS no está activado, pedir al usuario que lo active
-                    val intent = Intent(this, EnableGpsDialog::class.java)
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK )
-                    intent.putExtra("resolution", exception.resolution);
-                    startActivity(intent)
-                } else {
-                    Log.e("LocationService", "No se puede resolver: ${exception.message}")
-                }
-            }
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -101,18 +60,17 @@ class GeofencesServices: Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Encola la solicitud en el Channel
+
         intent?.let {
             // Comprobar el estado del GPS
-            checkLocationSettings()
+            locationManagerHelper.checkLocationSettings()
 
+            // Encola la solicitud en el Channel
             requestChannel.trySend(it)
         }
 
         return START_STICKY
     }
-
-
 
 
     private suspend fun handleIntent(intent: Intent?)  {

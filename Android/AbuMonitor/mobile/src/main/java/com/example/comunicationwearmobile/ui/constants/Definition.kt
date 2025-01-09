@@ -14,17 +14,14 @@ object Definition {
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
 
-    //constantes que indican cada cuanto se deben actualizar la señal del gps
-    const val MIN_DISTANCE_CHANGE_FOR_UPDATES: Long = 15 //metros
-    const val MIN_TIME_BW_UPDATES: Long = (1000 * 30 ).toLong()
-
     //ID de la primera notificacion generada
     const val FIRST_NOTIFICATION_ID          = 1
 
     //ID del Request permisson
-    const val REQUEST_CODE_GENERAL_PERMISSON = 1023
     lateinit var application:Application
 
+    //Nombre de los serializables de los intent
+    const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
 
     @SuppressLint("InlinedApi")
     val permissonNecesary = arrayOf(
