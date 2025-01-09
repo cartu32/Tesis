@@ -5,7 +5,10 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.interfaces.LocationCallback
+import com.example.comunicationwearmobile.ui.view.activities.EnableGpsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,13 +16,14 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
-class GeofencesServices: Service() {
+class GeofencesServices: Service(),LocationCallback {
 
     // Canal que se utiliza para encolar las peticiones realizadas cada vez que
     // se ejecuta stratservice
     private val requestChannel = Channel<Intent>(Channel.UNLIMITED)
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
     private var notificationManagerHelper:NotificationManagerHelper?= null
+    private lateinit var locationManagerHelper: LocationManagerHelper
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -30,6 +34,7 @@ class GeofencesServices: Service() {
         notificationManagerHelper?.createChannelForegroundServices()
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
+        locationManagerHelper=LocationManagerHelper(this)
 
         startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
         // Lector del Channel: consume las solicitudes encoladas
@@ -44,6 +49,13 @@ class GeofencesServices: Service() {
         }
     }
 
+    private fun requestEnableGps() {
+        val intent = Intent(this, EnableGpsActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(intent)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
@@ -56,6 +68,11 @@ class GeofencesServices: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Encola la solicitud en el Channel
         intent?.let {
+
+            if (!locationManagerHelper.checkConnectionSignalLocation()){
+                requestEnableGps()
+            }
+
             requestChannel.trySend(it)
         }
 

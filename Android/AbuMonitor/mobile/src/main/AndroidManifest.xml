@@ -62,7 +62,7 @@
             android:name=".ui.view.activities.MapsActivity"
             android:exported="true">
         </activity>
-
+        <activity android:name=".ui.view.activities.EnableGpsActivity" />
     <service
         android:enabled="true"
         android:name=".ui.utils.services.GeofencesServices"

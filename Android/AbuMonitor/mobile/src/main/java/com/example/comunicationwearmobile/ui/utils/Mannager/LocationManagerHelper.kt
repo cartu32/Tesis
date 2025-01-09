@@ -19,9 +19,9 @@ import com.example.comunicationwearmobile.ui.utils.interfaces.LocationCallback
     private var location: Location? = null
     private var locationManager: LocationManager? = null
     private var isGPSEnabled = false
-    private var isNetworkEnabled: Boolean? = false
+    private var isNetworkEnabled: Boolean = false
 
-    fun checkconnection(): Boolean {
+    fun checkConnectionSignalLocation(): Boolean {
         val context = callback?.getApplicationContext()
         locationManager = context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -29,58 +29,7 @@ import com.example.comunicationwearmobile.ui.utils.interfaces.LocationCallback
             isGPSEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             isNetworkEnabled = manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         }
-        return (!isGPSEnabled && !isNetworkEnabled!!)
+        return (isGPSEnabled && isNetworkEnabled)
     }
 
-    fun getLocation(): Location? {
-        try {
-            if (checkconnection()) {
-                callback?.alertNoGps()
-            }
-
-            if (isGPSEnabled) {
-                setPositionGPS()
-            } else if (isNetworkEnabled == true) {
-                setPositionNetwork()
-            }
-        } catch (e: Exception) {
-            Log.e("getLocation", e.message.toString())
-        }
-        return location
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun setPositionGPS() {
-        if (location == null) {
-            locationManager?.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                Definition.MIN_TIME_BW_UPDATES,
-                Definition.MIN_DISTANCE_CHANGE_FOR_UPDATES.toFloat(),
-                callback as? LocationListener ?: return
-            )
-
-            locationManager?.let { manager ->
-                location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                location?.let { currentLocation ->
-                    callback?.positionUpdate(currentLocation)
-                }
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun setPositionNetwork() {
-        locationManager?.requestLocationUpdates(
-            LocationManager.NETWORK_PROVIDER,
-            Definition.MIN_TIME_BW_UPDATES,
-            Definition.MIN_DISTANCE_CHANGE_FOR_UPDATES.toFloat(),
-            callback as? LocationListener ?: return
-        )
-        locationManager?.let { manager ->
-            location = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            location?.let { currentLocation ->
-                callback?.positionUpdate(currentLocation)
-            }
-        }
-    }
 }
