@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.GoogleMap
@@ -31,6 +32,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     private lateinit var alert: AlertDialog
     private lateinit var circle: Circle
     private lateinit var geoFenceMarker: MarkerOptions
+    private var frag: ConfigGeofenceFragment? = null
 
     companion object {
         private const val TAG = "MapsActivity"
@@ -69,6 +71,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
     private fun enableFeatureMaps() {
+        //En este metodo se habilitan los componentes del mapa. Por  ejemplo zoom, boton de ubicacion
         if (ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -83,16 +86,23 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         mMap.uiSettings.isMapToolbarEnabled = true
     }
 
-    override fun onMapLongClick(p0: LatLng) {
-        TODO("Not yet implemented")
+    override fun onMapLongClick(latLng: LatLng) {
+        Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
+        showConfigGeofenceFragment()
     }
 
-    override fun onMapClick(p0: LatLng) {
-        TODO("Not yet implemented")
+    override fun onMapClick(latLng: LatLng) {
+        Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude${latLng.longitude}")
+        showConfigGeofenceFragment()
     }
 
     override fun onLocationChanged(location: Location) {
         TODO("Not yet implemented")
+    }
+
+    fun showConfigGeofenceFragment(){
+        frag = ConfigGeofenceFragment(Definition.GEOFENCE_RADIUS_DEFAULT, true)
+        this.let { frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
     }
 
 

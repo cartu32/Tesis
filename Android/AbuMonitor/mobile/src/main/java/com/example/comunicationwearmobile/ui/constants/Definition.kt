@@ -14,6 +14,9 @@ object Definition {
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
 
+    //Definicion de configuracion del mapa
+    const val GEOFENCE_RADIUS_DEFAULT = 100f
+
     //ID de la primera notificacion generada
     const val FIRST_NOTIFICATION_ID          = 1
 
