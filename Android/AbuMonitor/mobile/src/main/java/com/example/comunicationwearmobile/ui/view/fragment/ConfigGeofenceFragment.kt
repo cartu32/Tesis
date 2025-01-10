@@ -3,6 +3,7 @@ package com.example.comunicationwearmobile.ui.view.fragment
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
@@ -10,7 +11,12 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -24,10 +30,28 @@ class ConfigGeofenceFragment(
     private var lblMetros: TextView? = null
     private var actualAction = 0
 
+    private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
+    private lateinit var factory: ViewModelFactory
+
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
+
         handleUserExit()
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initializeViewModel()
+    }
+
+
+    private fun initializeViewModel() {
+        if (!::viewmodelMapsActivity.isInitialized) {
+            factory = Definition.factory
+            viewmodelMapsActivity = ViewModelProvider(requireActivity(), factory)[ViewmodelMapsActivity::class.java]
+        }
+    }
+
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog , style: Int) {
@@ -41,6 +65,7 @@ class ConfigGeofenceFragment(
         mBottomSheetBehavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
         mBottomSheetBehavior.peekHeight = 1200
 
+
         seekBar = contentView.findViewById(R.id.seekBar)
         cmdConfirmar = contentView.findViewById(R.id.cmdConfirmar)
         lblMetros = contentView.findViewById(R.id.lblMetros)
@@ -48,6 +73,8 @@ class ConfigGeofenceFragment(
         seekBar?.setOnSeekBarChangeListener(listenerSeekBar)
         cmdConfirmar?.setOnClickListener(listenerCmdConfirmar)
         seekBar?.progress = radius.toInt()
+
+        initializeViewModel()
 
     }
 
@@ -90,7 +117,7 @@ class ConfigGeofenceFragment(
 
             lblMetros!!.text = progress.toString()
 
-            //mapsActivtyPresenter.updateCircleRadius(radius)
+            viewmodelMapsActivity.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {

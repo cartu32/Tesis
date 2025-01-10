@@ -3,6 +3,8 @@ package com.example.abumonitor.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
+
 
 class ViewModelFactory(private val creators: Map<Class<out ViewModel> , () -> ViewModel>) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

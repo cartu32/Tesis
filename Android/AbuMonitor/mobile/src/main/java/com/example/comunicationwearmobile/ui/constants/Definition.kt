@@ -6,6 +6,7 @@ import android.app.Application
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.abumonitor.ui.viewmodel.ViewmodelAreaGeofence
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import retrofit2.http.Tag
 
 object Definition {
@@ -52,7 +53,9 @@ object Definition {
             mapOf(
                 ViewmodelAreaGeofence::class.java to { ViewmodelAreaGeofence(application) },
                 ViewmodelMainActivity::class.java to { ViewmodelMainActivity(application) },
-            )
+                ViewmodelMapsActivity::class.java to { ViewmodelMapsActivity(application) },
+
+                )
         )
     }
 
