@@ -1,0 +1,22 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fondo con borde -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+            <stroke
+                android:width="2dp"
+                android:color="#000000" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Imagen del bitmap escalada -->
+    <item android:gravity="end|center_vertical">
+        <bitmap
+            android:src="@drawable/ic_spinner_down"
+            android:gravity="center"
+            android:tileMode="disabled" />
+    </item>
+</layer-list>
+
+
