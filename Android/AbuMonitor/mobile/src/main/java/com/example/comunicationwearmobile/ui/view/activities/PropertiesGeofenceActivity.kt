@@ -3,10 +3,12 @@ package com.example.comunicationwearmobile.ui.view.activities
 import android.graphics.Color
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Scroller
 import android.widget.Spinner
@@ -17,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.google.android.gms.location.Priority
 
@@ -24,6 +27,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private lateinit var spEvents:Spinner
     private lateinit var spPriority:Spinner
     private lateinit var txtDescription:EditText
+    private lateinit var cmdSavGeofence:Button
+    private lateinit var cmdCancelGeofence:Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,19 +43,36 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private fun initializeComponentsView(){
         var items:Array<String>
 
-        // Obtengo los valores del array de strings.xml
+        cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
+        cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
         spEvents=findViewById<Spinner>(R.id.spEvents)
+        spPriority=findViewById<Spinner>(R.id.spPriority)
+        txtDescription=findViewById<EditText>(R.id.txtDescription)
+
+        // Obtengo los valores del array de strings.xml
         items = resources.getStringArray(R.array.spinner_events)
         inititlizeSpinner(spEvents,items)
 
-        spPriority=findViewById<Spinner>(R.id.spPriority)
         items = resources.getStringArray(R.array.spinner_priority)
         inititlizeSpinner(spPriority,items)
 
-        txtDescription=findViewById<EditText>(R.id.txtDescription)
+        cmdSavGeofence.setOnClickListener{actionSave()}
+        cmdCancelGeofence.setOnClickListener{actionCancel()}
+
         txtDescription.setScroller(Scroller(this))
         txtDescription.isVerticalScrollBarEnabled = true
         txtDescription.movementMethod = ScrollingMovementMethod()
+
+    }
+
+    private fun actionCancel() {
+        Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
+        finish()
+    }
+
+    private fun actionSave() {
+        Log.d(Definition.TAG_DEBUG,"Guardando Geofence")
+        finish()
     }
 
     private fun inititlizeSpinner(spinner: Spinner,items:Array<String>,) {
@@ -81,7 +103,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>? , view: View? , position: Int , id: Long) {
                 val selectedItem = parent?.getItemAtPosition(position).toString()
                 spEvents.setSelection(position)
-                Toast.makeText(applicationContext, "Seleccionaste: $selectedItem", Toast.LENGTH_SHORT).show()
+
+                Log.d(Definition.TAG_DEBUG,"Seleccionaste: $selectedItem")
             }
 
 

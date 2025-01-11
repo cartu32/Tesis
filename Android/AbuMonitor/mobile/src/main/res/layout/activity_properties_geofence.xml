@@ -146,27 +146,54 @@
             android:layout_marginTop="15dp">
 
         </TableRow>
-        <EditText
-            android:id="@+id/txtDescription"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginBottom="15dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp"
-            android:hint="@string/descripcion_de_area_geofence"
-            android:inputType="textMultiLine"
-            android:lines="4"
-            android:maxLines="4"
-            android:scrollbars="vertical"
-            android:overScrollMode="always"
-            android:scrollHorizontally="false"
-            android:gravity="top|start"
-            android:background="@drawable/editext_border"
-            android:textColor="@color/black"
-            android:textColorHint="@color/cardview_dark_background"
-            android:padding="8dp"
-            tools:ignore="Autofill" />
+            <EditText
+                android:id="@+id/txtDescription"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:hint="@string/descripcion_de_area_geofence"
+                android:inputType="textMultiLine"
+                android:lines="4"
+                android:maxLines="4"
+                android:scrollbars="vertical"
+                android:overScrollMode="always"
+                android:scrollHorizontally="false"
+                android:gravity="top|start"
+                android:background="@drawable/editext_border"
+                android:textColor="@color/black"
+                android:textColorHint="@color/cardview_dark_background"
+                android:padding="8dp"
+                tools:ignore="Autofill" />
 
     </TableLayout>
 
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="20dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp">
+
+            <Button
+                android:id="@+id/cmdSaveGeofences"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/cmd_guardar_geofences" />
+
+            <Button
+                android:id="@+id/cmdCancelGeofence"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/cmd_cancelar_geofences" />
+
+        </TableRow>
+    </TableLayout>
 </LinearLayout>

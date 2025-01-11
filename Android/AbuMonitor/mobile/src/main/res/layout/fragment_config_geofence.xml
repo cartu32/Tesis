@@ -52,6 +52,6 @@
         android:id="@+id/cmdConfirmar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/cmd_confirm_geofences" />
+        android:text="@string/cmd_configurar_geofences" />
 
 </LinearLayout>
