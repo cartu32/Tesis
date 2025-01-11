@@ -73,7 +73,7 @@
         android:layout_width="355dp"
         android:layout_height="60dp"
         android:ems="10"
-        android:hint="@string/tiempo_de_permanencia_seg"
+        android:hint="@string/tiempo_de_permanencia"
         android:inputType="number"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

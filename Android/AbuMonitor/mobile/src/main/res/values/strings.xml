@@ -12,7 +12,7 @@
     <string name="lbl_metros">0</string>
     <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
     <string name="zona_segura">Zona Segura</string>
-    <string name="tiempo_de_permanencia_seg">Tiempo de permanencia(seg)</string>
+    <string name="tiempo_de_permanencia">Tiempo de permanencia(min)</string>
     <string name="prioridad">Prioridad:</string>
     <string name="evento">Evento:</string>
     <string name="propiedades">Propiedades</string>
@@ -21,6 +21,12 @@
         <item>Entrar</item>
         <item>Salir</item>
         <item>Permanecer</item>
+    </string-array>
+
+    <string-array name="spinner_priority">
+        <item>Baja</item>
+        <item>Media</item>
+        <item>Alta</item>
     </string-array>
 
 </resources>
