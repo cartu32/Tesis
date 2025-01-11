@@ -8,8 +8,8 @@
 
     <!--String del fragment de definir Areas.-->
     <string name="cmd_configurar_geofences"> Configurar Geofences</string>
-    <string name="cmd_guardar_geofences"> Guardar Geofences</string>
-    <string name="cmd_cancelar_geofences"> Cancelar Geofences</string>
+    <string name="cmd_guardar_geofences"> Guardar</string>
+    <string name="cmd_cancelar_geofences"> Cancelar</string>
     <string name="lbl_texto_distancia">Distancia(Mts)</string>
     <string name="lbl_metros">0</string>
     <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
