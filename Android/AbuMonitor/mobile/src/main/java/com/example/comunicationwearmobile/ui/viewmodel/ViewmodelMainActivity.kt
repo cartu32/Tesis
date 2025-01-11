@@ -13,18 +13,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 
-    private val _permissionsToRequest = MutableLiveData<List<String>>()
-    val permissionsToRequest: LiveData<List<String>> = _permissionsToRequest
+    private val _permissionsToRequest = MutableLiveData<List<String>?>()
+    val permissionsToRequest: LiveData<List<String>?> = _permissionsToRequest
 
-    private val _backgroundPermissionRequired = MutableLiveData<Boolean>()
-    val backgroundPermissionRequired: LiveData<Boolean> = _backgroundPermissionRequired
+    private val _backgroundPermissionRequired = MutableLiveData<Boolean?>()
+    val backgroundPermissionRequired: LiveData<Boolean?> = _backgroundPermissionRequired
 
-    private val _allPermissionGranted = MutableLiveData<Boolean>()
-    val allPermissionGranted: LiveData<Boolean> = _allPermissionGranted
+    private val _allPermissionGranted = MutableLiveData<Boolean?>()
+    val allPermissionGranted: LiveData<Boolean?> = _allPermissionGranted
 
     init {
         viewModelScope.launch {
@@ -86,9 +87,13 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
 
 
     fun onDestroyed(){
-        viewModelScope.launch {
-            AbuMonitorDatabase.closeDatabase()
-        }
+        //por si uso alguna corutina la cancelo
+        viewModelScope.cancel()
+
+        //limpio los livedata
+        _allPermissionGranted.value = null
+        _permissionsToRequest.value = null
+        _backgroundPermissionRequired.value = null
     }
 
 }

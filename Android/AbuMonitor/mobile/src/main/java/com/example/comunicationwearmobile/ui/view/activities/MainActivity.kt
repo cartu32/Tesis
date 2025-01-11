@@ -43,48 +43,54 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startGeofenceService() {
-        val serviceIntent = Intent(this, GeofencesServices::class.java)
+        val serviceIntent = Intent(this , GeofencesServices::class.java)
         startService(serviceIntent)
 
-        Toast.makeText(this,"Geofenceservices esta ejecutandose en primer plano",Toast.LENGTH_LONG)
+        Toast.makeText(
+            this ,
+            "Geofenceservices esta ejecutandose en primer plano" ,
+            Toast.LENGTH_LONG
+        )
             .show()
     }
 
     private fun configureInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v , insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left , systemBars.top , systemBars.right , systemBars.bottom)
             insets
         }
     }
 
     private fun initializeViewModel() {
         factory = Definition.factory
-        viewmodelMainActivity = ViewModelProvider(this, factory)[ViewmodelMainActivity::class.java]
+        viewmodelMainActivity = ViewModelProvider(this , factory)[ViewmodelMainActivity::class.java]
     }
+
     private fun initializeComponentsView() {
         //Esta es otra forma de asociar los listeners de los botones,
         //sin necesidad de crear objetos botones
         val buttons = mapOf(
-            R.id.cmdDefineAreas to ::openMapsActivity,
-            R.id.cmdDefineRoutes to ::showUnderConstruction,
-            R.id.cmdDefineReminder to ::showUnderConstruction,
+            R.id.cmdDefineAreas to ::openMapsActivity ,
+            R.id.cmdDefineRoutes to ::showUnderConstruction ,
+            R.id.cmdDefineReminder to ::showUnderConstruction ,
             R.id.cmdDefineContacts to ::showUnderConstruction
         )
 
-        buttons.forEach { (id, action) ->
+        buttons.forEach { (id , action) ->
             findViewById<Button>(id).setOnClickListener { action() }
         }
     }
+
     private fun observeLiveData() {
         viewmodelMainActivity.permissionsToRequest.observe(this) { permissions ->
-            if (permissions.isNotEmpty()) {
+            if (permissions?.isNotEmpty() == true) {
                 requestPermissionsLauncher.launch(permissions.toTypedArray())
             }
         }
 
         viewmodelMainActivity.backgroundPermissionRequired.observe(this) { isRequired ->
-            if (isRequired) askPermissionForBackgroundUsage()
+            if (isRequired == true) askPermissionForBackgroundUsage()
         }
 
         viewmodelMainActivity.allPermissionGranted.observe(this) { isRequired ->
@@ -101,10 +107,14 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions.all { it.value }) {
-            Log.d(Definition.TAG_DEBUG, "Todos los permisos generales fueron aceptados")
+            Log.d(Definition.TAG_DEBUG , "Todos los permisos generales fueron aceptados")
             askPermissionForBackgroundUsage()
         } else {
-            Toast.makeText(this, "Permisos denegados: ${permissions.filter { !it.value }.keys}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this ,
+                "Permisos denegados: ${permissions.filter { !it.value }.keys}" ,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -114,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         if (isGranted) {
             //Si se otorgaron todos los permisos, entonces se inicia el service
             startGeofenceService()
-        }else {
+        } else {
             val message = "ACCESS_BACKGROUND_LOCATION denegado"
             Toast.makeText(this , message , Toast.LENGTH_SHORT).show()
         }
@@ -124,17 +134,30 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Permiso Necesario!")
             .setMessage("¡Se necesita permiso de ubicación en segundo plano!. Por favor toca \"Permitir todo el tiempo\" en la siguiente pantalla")
-            .setPositiveButton("OK") { _, _ -> requestBackgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
-            .setNegativeButton("CANCEL", null)
+            .setPositiveButton("OK") { _ , _ -> requestBackgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
+            .setNegativeButton("CANCEL" , null)
             .create().show()
     }
 
     private fun openMapsActivity() {
-        startActivity(Intent(this, MapsActivity::class.java))
+        startActivity(Intent(this , MapsActivity::class.java))
     }
 
     private fun showUnderConstruction() {
-        Toast.makeText(this, "En construcción", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Desvincular observadores de LiveData para evitar fugas de memoria
+        viewmodelMainActivity.permissionsToRequest.removeObservers(this)
+        viewmodelMainActivity.backgroundPermissionRequired.removeObservers(this)
+        viewmodelMainActivity.allPermissionGranted.removeObservers(this)
+
+        // Notificar al ViewModel que la actividad se destruyó
+        viewmodelMainActivity.onDestroyed()
     }
 }
+
 

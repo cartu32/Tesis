@@ -33,7 +33,7 @@ class NotificationManagerHelper(base: Context?) : ContextWrapper(base) {
         return NotificationCompat.Builder(this, CHANNEL_ID_FOREGROUND_SERVICE)
             .setContentTitle("AbuMonitor")
             .setContentText("Ejecutando AbuMonitor en primer plano...")
-            .setSmallIcon(R.drawable.old_person)
+            .setSmallIcon(R.drawable.ic_old_person)
             .setOngoing(true) // Esto hace que no pueda eliminarse
             .build()
     }

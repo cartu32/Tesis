@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:background="@drawable/rounded_group_box">
+        android:background="@drawable/group_round_box">
 
         <!-- Primera fila de la tabla -->
         <TableRow
@@ -55,7 +55,7 @@
                 android:layout_height="50dp"
                 android:layout_weight="2"
                 android:layout_marginEnd="20dp"
-                android:background="@drawable/spinner_border"
+                android:background="@drawable/sp_border"
                 android:padding="8dp" />
         </TableRow>
         <!-- Segunda fila de la tabla -->
@@ -83,7 +83,7 @@
                 android:layout_height="50dp"
                 android:layout_weight="2"
                 android:layout_marginEnd="20dp"
-                android:background="@drawable/spinner_border"
+                android:background="@drawable/sp_border"
                 android:padding="8dp" />
         </TableRow>
 
@@ -136,7 +136,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/rounded_group_box">
+        android:background="@drawable/group_round_box">
 
         <!-- Primera fila de la tabla -->
         <TableRow

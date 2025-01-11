@@ -34,13 +34,13 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-
+ 
 class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickListener ,
     OnMapClickListener , LocationListener  {
 
     private lateinit var mMap: GoogleMap
     private lateinit var circle: Circle
-    private lateinit var geoFenceMarker: MarkerOptions
+    private var geoFenceMarker: MarkerOptions? = null
 
     private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
     private lateinit var factory: ViewModelFactory
@@ -152,7 +152,10 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
     private fun addMarker(latLng: LatLng) {
         geoFenceMarker = MarkerOptions().position(latLng)
-        mMap.addMarker(geoFenceMarker)
+
+        geoFenceMarker?.let { marker ->
+            mMap.addMarker(marker)
+        }
     }
 
     private fun addCircle(latLng: LatLng? , radius: Float) {
@@ -182,6 +185,29 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         circle.strokeColor = colorCircle
         circle.fillColor = ColorUtils.setAlphaComponent(colorCircle , alpha)
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Liberar listeners del mapa
+        mMap.setOnMapLongClickListener(null)
+        mMap.setOnMapClickListener(null)
+
+        // Eliminar el fragmento si está presente
+        frag?.dismissAllowingStateLoss()
+        frag = null
+
+        // Eliminar observadores de LiveData
+        viewmodelMapsActivity.updateCircleRadius.removeObservers(this)
+
+        // Limpiar referencias del círculo
+        circle.remove() // Esto elimina el círculo del mapa
+        geoFenceMarker = null
+
+        // Limpiar referencias del ViewModel si es necesario
+        viewmodelMapsActivity.onDestroyed() // Personalizado si existe en tu implementación
+    }
+
 
 }
 
