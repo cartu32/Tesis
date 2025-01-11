@@ -18,7 +18,6 @@ import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
-import com.google.android.gms.tasks.TaskCompletionSource
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         configureInsets()
         initializeViewModel()
-        initializeButtons()
+        initializeComponentsView()
         observeLiveData()
         checkPermissions()
 
@@ -63,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         factory = Definition.factory
         viewmodelMainActivity = ViewModelProvider(this, factory)[ViewmodelMainActivity::class.java]
     }
-    private fun initializeButtons() {
+    private fun initializeComponentsView() {
         //Esta es otra forma de asociar los listeners de los botones,
         //sin necesidad de crear objetos botones
         val buttons = mapOf(

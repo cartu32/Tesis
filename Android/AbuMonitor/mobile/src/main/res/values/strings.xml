@@ -10,6 +10,17 @@
     <string name="cmd_confirm_geofences">Confirmar Geofences</string>
     <string name="lbl_texto_distancia">Distancia(Mts)</string>
     <string name="lbl_metros">0</string>
+    <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
+    <string name="zona_segura">Zona Segura</string>
+    <string name="tiempo_de_permanencia_seg">Tiempo de permanencia(seg)</string>
+    <string name="prioridad">Prioridad:</string>
+    <string name="evento">Evento:</string>
+    <string name="propiedades">Propiedades</string>
 
+    <string-array name="spinner_events">
+        <item>Entrar</item>
+        <item>Salir</item>
+        <item>Permanecer</item>
+    </string-array>
 
 </resources>

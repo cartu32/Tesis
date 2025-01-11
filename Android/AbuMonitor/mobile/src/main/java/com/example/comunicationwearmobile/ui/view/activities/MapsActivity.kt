@@ -24,6 +24,7 @@ import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
@@ -128,6 +129,16 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onLocationChanged(location: Location) {
         TODO("Not yet implemented")
     }
+
+    fun positionUpdate(location: Location): LatLng {
+        val zoomLevel = 16.0f //This goes up to 21
+        val latLng = LatLng(location.latitude , location.longitude)
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , zoomLevel))
+
+        return latLng
+    }
+
 
     fun showConfigGeofenceFragment(){
         frag = ConfigGeofenceFragment(Definition.GEOFENCE_RADIUS_DEFAULT, true)

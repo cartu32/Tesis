@@ -3,6 +3,7 @@ package com.example.comunicationwearmobile.ui.view.fragment
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,6 +17,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.view.activities.MapsActivity
+import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
@@ -104,9 +107,9 @@ class ConfigGeofenceFragment(
 
     private val listenerCmdConfirmar =
         View.OnClickListener {
-             //val i:Int =0
-            //mapsActivtyPresenter.generateGeofencesManual()
-            }
+
+            startActivity(Intent(context, PropertiesGeofenceActivity::class.java))
+        }
 
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {

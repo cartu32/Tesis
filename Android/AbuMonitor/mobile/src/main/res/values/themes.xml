@@ -4,6 +4,8 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
-
+    <style name="CustomSpinnerStyle">
+        <item name="android:textColor">#FFFFFF</item> <!-- Color de texto rojo -->
+    </style>
     <style name="Theme.ComunicationWearMobile" parent="Base.Theme.ComunicationWearMobile" />
 </resources>
