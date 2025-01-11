@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.setPadding
 import com.example.comunicationwearmobile.R
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
@@ -50,7 +51,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent)
                 (view as TextView).setTextColor(Color.WHITE) // Cambia el color del texto del desplegable
-                (view as TextView).textSize = 25F
+                (view as TextView).textSize = 20F
+                (view as TextView).setPadding(15)
                 return view
             }
         }
@@ -73,7 +75,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         }  }
 
     private fun configureInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v , insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.properties_geofence)) { v , insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
