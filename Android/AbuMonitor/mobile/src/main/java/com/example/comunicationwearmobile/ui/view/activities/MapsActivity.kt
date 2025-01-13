@@ -7,20 +7,16 @@ import android.location.LocationListener
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.constants.Definition.factory
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -113,18 +109,18 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         mMap.uiSettings.isMapToolbarEnabled = true
     }
 
-    override fun onMapLongClick(latLng: LatLng) {
+    override fun onMapClick(latLng: LatLng) {
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
 
         showConfigGeofenceFragment()
         addMarkerGeofence(latLng,Definition.GEOFENCE_RADIUS_DEFAULT)
     }
 
-    override fun onMapClick(latLng: LatLng) {
+    override fun onMapLongClick(latLng: LatLng) {
         Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude${latLng.longitude}")
-        showConfigGeofenceFragment()
-        addMarkerGeofence(latLng,Definition.GEOFENCE_RADIUS_DEFAULT)
-    }
+
+        viewmodelMapsActivity.determineWithinAnyCircle(latLng)
+       }
 
     override fun onLocationChanged(location: Location) {
         TODO("Not yet implemented")
@@ -171,10 +167,8 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
                 .radius(radius.toDouble())
                 .strokeWidth(4f)
         )
-    }
 
-    fun updateCircleRadiusGraphic(geofenceRadius: Float) {
-        circle.radius = geofenceRadius.toDouble()
+        viewmodelMapsActivity.insertListAreaCircle(circle , latLng)
     }
 
     fun updateCircleColorGraphic(id: String?) {

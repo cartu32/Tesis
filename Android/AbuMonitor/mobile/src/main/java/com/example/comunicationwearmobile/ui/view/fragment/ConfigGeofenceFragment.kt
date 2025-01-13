@@ -156,6 +156,15 @@ class ConfigGeofenceFragment(
         else ACTION_POINT_ROUTE
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(Definition.TAG_DEBUG,"Se destiene fragment")
+    }
 
     //@Override
     private fun handleUserExit() {
