@@ -16,7 +16,7 @@ object Definition {
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
 
     //Definicion de configuracion del mapa
-    const val GEOFENCE_RADIUS_DEFAULT = 100f
+    const val GEOFENCE_RADIUS_DEFAULT = 100
 
     //ID de la primera notificacion generada
     const val FIRST_NOTIFICATION_ID          = 1
@@ -54,7 +54,6 @@ object Definition {
                 ViewmodelAreaGeofence::class.java to { ViewmodelAreaGeofence(application) },
                 ViewmodelMainActivity::class.java to { ViewmodelMainActivity(application) },
                 ViewmodelMapsActivity::class.java to { ViewmodelMapsActivity(application) },
-
                 )
         )
     }

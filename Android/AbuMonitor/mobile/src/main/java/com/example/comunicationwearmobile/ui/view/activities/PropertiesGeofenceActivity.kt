@@ -1,6 +1,9 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
+import android.icu.util.TimeZone
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
@@ -9,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Scroller
 import android.widget.Spinner
@@ -19,35 +23,52 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.location.Priority
+import java.security.Security
+import java.sql.Time
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
     private lateinit var spEvents:Spinner
     private lateinit var spPriority:Spinner
     private lateinit var txtDescription:EditText
+    private lateinit var txtDwellTime: EditText
+    private lateinit var chkSecurityZone: CheckBox
     private lateinit var cmdSavGeofence:Button
     private lateinit var cmdCancelGeofence:Button
+ //   private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
+    private lateinit var factory: ViewModelFactory
+    private lateinit var activity: AppCompatActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_properties_geofence)
+
         configureInsets()
         initializeComponentsView()
 
     }
 
+
     private fun initializeComponentsView(){
         var items:Array<String>
 
-        cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
-        cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
         spEvents=findViewById<Spinner>(R.id.spEvents)
         spPriority=findViewById<Spinner>(R.id.spPriority)
+        txtDwellTime=findViewById<EditText>(R.id.txtDwellTime)
+        chkSecurityZone=findViewById<CheckBox>(R.id.chkSecurityZone)
         txtDescription=findViewById<EditText>(R.id.txtDescription)
+
+        cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
+        cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
+
 
         // Obtengo los valores del array de strings.xml
         items = resources.getStringArray(R.array.spinner_events)
@@ -67,11 +88,29 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
     private fun actionCancel() {
         Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
+
+        //le aviso al fragment que se presiono el boton cancelar
+        val intent=Intent()
+        setResult(Activity.RESULT_CANCELED,intent)
         finish()
     }
 
     private fun actionSave() {
-        Log.d(Definition.TAG_DEBUG,"Guardando Geofence")
+        //si se presiono el boton guardar
+        Log.d(Definition.TAG_DEBUG,"confirmado datos Geofence")
+
+        //cargo en el
+        ViewModelManager.sharedViewmodelMapsActivity.saveAreaGeofence(
+            spEvents.selectedItemPosition ,
+            spPriority.selectedItemPosition,
+            chkSecurityZone.isActivated,
+            txtDwellTime.text.toString().toIntOrNull() ?:0,
+            txtDescription.text.toString()
+        )
+
+        //le aviso al fragment de que se presiono el boton guardar
+        val intent=Intent()
+        setResult(Activity.RESULT_OK,intent)
         finish()
     }
 

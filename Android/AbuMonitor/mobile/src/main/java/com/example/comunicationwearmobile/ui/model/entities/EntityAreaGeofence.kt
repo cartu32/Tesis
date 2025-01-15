@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.sql.Time
+import java.time.LocalTime
 
 @Entity(
     tableName = "Area_Geofence",
@@ -45,16 +45,17 @@ import java.sql.Time
 )
 data class EntityAreaGeofence(
     @PrimaryKey(autoGenerate = true) var id_area: Int =0 ,
-    var latitude:Double=0.0,
-    var longitude:Double=0.0,
-    var meters:Int=0,
-    var security_zone:Boolean=false,
-    var dwell_time:Time,
+    var latitude:Double=0.0 ,
+    var longitude:Double=0.0 ,
+    var meters:Int=0 ,
+    var security_zone:Boolean=false ,
+    var dwell_time: Int=0 ,
+    var description:String= null.toString() ,
 
-    var id_contact: Int? = null,
+    var id_contact: Int? = null ,
     var id_color: Int =0 ,
     var id_event: Int =0 ,
     var id_priority: Int =0 ,
-    var id_reminder: Int ?=null,
+    var id_reminder: Int ?=null ,
     var id_type_area: Int =0 ,
 )

@@ -13,11 +13,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 
+    lateinit var tempAreaGeof:EntityAreaGeofence
     private val _permissionsToRequest = MutableLiveData<List<String>?>()
     val permissionsToRequest: LiveData<List<String>?> = _permissionsToRequest
 
@@ -35,6 +37,7 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
             //se creo e inicializo la base de datos
                 Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
 
+            tempAreaGeof=EntityAreaGeofence()
         }
     }
 

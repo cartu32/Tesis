@@ -1,9 +1,11 @@
 package com.example.comunicationwearmobile.ui.view.fragment
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,29 +14,30 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
-import androidx.lifecycle.ViewModel
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.MapsActivity
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
+import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class ConfigGeofenceFragment(
-    private var radius: Float ,
+    private var radius: Int ,
     EnableGeofenceButton: Boolean
 ) : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
-    private var cmdConfirmar: Button? = null
+    private var cmdConfigArea: Button? = null
     private var lblMetros: TextView? = null
     private var actualAction = 0
 
-    private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
-    private lateinit var factory: ViewModelFactory
+//    private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
+ //   private lateinit var factory: ViewModelFactory
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
@@ -44,16 +47,9 @@ class ConfigGeofenceFragment(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initializeViewModel()
     }
 
 
-    private fun initializeViewModel() {
-        if (!::viewmodelMapsActivity.isInitialized) {
-            factory = Definition.factory
-            viewmodelMapsActivity = ViewModelProvider(requireActivity(), factory)[ViewmodelMapsActivity::class.java]
-        }
-    }
 
 
     @SuppressLint("RestrictedApi")
@@ -70,14 +66,12 @@ class ConfigGeofenceFragment(
 
 
         seekBar = contentView.findViewById(R.id.seekBar)
-        cmdConfirmar = contentView.findViewById(R.id.cmdConfirmar)
+        cmdConfigArea = contentView.findViewById(R.id.cmdConfigArea)
         lblMetros = contentView.findViewById(R.id.lblMetros)
 
         seekBar?.setOnSeekBarChangeListener(listenerSeekBar)
-        cmdConfirmar?.setOnClickListener(listenerCmdConfirmar)
-        seekBar?.progress = radius.toInt()
-
-        initializeViewModel()
+        cmdConfigArea?.setOnClickListener(listenerCmdConfig)
+        seekBar?.progress = radius
 
     }
 
@@ -104,23 +98,27 @@ class ConfigGeofenceFragment(
             Log.d(ConfigGeofenceFragment::class.java.simpleName , slideOffset.toString())
         }
     }
+    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
 
-    private val listenerCmdConfirmar =
-        View.OnClickListener {
-
-            startActivity(Intent(context, PropertiesGeofenceActivity::class.java))
         }
+    }
+
+    private val listenerCmdConfig =View.OnClickListener {
+        val intent=Intent(context, PropertiesGeofenceActivity::class.java)
+        launcher.launch(intent)
+    }
 
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar , progress: Int , b: Boolean) {
             if (actualAction != ACTION_GEOFENCE) return
 
-            radius = progress.toFloat()
+            radius = progress
 
             lblMetros!!.text = progress.toString()
 
-            viewmodelMapsActivity.updateCircleRadius(radius)
+            ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {

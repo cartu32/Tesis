@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.ui.view.activities
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationListener
 import android.os.Build
@@ -17,6 +18,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
+import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -38,7 +40,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     private lateinit var circle: Circle
     private var geoFenceMarker: MarkerOptions? = null
 
-    private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
+    //private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
     private lateinit var factory: ViewModelFactory
 
     private var frag: ConfigGeofenceFragment? = null
@@ -61,9 +63,17 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
     private fun configOberserverLivedata() {
-        viewmodelMapsActivity.updateCircleRadius.observe(this){radius->
+        val alpha=64
+
+        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius.observe(this){radius->
             circle.radius= radius.toDouble()
-            Log.d(Definition.TAG_DEBUG,"Circulo Radio${circle.radius}")
+
+            Log.d(Definition.TAG_DEBUG,"Circulo Radio:${circle.radius}")
+        }
+
+        ViewModelManager.sharedViewmodelMapsActivity.confirmAddCircle.observe(this){value->
+            if(value==true)
+                Toast.makeText(this,"Area Agregada",Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -74,8 +84,9 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
     private fun initializeViewModel() {
-        factory = Definition.factory
-        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
+        //guardo el viewmodel para poder usarlo en el fragment y en propertiesGeofencesActivt
+        ViewModelManager.sharedViewmodelMapsActivity = ViewModelProvider(this, Definition.factory)[ViewmodelMapsActivity::class.java]
+        //viewmodelMapsActivity=ViewModelManager.sharedViewmodelMapsActivity
     }
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -119,7 +130,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onMapLongClick(latLng: LatLng) {
         Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude${latLng.longitude}")
 
-        viewmodelMapsActivity.determineWithinAnyCircle(latLng)
+        ViewModelManager.sharedViewmodelMapsActivity.determineWithinAnyCircle(latLng)
        }
 
     override fun onLocationChanged(location: Location) {
@@ -138,10 +149,10 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
     fun showConfigGeofenceFragment(){
         frag = ConfigGeofenceFragment(Definition.GEOFENCE_RADIUS_DEFAULT, true)
-        this.let { frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
+        this.let {frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
     }
 
-    private fun addMarkerGeofence(latLng: LatLng , radius: Float) {
+    private fun addMarkerGeofence(latLng: LatLng , radius: Int) {
         addMarker(latLng)
         addCircle(latLng , radius)
     }
@@ -154,10 +165,10 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         }
     }
 
-    private fun addCircle(latLng: LatLng? , radius: Float) {
+    private fun addCircle(latLng: LatLng? , radius: Int) {
         val alpha = 64
 
-        val colorCircle = viewmodelMapsActivity.determineColor()
+        val colorCircle = Color.BLUE
 
         this.circle = mMap.addCircle(
             CircleOptions()
@@ -168,16 +179,15 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
                 .strokeWidth(4f)
         )
 
-        viewmodelMapsActivity.insertListAreaCircle(circle , latLng)
+
+        ViewModelManager.sharedViewmodelMapsActivity.loadAreaTemporaryCircle(circle , latLng)
     }
 
-    fun updateCircleColorGraphic(id: String?) {
+    fun updateCircleColorGraphic(colorCircle:Int) {
         val alpha = 64
 
-        val colorCircle = viewmodelMapsActivity.determineColor()
-
         circle.strokeColor = colorCircle
-        circle.fillColor = ColorUtils.setAlphaComponent(colorCircle , alpha)
+
     }
 
     override fun onDestroy() {
@@ -192,14 +202,14 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         frag = null
 
         // Eliminar observadores de LiveData
-        viewmodelMapsActivity.updateCircleRadius.removeObservers(this)
+        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius.removeObservers(this)
 
         // Limpiar referencias del círculo
         circle.remove() // Esto elimina el círculo del mapa
         geoFenceMarker = null
 
         // Limpiar referencias del ViewModel si es necesario
-        viewmodelMapsActivity.onDestroyed() // Personalizado si existe en tu implementación
+        ViewModelManager.sharedViewmodelMapsActivity.onDestroyed() // Personalizado si existe en tu implementación
     }
 
 
