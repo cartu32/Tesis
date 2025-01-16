@@ -18,11 +18,11 @@ class GeofencesServices: Service() {
 
     // Canal que se utiliza para encolar las peticiones realizadas cada vez que
     // se ejecuta stratservice
-    private val requestChannel = Channel<Intent>(Channel.UNLIMITED)
-    private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
+    private var requestChannel: Channel<Intent>? = null
+    private var serviceScope:CoroutineScope? = null
     private var notificationManagerHelper:NotificationManagerHelper?= null
 
-    private lateinit var locationManagerHelper: LocationManagerHelper
+    private var locationManagerHelper: LocationManagerHelper?=null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -30,30 +30,45 @@ class GeofencesServices: Service() {
     override fun onCreate() {
         super.onCreate()
 
+        requestChannel=Channel<Intent>(Channel.UNLIMITED)
+        serviceScope=CoroutineScope(Dispatchers.IO + Job())
+
         notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
         notificationManagerHelper?.createChannelForegroundServices()
         locationManagerHelper=LocationManagerHelper()
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
-        locationManagerHelper.configCheckStatusGps()
+        locationManagerHelper?.configCheckStatusGps()
         startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
         // Lector del Channel: consume las solicitudes encoladas
-        serviceScope.launch {
-            for (intent in requestChannel) {
-                try {
-                    handleIntent(intent) // Procesa cada intent
-                } catch (e: Exception) {
-                    e.printStackTrace()
+
+        serviceScope?.launch {
+            requestChannel?.let { channel ->
+                for (intent in channel) {
+                    try {
+                        handleIntent(intent) // Procesa cada intent
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }
+
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
-        serviceScope.cancel() // Cancela la corutina cuando el servicio se destruye
+
+        // Cancela la corutina cuando el servicio se destruye
+        serviceScope?.cancel()
+        serviceScope=null
+
+        //libero los recursos
+        requestChannel=null
+        locationManagerHelper=null
+        notificationManagerHelper=null
 
         Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
     }
@@ -63,10 +78,10 @@ class GeofencesServices: Service() {
 
         intent?.let {
             // Comprobar el estado del GPS
-            locationManagerHelper.checkLocationSettings()
+            locationManagerHelper?.checkLocationSettings()
 
             // Encola la solicitud en el Channel
-            requestChannel.trySend(it)
+            requestChannel?.trySend(it)
         }
 
         return START_STICKY
