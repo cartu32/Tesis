@@ -130,14 +130,6 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
         Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
         ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
     }
-
-    companion object {
-        // TODO: Rename parameter arguments, choose names that match
-        // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-        private const val ACTION_GEOFENCE = 1
-        private const val ACTION_POINT_ROUTE = 2
-        private var positionIdArea = 0
-    }
 }
 
 

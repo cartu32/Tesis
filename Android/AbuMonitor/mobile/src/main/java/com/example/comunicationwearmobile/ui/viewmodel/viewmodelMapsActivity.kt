@@ -139,24 +139,30 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             }
         }
     }
-
-    fun onDestroyed() {
-        //por si uso alguna corutina la cancelo
-        viewModelScope.cancel()
-
-        //limpio el objeto de areTemporary
-        areaTemporary=null
-        //elimino de la memoria el listado de AreaGeofence
-        listAreaGeofence?.clear()
-        listAreaGeofence=null
-
-        //limpio el livedata
-        _updateCircleRadius = null
-        _updateCircleColor = null
-        _confirmAddCircle=null
-
+    private fun removeAllMarkersAndCircles() {
+        viewModelScope.launch {
+            listAreaGeofence?.forEach { areaData ->
+                areaData.circle?.remove()
+                areaData.marker?.remove()
+            }
+        }
     }
 
+    fun onDestroyed() {
+        // Limpio los recursos antes de cancelar el scope
+        removeAllMarkersAndCircles()
 
+        //limpio el listado de area geofncing
+        listAreaGeofence?.clear()
+        listAreaGeofence = null
+
+        // Limpio el LiveData
+        _updateCircleRadius = null
+        _updateCircleColor = null
+        _confirmAddCircle = null
+
+        // Finalmente cancelo el scope
+        viewModelScope.cancel()
+    }
 
 }
