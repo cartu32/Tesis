@@ -1,9 +1,6 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
-import android.app.Activity
-import android.content.Intent
 import android.graphics.Color
-import android.icu.util.TimeZone
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
@@ -17,33 +14,23 @@ import android.widget.EditText
 import android.widget.Scroller
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
-import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
-import com.google.android.gms.location.Priority
-import java.security.Security
-import java.sql.Time
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
-    private lateinit var spEvents:Spinner
-    private lateinit var spPriority:Spinner
-    private lateinit var txtDescription:EditText
-    private lateinit var txtDwellTime: EditText
-    private lateinit var chkSecurityZone: CheckBox
-    private lateinit var cmdSavGeofence:Button
-    private lateinit var cmdCancelGeofence:Button
- //   private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
-    private lateinit var factory: ViewModelFactory
-    private lateinit var activity: AppCompatActivity
+    private var spEvents:Spinner ?=null
+    private var spPriority:Spinner ?=null
+    private var txtDescription:EditText ?=null
+    private var txtDwellTime: EditText ?=null
+    private var chkSecurityZone: CheckBox ?=null
+    private var cmdSavGeofence:Button ?=null
+    private var cmdCancelGeofence:Button ?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,15 +38,24 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_properties_geofence)
 
+        //inicializo los elementos de la view
         configureInsets()
         initializeComponentsView()
 
     }
 
+    private fun configureInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.properties_geofence)) { v , insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+    }
 
     private fun initializeComponentsView(){
         var items:Array<String>
 
+        //asocio con los objetos de con los elementos del layout
         spEvents=findViewById<Spinner>(R.id.spEvents)
         spPriority=findViewById<Spinner>(R.id.spPriority)
         txtDwellTime=findViewById<EditText>(R.id.txtDwellTime)
@@ -77,41 +73,47 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         items = resources.getStringArray(R.array.spinner_priority)
         inititlizeSpinner(spPriority,items)
 
-        cmdSavGeofence.setOnClickListener{actionSave()}
-        cmdCancelGeofence.setOnClickListener{actionCancel()}
+        //les asocio los listener a cada elemento
+        cmdSavGeofence?.setOnClickListener{actionSave()}
+        cmdCancelGeofence?.setOnClickListener{actionCancel()}
 
-        txtDescription.setScroller(Scroller(this))
-        txtDescription.isVerticalScrollBarEnabled = true
-        txtDescription.movementMethod = ScrollingMovementMethod()
+        txtDescription?.setScroller(Scroller(this))
+        txtDescription?.isVerticalScrollBarEnabled = true
+        txtDescription?.movementMethod = ScrollingMovementMethod()
 
     }
 
     private fun actionCancel() {
+        //metodo que se ejecuta al presionar el boton cancelar
         Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
 
         ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
+        //se cierra la activity
         finish()
     }
 
     private fun actionSave() {
-        //si se presiono el boton guardar
+
+        //metodo que se ejecuta al presionar el boton guardar
         Log.d(Definition.TAG_DEBUG,"confirmado datos Geofence")
 
-        //cargo en el
+        //cargo en el viewmodel los valores de los elementos ingresados en la view
         ViewModelManager.sharedViewmodelMapsActivity.saveAreaGeofence(
-            spEvents.selectedItemPosition ,
-            spPriority.selectedItemPosition,
-            chkSecurityZone.isActivated,
-            txtDwellTime.text.toString().toIntOrNull() ?:0,
-            txtDescription.text.toString()
+            spEvents?.selectedItemPosition ,
+            spPriority?.selectedItemPosition,
+            chkSecurityZone?.isActivated,
+            txtDwellTime?.text.toString().toIntOrNull() ?:0,
+            txtDescription?.text.toString()
         )
 
+        //le notifico a mapsactivty que se confirmaron
         ViewModelManager.sharedViewmodelMapsActivity.confirmInMap()
 
+        //se cierra la activity
         finish()
     }
 
-    private fun inititlizeSpinner(spinner: Spinner,items:Array<String>,) {
+    private fun inititlizeSpinner(spinner: Spinner?,items:Array<String>,) {
 
         // Crea el adaptador personalizado
         val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
@@ -132,13 +134,13 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         }
 
         // Asigna el adaptador al Spinner
-        spinner.adapter = adapter
+        spinner?.adapter = adapter
 
         // Escuchar selección (opcional)
-        spEvents.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        spEvents?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>? , view: View? , position: Int , id: Long) {
                 val selectedItem = parent?.getItemAtPosition(position).toString()
-                spEvents.setSelection(position)
+                spEvents?.setSelection(position)
 
                 Log.d(Definition.TAG_DEBUG,"Seleccionaste: $selectedItem")
             }
@@ -147,13 +149,22 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Acción cuando no se selecciona nada
             }
-        }  }
-
-    private fun configureInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.properties_geofence)) { v , insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        spEvents=null
+        spPriority=null
+        txtDescription=null
+        txtDwellTime=null
+        chkSecurityZone=null
+        cmdSavGeofence=null
+        cmdSavGeofence=null
+        cmdCancelGeofence=null
+
+    }
+
+
 }

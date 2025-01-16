@@ -9,9 +9,8 @@ import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
 
 class AbuMonitorApplication: Application() {
-    private lateinit var geofencesServices: GeofencesServices
 
-    override fun onCreate() {
+     override fun onCreate() {
         super.onCreate()
         Definition.application = this
 

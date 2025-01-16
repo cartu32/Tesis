@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 
     lateinit var tempAreaGeof:EntityAreaGeofence
+
     private val _permissionsToRequest = MutableLiveData<List<String>?>()
     val permissionsToRequest: LiveData<List<String>?> = _permissionsToRequest
 

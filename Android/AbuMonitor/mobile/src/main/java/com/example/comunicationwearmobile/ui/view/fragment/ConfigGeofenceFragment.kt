@@ -1,55 +1,59 @@
 package com.example.comunicationwearmobile.ui.view.fragment
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.ui.viewmodel.ViewModelFactory
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.view.activities.MapsActivity
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class ConfigGeofenceFragment(
-    private var radius: Int ,
-    EnableGeofenceButton: Boolean
-) : BottomSheetDialogFragment() {
+class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
     private var cmdConfigArea: Button? = null
     private var lblMetros: TextView? = null
-    private var actualAction = 0
 
-//    private lateinit var viewmodelMapsActivity: ViewmodelMapsActivity
- //   private lateinit var factory: ViewModelFactory
-
-    override fun onCancel(dialog: DialogInterface) {
-        super.onCancel(dialog)
-
-        handleUserExit()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
 
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+
+        //cuando el usuario presiona fuera del fragment se ejecuta este metodo
+        handleUserExit()
+    }
+
+
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(Definition.TAG_DEBUG,"Se destiene fragment")
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        seekBar=null
+        cmdConfigArea=null
+        lblMetros=null
+
+        Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
+    }
 
 
     @SuppressLint("RestrictedApi")
@@ -108,11 +112,7 @@ class ConfigGeofenceFragment(
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar , progress: Int , b: Boolean) {
 
-            if (actualAction != ACTION_GEOFENCE)
-                return
-
             radius = progress
-
             lblMetros?.text = progress.toString()
 
             ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius(radius)
@@ -124,43 +124,6 @@ class ConfigGeofenceFragment(
         override fun onStopTrackingTouch(seekBar: SeekBar) {
         }
     }
-
-    private val listenerSpinner: AdapterView.OnItemSelectedListener =
-        object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*> ,
-                view: View ,
-                position: Int ,
-                id: Long
-            ) {
-                if (actualAction != ACTION_GEOFENCE) return
-
-                positionIdArea = position
-              /*  mapsActivtyPresenter.saveSelectedGeofencesArea(
-                    parent.getItemAtPosition(position).toString()
-                )*/
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-        }
-
-    // TODO: Rename and change types of parameters
-    init {
-        actualAction = if (EnableGeofenceButton) ACTION_GEOFENCE
-        else ACTION_POINT_ROUTE
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(Definition.TAG_DEBUG,"Se destiene fragment")
-    }
-
     //@Override
     private fun handleUserExit() {
 

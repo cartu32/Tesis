@@ -14,7 +14,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 
 object ViewModelManager {
@@ -23,63 +22,61 @@ object ViewModelManager {
 
 class ViewmodelMapsActivity(application: Application): AndroidViewModel(application) {
 
+    //atributo que almacena el Id del la ultima area geofence agregada
     private var lastIdArea=0
 
-    var areaTemporary=AreaGeofenceInMap()
+    //declaro los livedata
+    private var _updateCircleRadius:MutableLiveData<Int>? = MutableLiveData<Int>()
+    val updateCircleRadius: LiveData<Int> ?= _updateCircleRadius
 
-    private val _updateCircleRadius = MutableLiveData<Int>()
-    val updateCircleRadius: LiveData<Int> = _updateCircleRadius
+    private var _updateCircleColor:MutableLiveData<Int>? = MutableLiveData<Int>()
+    val updateCircleColor: LiveData<Int> ?= _updateCircleColor
 
-    private val _updateCircleColor = MutableLiveData<Int>()
-    val updateCircleColor: LiveData<Int> = _updateCircleColor
+    private var _confirmAddCircle:MutableLiveData<Boolean>? = MutableLiveData<Boolean>()
+    val confirmAddCircle: LiveData<Boolean>? = _confirmAddCircle
 
-    private val _confirmAddCircle = MutableLiveData<Boolean>()
-    val confirmAddCircle: LiveData<Boolean> = _confirmAddCircle
+    //defino un objeto areaTemporary para ir almacenando temporalmentelos datos de la nueva area
+    //que va ir agregando el usuario a traves del mapa. Luego estos datos se agregan al listado
+    //de areas en el mapa
+    private var areaTemporary:AreaGeofenceInMap?=AreaGeofenceInMap()
 
+    //se crea este listado de areas en el map, para poder mostrar graficamente
+    //las areas de geofencing en el mapa
+    private var listAreaGeofence:ArrayList<AreaGeofenceInMap>?= ArrayList()
 
-    private var listAreaGeofence= ArrayList<AreaGeofenceInMap>()
-
-    fun loadConfigInAreaTemporary(dwellTime:Int){
+    fun loadConfigInAreaTemporary(dwellTime:Int?){
         //este metodo agrega en el area temporary los campos que fueron ingresados en la
         //activity propertiesGeofenceActivty.
         //Este metodo se llama cuando se apreta en el guardar de esa activity
 
-        with(areaTemporary){
-            id_area=lastIdArea
-            dwell_time=dwellTime
-        }
+        areaTemporary?.let {
+            with(it) {
+                id_area = lastIdArea
 
+                if (dwellTime != null) {
+                    dwell_time = dwellTime
+                }
+            }
+        }
 
     }
 
     fun loadMarkerInAreaTemporary(marker: Marker) {
-        areaTemporary.marker= marker
+        areaTemporary?.marker= marker
     }
 
     fun loadCircleInAreaTemporary(circle: Circle , latLng: LatLng ) {
         //este metodo agrega en el area temporary el circulo y la latitud y longitud
         //Este metodo se llama cada vez que se agrega un circulo en el mapa, al hacer click
         //sobre el
-        areaTemporary.circle=circle
+        areaTemporary?.circle=circle
 
-        areaTemporary.latitude=latLng.latitude
-        areaTemporary.longitude=latLng.longitude
+        areaTemporary?.latitude=latLng.latitude
+        areaTemporary?.longitude=latLng.longitude
     }
 
-    fun updateCircleRadius(radius: Int ){
 
-        areaTemporary.meters=radius
-
-        _updateCircleRadius.value = radius
-    }
-
-    fun updateCircleColor(color:Int){
-    //    areaTemporary.id_color=color
-
-        _updateCircleColor.value=color
-    }
-
-    fun saveAreaGeofence(event:Int,priority: Int,securityZone:Boolean,dwellTime:Int,descripcion:String){
+    fun saveAreaGeofence(event:Int?,priority: Int?,securityZone:Boolean?,dwellTime:Int?,descripcion:String?){
 
         loadConfigInAreaTemporary(dwellTime)
         saveInListAreaMap()
@@ -87,14 +84,14 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     }
 
     fun confirmInMap() {
-        _confirmAddCircle.value=true
+        _confirmAddCircle?.value=true
     }
 
     fun cancelInMap(){
         //como el usuario cancela la opcion se borra el circulo y el marcador en el mapa mapa
-        areaTemporary.marker.remove()
-        areaTemporary.circle.remove()
-        _confirmAddCircle.value=false
+        areaTemporary?.marker?.remove()
+        areaTemporary?.circle?.remove()
+        _confirmAddCircle?.value=false
     }
 
     private fun saveInDatabase() {
@@ -103,7 +100,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     private fun saveInListAreaMap() {
         //agrego en el area de geofencing creado el areTemporary que se fue creando
-        listAreaGeofence.add(areaTemporary)
+        areaTemporary?.let { listAreaGeofence?.add(it) }
 
         // Reinicia el estado de areaTemporary para el siguiente uso
         areaTemporary = AreaGeofenceInMap()
@@ -111,20 +108,24 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         lastIdArea++
     }
 
-    fun onDestroyed() {
-        //por si uso alguna corutina la cancelo
-        viewModelScope.cancel()
+    fun updateCircleRadius(radius: Int ){
 
-        //limpio el livedata
-        _updateCircleRadius.value = 0
-        _updateCircleColor.value = 0
+        areaTemporary?.meters=radius
+
+        _updateCircleRadius?.value = radius
+    }
+
+    fun updateCircleColor(color:Int){
+        //    areaTemporary.id_color=color
+
+        _updateCircleColor?.value=color
     }
 
 
     fun determineWithinAnyCircle(latLng: LatLng){
 
         viewModelScope.launch {
-            listAreaGeofence.forEach{areaData ->
+            listAreaGeofence?.forEach{areaData ->
                 with(areaData) {
                     //convirto la latitud y longitud LatLng
                     val locationAreaCenter = LatLng(latitude , longitude)
@@ -138,6 +139,24 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             }
         }
     }
+
+    fun onDestroyed() {
+        //por si uso alguna corutina la cancelo
+        viewModelScope.cancel()
+
+        //limpio el objeto de areTemporary
+        areaTemporary=null
+        //elimino de la memoria el listado de AreaGeofence
+        listAreaGeofence?.clear()
+        listAreaGeofence=null
+
+        //limpio el livedata
+        _updateCircleRadius = null
+        _updateCircleColor = null
+        _confirmAddCircle=null
+
+    }
+
 
 
 }

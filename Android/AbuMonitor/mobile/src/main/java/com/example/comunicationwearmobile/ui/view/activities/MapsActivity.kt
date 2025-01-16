@@ -35,8 +35,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickListener ,
     OnMapClickListener , LocationListener  {
 
-    private lateinit var mMap: GoogleMap
-    private lateinit var circle: Circle
+    private var mMap: GoogleMap ?=null
+    private var circle: Circle ?= null
 
     private var frag: ConfigGeofenceFragment? = null
 
@@ -60,13 +60,13 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     private fun configOberserverLivedata() {
         val alpha=64
 
-        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius.observe(this){radius->
-            circle.radius= radius.toDouble()
+        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius?.observe(this){radius->
+            circle?.radius= radius.toDouble()
 
-            Log.d(Definition.TAG_DEBUG,"Circulo Radio:${circle.radius}")
+            Log.d(Definition.TAG_DEBUG,"Circulo Radio:${circle?.radius}")
         }
 
-        ViewModelManager.sharedViewmodelMapsActivity.confirmAddCircle.observe(this) { result ->
+        ViewModelManager.sharedViewmodelMapsActivity.confirmAddCircle?.observe(this) { result ->
             if(result==true)
                 // Mostrar mensaje de éxito
                 Toast.makeText(this, "Área guardada con éxito", Toast.LENGTH_SHORT).show()
@@ -98,8 +98,8 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
             dlg?.show()
         }
 
-        mMap.setOnMapLongClickListener(this)
-        mMap.setOnMapClickListener(this)
+        mMap?.setOnMapLongClickListener(this)
+        mMap?.setOnMapClickListener(this)
 
         enableFeatureMaps()
     }
@@ -113,11 +113,11 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
             Log.e(Definition.TAG_DEBUG,"Error:Faltan permisos de FINE O COARSE LOCATION")
             return
         }
-        mMap.isMyLocationEnabled = true
-        mMap.uiSettings.setAllGesturesEnabled(true)
-        mMap.uiSettings.isMyLocationButtonEnabled = true
-        mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.uiSettings.isMapToolbarEnabled = true
+        mMap?.isMyLocationEnabled = true
+        mMap?.uiSettings?.setAllGesturesEnabled(true)
+        mMap?.uiSettings?.isMyLocationButtonEnabled = true
+        mMap?.uiSettings?.isZoomControlsEnabled = true
+        mMap?.uiSettings?.isMapToolbarEnabled = true
     }
 
     override fun onMapClick(latLng: LatLng) {
@@ -141,39 +141,37 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         val zoomLevel = 16.0f //This goes up to 21
         val latLng = LatLng(location.latitude , location.longitude)
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , zoomLevel))
+        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , zoomLevel))
 
         return latLng
     }
 
 
-    fun showConfigGeofenceFragment(){
-        frag = ConfigGeofenceFragment(Definition.GEOFENCE_RADIUS_DEFAULT, true)
+    private fun showConfigGeofenceFragment(){
+        frag = ConfigGeofenceFragment(Definition.GEOFENCE_RADIUS_DEFAULT)
         this.let {frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
     }
 
     private fun addMarkerGeofence(latLng: LatLng ) {
-        val radius=Definition.GEOFENCE_RADIUS_DEFAULT
-
         addMarker(latLng)
-        addCircle(latLng , radius)
+        addCircle(latLng)
     }
 
     private fun addMarker(latLng: LatLng) {
        val geoFenceMarker = MarkerOptions().position(latLng)
-       val marker=mMap.addMarker(geoFenceMarker)
+       val marker=mMap?.addMarker(geoFenceMarker)
 
         marker?.let {
             ViewModelManager.sharedViewmodelMapsActivity.loadMarkerInAreaTemporary(it)
         }
     }
 
-    private fun addCircle(latLng: LatLng? , radius: Int) {
+    private fun addCircle(latLng: LatLng? , radius: Int=Definition.GEOFENCE_RADIUS_DEFAULT) {
         val alpha = 64
 
         val colorCircle = Color.BLUE
 
-        this.circle = mMap.addCircle(
+        this.circle = mMap?.addCircle(
             CircleOptions()
                 .center(latLng!!)
                 .strokeColor(colorCircle)
@@ -182,14 +180,18 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
                 .strokeWidth(4f)
         )
 
-
-        ViewModelManager.sharedViewmodelMapsActivity.loadCircleInAreaTemporary(circle , latLng)
+        //como circle ni let puden ser null, entonces it1 se asigna a circle e it se asigna a latlng
+        latLng?.let {
+            circle?.let { it1 ->
+                ViewModelManager.sharedViewmodelMapsActivity.loadCircleInAreaTemporary(it1 ,it)
+            }
+        }
     }
 
     fun updateCircleColorGraphic(colorCircle:Int) {
         val alpha = 64
 
-        circle.strokeColor = colorCircle
+        circle?.strokeColor = colorCircle
 
     }
 
@@ -197,19 +199,24 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         super.onDestroy()
 
         // Liberar listeners del mapa
-        mMap.setOnMapLongClickListener(null)
-        mMap.setOnMapClickListener(null)
+        mMap?.setOnMapLongClickListener(null)
+        mMap?.setOnMapClickListener(null)
 
         // Eliminar el fragmento si está presente
         frag?.dismissAllowingStateLoss()
         frag = null
 
-        // Eliminar observadores de LiveData
-        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius.removeObservers(this)
+        // Eliminar los observadores de LiveData
+        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius?.removeObservers(this)
+        ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius?.removeObservers(this)
+        ViewModelManager.sharedViewmodelMapsActivity.confirmAddCircle?.removeObservers(this)
 
         // Limpiar referencias del círculo
-        circle.remove() // Esto elimina el círculo del mapa
-
+        circle?.remove() // Esto elimina el círculo del mapa
+        circle=null
+        
+        mMap=null
+        
         // Limpiar referencias del ViewModel si es necesario
         ViewModelManager.sharedViewmodelMapsActivity.onDestroyed() // Personalizado si existe en tu implementación
     }
