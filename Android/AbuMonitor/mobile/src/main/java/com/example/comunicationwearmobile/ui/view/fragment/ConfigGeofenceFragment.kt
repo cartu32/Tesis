@@ -163,6 +163,9 @@ class ConfigGeofenceFragment(
 
     //@Override
     private fun handleUserExit() {
+
+        Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
+        ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
     }
 
     companion object {
