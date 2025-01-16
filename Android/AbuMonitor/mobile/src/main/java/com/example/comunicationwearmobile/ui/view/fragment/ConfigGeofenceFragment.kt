@@ -98,25 +98,22 @@ class ConfigGeofenceFragment(
             Log.d(ConfigGeofenceFragment::class.java.simpleName , slideOffset.toString())
         }
     }
-    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-
-        }
-    }
 
     private val listenerCmdConfig =View.OnClickListener {
         val intent=Intent(context, PropertiesGeofenceActivity::class.java)
-        launcher.launch(intent)
+        startActivity(intent)
     }
 
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar , progress: Int , b: Boolean) {
-            if (actualAction != ACTION_GEOFENCE) return
+
+            if (actualAction != ACTION_GEOFENCE)
+                return
 
             radius = progress
 
-            lblMetros!!.text = progress.toString()
+            lblMetros?.text = progress.toString()
 
             ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius(radius)
         }

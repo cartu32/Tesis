@@ -89,9 +89,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private fun actionCancel() {
         Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
 
-        //le aviso al fragment que se presiono el boton cancelar
-        val intent=Intent()
-        setResult(Activity.RESULT_CANCELED,intent)
+        ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
         finish()
     }
 
@@ -108,9 +106,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             txtDescription.text.toString()
         )
 
-        //le aviso al fragment de que se presiono el boton guardar
-        val intent=Intent()
-        setResult(Activity.RESULT_OK,intent)
+        ViewModelManager.sharedViewmodelMapsActivity.confirmInMap()
+
         finish()
     }
 
