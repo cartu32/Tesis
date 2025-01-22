@@ -92,7 +92,8 @@ dependencies {
     implementation (libs.kotlin.stdlib)
     implementation (libs.androidx.core.ktx.v160)
     implementation (libs.jetbrains.kotlin.parcelize.runtime)
-
+    debugImplementation (libs.leakcanary.android)
+    releaseImplementation (libs.leakcanary.android.no.op)
     //dependencias de librerias compartidas entre wear y mobile
     implementation(project(":shared_library"))
 }

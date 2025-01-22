@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.model.maps
 
 import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import java.io.Serializable
 import java.lang.ref.WeakReference
@@ -12,12 +13,7 @@ todos los datos de EntityAreaGeofence que corresponde a la base de datos
 */
 class AreaGeofenceInMap : Serializable {
     var id_area: Int =0
-    var latitude:Double=0.0
-    var longitude:Double=0.0
-    var meters:Int=0
-    var dwell_time: Int=0
-
-
+    lateinit var latLng: LatLng
     lateinit var circle: Circle
     lateinit var marker: Marker
 }

@@ -42,9 +42,9 @@ class MsgConfigActivity : AppCompatActivity(), InterfaceMainAct {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //aca va el codigo de la activity
-        setContentView(R.layout.activity_msg_config)
+        setContentView(R.layout.activity_sms_config)
 
-        cmdSendWear    = findViewById<Button>(R.id.cmdSendWear)
+        cmdSendWear    = findViewById<Button>(R.id.cmd
         txtMsgFromWear = findViewById<TextView>(R.id.txtMsgFromWear)
         txtMsgTitle    = findViewById<EditText>(R.id.txtMsgTitle)
         txtMsg         = findViewById<EditText>(R.id.txtMsg)

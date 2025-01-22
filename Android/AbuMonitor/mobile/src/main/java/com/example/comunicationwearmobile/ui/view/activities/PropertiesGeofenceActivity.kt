@@ -1,5 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
@@ -21,7 +23,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
     private var spEvents:Spinner ?=null
@@ -87,7 +88,10 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         //metodo que se ejecuta al presionar el boton cancelar
         Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
 
-        ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
+        val resultIntent= Intent()
+        setResult(Activity.RESULT_CANCELED,resultIntent)
+
+        //ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
         //se cierra la activity
         finish()
     }
@@ -97,17 +101,14 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         //metodo que se ejecuta al presionar el boton guardar
         Log.d(Definition.TAG_DEBUG,"confirmado datos Geofence")
 
-        //cargo en el viewmodel los valores de los elementos ingresados en la view
-        ViewModelManager.sharedViewmodelMapsActivity.saveAreaGeofence(
-            spEvents?.selectedItemPosition ,
-            spPriority?.selectedItemPosition,
-            chkSecurityZone?.isActivated,
-            txtDwellTime?.text.toString().toIntOrNull() ?:0,
-            txtDescription?.text.toString()
-        )
+        val resultIntent= Intent()
 
-        //le notifico a mapsactivty que se confirmaron
-        ViewModelManager.sharedViewmodelMapsActivity.confirmInMap()
+        resultIntent.putExtra("Intent_Event",spEvents?.selectedItemPosition)
+        resultIntent.putExtra("Intent_Priority",spPriority?.selectedItemPosition)
+        resultIntent.putExtra("Intent_SecurityZone",chkSecurityZone?.isActivated)
+        resultIntent.putExtra("Intent_Dweel_Time",txtDwellTime?.text.toString().toIntOrNull() ?:0)
+        resultIntent.putExtra("Intent_Description",txtDescription?.text.toString())
+        setResult(Activity.RESULT_OK,resultIntent)
 
         //se cierra la activity
         finish()

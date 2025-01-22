@@ -1,7 +1,7 @@
 [versions]
 accompanistPager = "0.24.0-alpha"
 accompanistPagerIndicators = "0.24.0-alpha"
-agp = "8.6.1"
+agp = "8.8.0"
 coreKtxVersion = "1.6.0"
 gson = "2.8.5"
 healthServicesClient = "1.0.0-rc02"
@@ -15,6 +15,8 @@ appcompat = "1.6.1"
 kotlinParcelizeRuntimeVersion = "1.4.21"
 kotlinxSerializationCore = "1.5.0"
 kotlinxSerializationProtobuf = "1.5.0"
+leakcanaryAndroidNoOp = "2.12"
+leakcanaryAndroid = "2.12"
 lifecycleRuntimeKtx = "2.8.0"
 lifecycleExtensions = "2.2.0"
 playServicesWearable = "18.1.0"
@@ -52,6 +54,8 @@ kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinxSerializationProtobuf" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
+leakcanary-android-no-op = { module = "com.squareup.leakcanary:leakcanary-android-no-op", version.ref = "leakcanaryAndroidNoOp" }
 play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.fragment
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -11,22 +12,30 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
-import com.example.comunicationwearmobile.ui.viewmodel.ViewModelManager
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragment() {
+class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
     private var cmdConfigArea: Button? = null
     private var lblMetros: TextView? = null
+    private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
+    private var radius: Int =Definition.GEOFENCE_RADIUS_DEFAULT
 
+    private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
     }
 
 
@@ -35,6 +44,8 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
 
         //cuando el usuario presiona fuera del fragment se ejecuta este metodo
         handleUserExit()
+
+
     }
 
 
@@ -51,9 +62,11 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
         seekBar=null
         cmdConfigArea=null
         lblMetros=null
+        activityResultLauncher=null
 
         Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
     }
+
 
 
     @SuppressLint("RestrictedApi")
@@ -77,6 +90,44 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
         cmdConfigArea?.setOnClickListener(listenerCmdConfig)
         seekBar?.progress = radius
 
+        initializeViewModel()
+        configActivityResult()
+    }
+
+    private fun initializeViewModel() {
+        //guardo el viewmodel para poder usarlo en el fragment y en propertiesGeofencesActivt
+         viewmodelMapsActivity= ViewModelProvider(requireActivity(), Definition.factory)[ViewmodelMapsActivity::class.java]
+    }
+
+
+    private fun configActivityResult() {
+        activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // Obtén los datos del Intent
+                val data = result.data
+
+                val itemEvent = data?.getIntExtra("Intent_Event" , 0)
+                val itemPriority = data?.getIntExtra("Intent_Priority" , 0)
+                val isSecurityZone = data?.getBooleanExtra("Intent_SecurityZone" , false)
+                val dwellTime = data?.getIntExtra("Intent_Dweel_Time" , 0)
+                val description = data?.getStringExtra("Intent_Description")
+
+
+                viewmodelMapsActivity?.saveAreaGeofence(
+                    itemEvent ,
+                    itemPriority ,
+                    isSecurityZone ,
+                    dwellTime ,
+                    description ,
+                )
+               }
+            else{
+                viewmodelMapsActivity?.cancelInMap()
+            }
+
+            dismiss()
+
+        }
     }
 
     private val mBottomSheetBehaviorCallback: BottomSheetCallback = object : BottomSheetCallback() {
@@ -105,8 +156,9 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
 
     private val listenerCmdConfig =View.OnClickListener {
         val intent=Intent(context, PropertiesGeofenceActivity::class.java)
-        startActivity(intent)
+        activityResultLauncher?.launch(intent)
     }
+
 
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
@@ -115,7 +167,7 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
             radius = progress
             lblMetros?.text = progress.toString()
 
-            ViewModelManager.sharedViewmodelMapsActivity.updateCircleRadius(radius)
+            viewmodelMapsActivity?.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -128,7 +180,7 @@ class ConfigGeofenceFragment(private var radius: Int) : BottomSheetDialogFragmen
     private fun handleUserExit() {
 
         Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
-        ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
+        viewmodelMapsActivity?.cancelInMap()
     }
 }
 
