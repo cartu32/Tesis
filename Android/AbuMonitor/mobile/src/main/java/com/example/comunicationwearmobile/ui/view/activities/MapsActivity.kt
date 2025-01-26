@@ -136,9 +136,22 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
 
     private fun showConfigGeofenceFragment() {
-        frag = ConfigGeofenceFragment()
-        this.let {frag?.show(it.supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName) }
+        frag = ConfigGeofenceFragment().apply {
+            onDismissCallback = {freeFragment() }
+        }
+        // Muestra el fragmento
+        frag?.show(supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName)
     }
+
+    private fun freeFragment() {
+        // Limpia el fragmento y el callback
+        frag?.let {
+            it.dismiss()  // Elimina el fragmento del FragmentManager
+            frag = null   // Libera la referencia al fragmento
+            Log.d(Definition.TAG_DEBUG, "Se libera frag")
+        }
+    }
+
 
     private fun addMarkerGeofence(latLng: LatLng ) {
        val marker = addMarker(latLng)
@@ -200,6 +213,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         
         // Limpiar referencias del ViewModel si es necesario
         viewmodelMapsActivity?.onDestroyed() // Personalizado si existe en tu implementación
+        viewmodelMapsActivity=null
     }
 
 

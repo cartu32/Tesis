@@ -23,8 +23,8 @@ import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 class MainActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
-    private lateinit var viewmodelMainActivity: ViewmodelMainActivity
-    private lateinit var factory: ViewModelFactory
+    private var viewmodelMainActivity: ViewmodelMainActivity?=null
+    private var factory: ViewModelFactory?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         // Verificar los permisos al iniciar
-        viewmodelMainActivity.checkPermissions()
+        viewmodelMainActivity?.checkPermissions()
 
     }
 
@@ -63,9 +63,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeViewModel() {
-        factory = Definition.factory
-        viewmodelMainActivity = ViewModelProvider(this , factory)[ViewmodelMainActivity::class.java]
+        viewmodelMainActivity = if (factory != null) {
+            ViewModelProvider(this, factory!!)[ViewmodelMainActivity::class.java]
+        } else {
+            ViewModelProvider(this)[ViewmodelMainActivity::class.java]
+        }
     }
+
 
     private fun initializeComponentsView() {
         //Esta es otra forma de asociar los listeners de los botones,
@@ -83,24 +87,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeLiveData() {
-        viewmodelMainActivity.permissionsToRequest.observe(this) { permissions ->
+        viewmodelMainActivity?.permissionsToRequest?.observe(this) { permissions ->
             if (permissions?.isNotEmpty() == true) {
                 requestPermissionsLauncher.launch(permissions.toTypedArray())
             }
         }
 
-        viewmodelMainActivity.backgroundPermissionRequired.observe(this) { isRequired ->
+        viewmodelMainActivity?.backgroundPermissionRequired?.observe(this) { isRequired ->
             if (isRequired == true) askPermissionForBackgroundUsage()
         }
 
-        viewmodelMainActivity.allPermissionGranted.observe(this) { isRequired ->
+        viewmodelMainActivity?.allPermissionGranted?.observe(this) { isRequired ->
             //Si se otorgaron todos los permisos, entonces se inicia el service
             startGeofenceService()
         }
     }
 
     private fun checkPermissions() {
-        viewmodelMainActivity.checkPermissions()
+        viewmodelMainActivity?.checkPermissions()
     }
 
     private val requestPermissionsLauncher = registerForActivityResult(
@@ -151,12 +155,15 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
 
         // Desvincular observadores de LiveData para evitar fugas de memoria
-        viewmodelMainActivity.permissionsToRequest.removeObservers(this)
-        viewmodelMainActivity.backgroundPermissionRequired.removeObservers(this)
-        viewmodelMainActivity.allPermissionGranted.removeObservers(this)
+        viewmodelMainActivity?.permissionsToRequest?.removeObservers(this)
+        viewmodelMainActivity?.backgroundPermissionRequired?.removeObservers(this)
+        viewmodelMainActivity?.allPermissionGranted?.removeObservers(this)
 
         // Notificar al ViewModel que la actividad se destruyó
-        viewmodelMainActivity.onDestroyed()
+        viewmodelMainActivity?.onDestroyed()
+        viewmodelMainActivity=null
+
+        factory=null
     }
 }
 

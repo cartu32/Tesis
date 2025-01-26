@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 
 val mutex = Mutex()
 
-fun showToast(mcontext: Context, msg: String){
+fun showToast(mcontext: CoroutineScope, msg: String){
     Toast.makeText(mcontext,msg, Toast.LENGTH_SHORT).show()
 }
 

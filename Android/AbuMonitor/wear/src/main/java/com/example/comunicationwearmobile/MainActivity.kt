@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             val hasPermissionsAndCapabilities = model.checkPermissionsAndCapabilities(permissionManager!!)
 
             if(!hasPermissionsAndCapabilities ){
-                showToast(applicationContext, "Permisos no otorgados o el reloj no puede detectar caídas")
+                showToast(this, "Permisos no otorgados o el reloj no puede detectar caídas")
             }
         }
 

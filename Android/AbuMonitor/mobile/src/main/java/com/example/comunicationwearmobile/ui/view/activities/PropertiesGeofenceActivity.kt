@@ -158,6 +158,10 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
         spEvents=null
         spPriority=null
+
+        spPriority?.onItemSelectedListener=null
+        spEvents?.onItemSelectedListener=null
+
         txtDescription=null
         txtDwellTime=null
         chkSecurityZone=null

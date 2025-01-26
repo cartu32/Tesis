@@ -122,8 +122,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private fun removeAllMarkersAndCircles() {
         viewModelScope.launch {
             listAreaGeofence?.forEach { areaData ->
-                areaData.circle?.remove()
-                areaData.marker?.remove()
+                areaData.circle.remove()
+                areaData.marker.remove()
             }
         }
     }
@@ -135,6 +135,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         //limpio el listado de area geofncing
         listAreaGeofence?.clear()
         listAreaGeofence = null
+        areaTemporary=null
 
         // Limpio el LiveData
         _showMessage = null

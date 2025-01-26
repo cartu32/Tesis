@@ -30,13 +30,11 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
     private var radius: Int =Definition.GEOFENCE_RADIUS_DEFAULT
 
+    var onDismissCallback: (() -> Unit)? = null
+
+
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-
-    }
 
 
     override fun onCancel(dialog: DialogInterface) {
@@ -63,6 +61,8 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         cmdConfigArea=null
         lblMetros=null
         activityResultLauncher=null
+
+        onDismissCallback?.invoke()
 
         Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
     }
@@ -134,7 +134,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         override fun onStateChanged(bottomSheet: View , newState: Int) {
             var state: String? = null
 
-            when (newState) {
+            when(newState) {
                 BottomSheetBehavior.STATE_COLLAPSED -> state = "STATE_COLLAPSED"
                 BottomSheetBehavior.STATE_DRAGGING -> state = "STATE_DRAGGING"
                 BottomSheetBehavior.STATE_EXPANDED -> state = "STATE_EXPANDED"
@@ -144,6 +144,10 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
                     //call ALWAYS dismiss to hide the modal background
                     handleUserExit()
                     dismiss()
+                }
+
+                BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                    TODO()
                 }
             }
             Log.d(ConfigGeofenceFragment::class.java.simpleName , state!!)
@@ -162,7 +166,8 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
 
 
     private val listenerSeekBar: OnSeekBarChangeListener = object : OnSeekBarChangeListener {
-        override fun onProgressChanged(seekBar: SeekBar , progress: Int , b: Boolean) {
+        @SuppressLint("SetTextI18n")
+        override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
 
             radius = progress
             lblMetros?.text = progress.toString()
