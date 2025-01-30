@@ -15,6 +15,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
@@ -71,9 +72,14 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
     private fun initializeViewModel() {
-        //guardo el viewmodel para poder usarlo en el fragment y en propertiesGeofencesActivt
-        viewmodelMapsActivity = ViewModelProvider(this, Definition.factory)[ViewmodelMapsActivity::class.java]
+        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
+        val factory = GenericViewModelFactory {
+            ViewmodelMapsActivity(application)
+        }
+
+        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap

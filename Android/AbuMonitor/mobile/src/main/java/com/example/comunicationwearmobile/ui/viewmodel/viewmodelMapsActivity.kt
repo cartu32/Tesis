@@ -16,7 +16,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 
-class ViewmodelMapsActivity(application: Application): AndroidViewModel(application) {
+class ViewmodelMapsActivity(private var application: Application): AndroidViewModel(application) {
 
     //atributo que almacena el Id del la ultima area geofence agregada
     private var lastIdArea=0
@@ -106,15 +106,21 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         viewModelScope.launch {
             var radius:Float=0f
 
-            listAreaGeofence?.forEach{areaData ->
-                with(areaData) {
-                    radius= areaData.circle.radius.toFloat()
+            listAreaGeofence?.forEach { areaData ->
+                val circleRadius = areaData.circle?.radius?.toFloat()
+                val areaLatLng = areaData.latLng
 
-                    if (Tools.isPointInsideCircle(latLng , areaData.latLng ,radius)) {
-                        Log.d(Definition.TAG_DEBUG , "Esta dentro del area: $id_area")
+                if (circleRadius != null && areaLatLng != null) {
+                    // Realizar la verificación si los valores necesarios no son nulos
+                    val isInside = Tools.isPointInsideCircle(latLng, areaLatLng, circleRadius)
+
+                    if (isInside) {
+                        Log.d(Definition.TAG_DEBUG, "Está dentro del área: ${areaData.id_area}")
                     } else {
-                        Log.d(Definition.TAG_DEBUG , "No se enceuntra en el area: $id_area")
+                        Log.d(Definition.TAG_DEBUG, "No se encuentra en el área: ${areaData.id_area}")
                     }
+                } else {
+                    Log.w(Definition.TAG_DEBUG, "Datos incompletos para evaluar el área: ${areaData.id_area}")
                 }
             }
         }
@@ -122,8 +128,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private fun removeAllMarkersAndCircles() {
         viewModelScope.launch {
             listAreaGeofence?.forEach { areaData ->
-                areaData.circle.remove()
-                areaData.marker.remove()
+                areaData.circle?.remove()
+                areaData.marker?.remove()
             }
         }
     }

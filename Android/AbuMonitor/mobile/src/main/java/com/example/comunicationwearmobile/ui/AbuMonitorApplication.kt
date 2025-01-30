@@ -12,8 +12,6 @@ class AbuMonitorApplication: Application() {
 
      override fun onCreate() {
         super.onCreate()
-        Definition.application = this
-
 
     }
 

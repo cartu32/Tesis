@@ -13,7 +13,7 @@ todos los datos de EntityAreaGeofence que corresponde a la base de datos
 */
 class AreaGeofenceInMap : Serializable {
     var id_area: Int =0
-    lateinit var latLng: LatLng
-    lateinit var circle: Circle
-    lateinit var marker: Marker
+    var latLng: LatLng ?= null
+    var circle: Circle ?= null
+    var marker: Marker ?= null
 }

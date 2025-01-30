@@ -16,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
@@ -95,10 +96,13 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     }
 
     private fun initializeViewModel() {
-        //guardo el viewmodel para poder usarlo en el fragment y en propertiesGeofencesActivt
-         viewmodelMapsActivity= ViewModelProvider(requireActivity(), Definition.factory)[ViewmodelMapsActivity::class.java]
-    }
+        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
+        val factory = GenericViewModelFactory {
+            ViewmodelMapsActivity(requireActivity().application)
+        }
 
+        viewmodelMapsActivity = ViewModelProvider(requireActivity(), factory)[ViewmodelMapsActivity::class.java]
+    }
 
     private fun configActivityResult() {
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

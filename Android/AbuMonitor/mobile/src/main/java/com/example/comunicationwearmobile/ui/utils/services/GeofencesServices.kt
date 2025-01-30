@@ -35,7 +35,7 @@ class GeofencesServices: Service() {
 
         notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
         notificationManagerHelper?.createChannelForegroundServices()
-        locationManagerHelper=LocationManagerHelper()
+        locationManagerHelper=LocationManagerHelper(this)
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
         locationManagerHelper?.configCheckStatusGps()
@@ -78,7 +78,7 @@ class GeofencesServices: Service() {
 
         intent?.let {
             // Comprobar el estado del GPS
-            locationManagerHelper?.checkLocationSettings()
+            locationManagerHelper?.checkLocationSettings(this)
 
             // Encola la solicitud en el Channel
             requestChannel?.trySend(it)

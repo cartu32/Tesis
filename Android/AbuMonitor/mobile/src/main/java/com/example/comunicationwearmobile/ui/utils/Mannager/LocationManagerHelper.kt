@@ -1,14 +1,11 @@
 package com.example.comunicationwearmobile.ui.utils.Mannager
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.view.activities.EnableGpsDialog
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -23,7 +20,7 @@ import com.google.android.gms.location.SettingsClient
  *  así como la gestión de permisos relacionados con la ubicación..
  *
  * @property activity nombre de la activity.
- */class LocationManagerHelper constructor() {
+ */class LocationManagerHelper constructor(private var context: Context) {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var settingsClient: SettingsClient
@@ -32,8 +29,8 @@ import com.google.android.gms.location.SettingsClient
 
     fun configCheckStatusGps() {
         // Inicializar clientes
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(Definition.application)
-        settingsClient = LocationServices.getSettingsClient(Definition.application)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        settingsClient = LocationServices.getSettingsClient(context)
 
         // Crear una solicitud de ubicación
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).build()
@@ -45,7 +42,7 @@ import com.google.android.gms.location.SettingsClient
 
     }
 
-    fun checkLocationSettings() {
+    fun checkLocationSettings(context: Context) {
         settingsClient.checkLocationSettings(locationSettingsRequest)
             .addOnSuccessListener {
                 // El GPS está activado
@@ -54,11 +51,11 @@ import com.google.android.gms.location.SettingsClient
             .addOnFailureListener { exception ->
                 if (exception is ResolvableApiException) {
                     // El GPS no está activado, pedir al usuario que lo active
-                    val intent = Intent(Definition.application, EnableGpsDialog::class.java)
+                    val intent = Intent(context, EnableGpsDialog::class.java)
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK )
                     intent.putExtra(Definition.RESOLVABLE_API_EXCEPTION, exception.resolution);
 
-                    startActivity(Definition.application,intent,null)
+                    startActivity(context,intent,null)
                 } else {
                     Log.e(Definition.TAG_DEBUG, "No se puede resolver: ${exception.message}")
                 }

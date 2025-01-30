@@ -14,7 +14,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.ui.viewmodel.ViewModelFactory
+import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
-    private var factory: ViewModelFactory?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,12 +62,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeViewModel() {
-        viewmodelMainActivity = if (factory != null) {
-            ViewModelProvider(this, factory!!)[ViewmodelMainActivity::class.java]
-        } else {
-            ViewModelProvider(this)[ViewmodelMainActivity::class.java]
+        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
+        val factory = GenericViewModelFactory {
+            ViewmodelMainActivity(application)
         }
+
+        viewmodelMainActivity = ViewModelProvider(this, factory)[ViewmodelMainActivity::class.java]
     }
+
 
 
     private fun initializeComponentsView() {
@@ -151,8 +152,24 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
     }
 
+
+    private fun freeListeners() {
+        val buttons = listOf(
+            R.id.cmdDefineAreas,
+            R.id.cmdDefineRoutes,
+            R.id.cmdDefineReminder,
+            R.id.cmdDefineContacts
+        )
+
+        buttons.forEach { id ->
+            findViewById<Button>(id).setOnClickListener(null)
+        }
+    }
     override fun onDestroy() {
         super.onDestroy()
+
+        //se libera los listeners de los botones
+        freeListeners()
 
         // Desvincular observadores de LiveData para evitar fugas de memoria
         viewmodelMainActivity?.permissionsToRequest?.removeObservers(this)
@@ -163,8 +180,8 @@ class MainActivity : AppCompatActivity() {
         viewmodelMainActivity?.onDestroyed()
         viewmodelMainActivity=null
 
-        factory=null
     }
+
 }
 
 

@@ -8,6 +8,7 @@ package com.example.comunicationwearmobile
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -30,14 +31,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        permissionManager= PermissionManager(this)
-        model.setLifecycleOwner(this)
+        val context = this
+        permissionManager= PermissionManager(context)
+        model.setLifecycleOwner(context)
 
         lifecycleScope.launch{
             val hasPermissionsAndCapabilities = model.checkPermissionsAndCapabilities(permissionManager!!)
 
             if(!hasPermissionsAndCapabilities ){
-                showToast(this, "Permisos no otorgados o el reloj no puede detectar caídas")
+                showToast(context, "Permisos no otorgados o el reloj no puede detectar caídas")
             }
         }
 

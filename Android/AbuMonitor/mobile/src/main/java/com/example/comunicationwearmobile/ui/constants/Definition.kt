@@ -3,11 +3,6 @@ package com.example.abumonitor.constants
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
-import com.example.abumonitor.ui.viewmodel.ViewModelFactory
-import com.example.abumonitor.ui.viewmodel.ViewmodelAreaGeofence
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
-import retrofit2.http.Tag
 
 object Definition {
     //nombre del archivo de la  base de datos Room
@@ -48,15 +43,6 @@ object Definition {
         Manifest.permission.WAKE_LOCK,
     )
 
-    val factory: ViewModelFactory by lazy {
-        ViewModelFactory(
-            mapOf(
-                ViewmodelAreaGeofence::class.java to { ViewmodelAreaGeofence(application) },
-                ViewmodelMainActivity::class.java to { ViewmodelMainActivity(application) },
-                ViewmodelMapsActivity::class.java to { ViewmodelMapsActivity(application) },
-                )
-        )
-    }
 
 
 }
