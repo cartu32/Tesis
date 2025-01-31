@@ -22,6 +22,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Database(
     entities = [EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
@@ -46,46 +47,44 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AbuMonitorDatabase? = null
-        private val firstTimeStateDao:DaoFirstTimeState?=null
 
-        suspend fun getDatabase(context: Context , scope: CoroutineScope): AbuMonitorDatabase? {
-            val callback = DatabaseCallback(scope)
 
-            if (INSTANCE == null) {
-                synchronized(this) {
-                    val instance = Room.databaseBuilder(
-                        context.applicationContext ,
-                        AbuMonitorDatabase::class.java ,
-                        Definition.DATABASE_NAME
-                    )
-                        .addCallback(callback)
-                        .fallbackToDestructiveMigration()
-                        .build()
-                    INSTANCE = instance
+        suspend fun getDatabase(context: Context, scope: CoroutineScope): AbuMonitorDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AbuMonitorDatabase::class.java,
+                    Definition.DATABASE_NAME
+                )
+                    .addCallback(DatabaseCallback(scope))
+                    .fallbackToDestructiveMigration()
+                    .build()
 
-                    scope.launch {
-                        saveFirstState(instance)
+                INSTANCE = instance
 
-                    }
-
+                scope.launch {
+                    saveFirstState(instance)
                 }
-                INSTANCE.let {
-                    if(!getFirstState(INSTANCE))
-                        callback.awaitCompletion()
+
+                instance // Devuelve la instancia creada
+            }.also { database ->
+                if (!getFirstState(database)) {
+                    database.openHelper.writableDatabase // Asegura que la BD se inicialice antes de continuar
                 }
             }
-
-            return INSTANCE
         }
 
         private suspend fun getFirstState(instance: AbuMonitorDatabase?): Boolean {
-            return try {
-                instance?.firstTimeStateDao()?.getFirstTimeState()?.isFirstTime ?: false
-            } catch (e: Exception) {
-                Log.e(TAG,"Error al leer el estado de la base de datos")
-                false
+            return withContext(Dispatchers.IO) {
+                try {
+                    instance?.firstTimeStateDao()?.getFirstTimeState()?.isFirstTime ?: false
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error al leer el estado de la base de datos")
+                    false
+                }
             }
         }
+
         private suspend fun saveFirstState(instance: AbuMonitorDatabase) {
             try {
                 val state = EntityFirstTimeState(isFirstTime = true)
@@ -95,6 +94,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
             }
         }
 
+     
         fun closeDatabase() {
             INSTANCE?.close()
             INSTANCE = null
@@ -126,7 +126,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
             private const val TYPE_AREA_START_ROUTE = "Inicio_Ruta"
             private const val TYPE_AREA_END_ROUTE = "Fin_Ruta"
 
-            private var isFirsrTime: Boolean = true
+
 
 
         }
@@ -134,7 +134,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
             super.onCreate(db)
             Log.d(TAG,"SE EJECUTA EN ON CREATE DE DATABASE")
             INSTANCE?.let { database ->
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch(Dispatchers.IO){
                     insertDataInDataBase(database)
 
                     completion.complete(Unit)
