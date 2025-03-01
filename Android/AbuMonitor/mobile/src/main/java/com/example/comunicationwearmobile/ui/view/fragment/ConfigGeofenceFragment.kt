@@ -14,6 +14,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
@@ -31,7 +33,6 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
     private var radius: Int =Definition.GEOFENCE_RADIUS_DEFAULT
 
-    var onDismissCallback: (() -> Unit)? = null
 
 
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
@@ -63,7 +64,6 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         lblMetros=null
         activityResultLauncher=null
 
-        onDismissCallback?.invoke()
 
         Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
     }
@@ -79,7 +79,6 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
             (contentView
                 .parent as View)
         )
-        mBottomSheetBehavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
         mBottomSheetBehavior.peekHeight = 1200
 
 
@@ -124,7 +123,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
                     dwellTime ,
                     description ,
                 )
-               }
+            }
             else{
                 viewmodelMapsActivity?.cancelInMap()
             }
@@ -133,35 +132,6 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
 
         }
     }
-
-    private val mBottomSheetBehaviorCallback: BottomSheetCallback = object : BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View , newState: Int) {
-            var state: String? = null
-
-            when(newState) {
-                BottomSheetBehavior.STATE_COLLAPSED -> state = "STATE_COLLAPSED"
-                BottomSheetBehavior.STATE_DRAGGING -> state = "STATE_DRAGGING"
-                BottomSheetBehavior.STATE_EXPANDED -> state = "STATE_EXPANDED"
-                BottomSheetBehavior.STATE_SETTLING -> state = "STATE_SETTLING"
-                BottomSheetBehavior.STATE_HIDDEN -> {
-                    state = "STATE_HIDDEN"
-                    //call ALWAYS dismiss to hide the modal background
-                    handleUserExit()
-                    dismiss()
-                }
-
-                BottomSheetBehavior.STATE_HALF_EXPANDED -> {
-                    TODO()
-                }
-            }
-            Log.d(ConfigGeofenceFragment::class.java.simpleName , state!!)
-        }
-
-        override fun onSlide(bottomSheet: View , slideOffset: Float) {
-            Log.d(ConfigGeofenceFragment::class.java.simpleName , slideOffset.toString())
-        }
-    }
-
     private val listenerCmdConfig =View.OnClickListener {
         val intent=Intent(context, PropertiesGeofenceActivity::class.java)
         activityResultLauncher?.launch(intent)
@@ -191,6 +161,20 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
         viewmodelMapsActivity?.cancelInMap()
     }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        val fragmentManager: FragmentManager = parentFragmentManager
+        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+        if (fragmentManager.backStackEntryCount > 0) {
+            fragmentManager.popBackStack()
+            Log.d("Prueba" , "fragment destruido. (Ondismiss)")
+        }
+        fragmentTransaction.commit()
+    }
 }
+
+
+
 
 

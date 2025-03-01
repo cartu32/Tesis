@@ -38,15 +38,12 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
     private var mMap: GoogleMap ?=null
     private var circle: Circle ?= null
+    // intent request code to handle updating play services if needed.
+    private val RC_HANDLE_GMS = 9001
 
-    private var frag: ConfigGeofenceFragment? = null
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
-    companion object {
 
-        // intent request code to handle updating play services if needed.
-        private const val RC_HANDLE_GMS = 9001
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,20 +139,13 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
 
 
     private fun showConfigGeofenceFragment() {
-        frag = ConfigGeofenceFragment().apply {
-            onDismissCallback = {freeFragment() }
-        }
-        // Muestra el fragmento
-        frag?.show(supportFragmentManager, ConfigGeofenceFragment::class.java.simpleName)
-    }
+        val fragmentManager = supportFragmentManager
+        val configGeofenceFragment=ConfigGeofenceFragment()
+        val ft = fragmentManager.beginTransaction()
 
-    private fun freeFragment() {
-        // Limpia el fragmento y el callback
-        frag?.let {
-            it.dismiss()  // Elimina el fragmento del FragmentManager
-            frag = null   // Libera la referencia al fragmento
-            Log.d(Definition.TAG_DEBUG, "Se libera frag")
-        }
+        ft.add(configGeofenceFragment, "Fragment")
+        ft.addToBackStack(null)
+        ft.commit()
     }
 
 
@@ -204,9 +194,6 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         mMap?.setOnMapLongClickListener(null)
         mMap?.setOnMapClickListener(null)
 
-        // Eliminar el fragmento si está presente
-        frag?.dismissAllowingStateLoss()
-        frag = null
 
         // Eliminar los observadores de LiveData
         viewmodelMapsActivity?.showMessage?.removeObservers(this)

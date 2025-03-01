@@ -23,7 +23,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-
 class PropertiesGeofenceActivity: AppCompatActivity() {
     private var spEvents:Spinner ?=null
     private var spPriority:Spinner ?=null
@@ -42,7 +41,6 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         //inicializo los elementos de la view
         configureInsets()
         initializeComponentsView()
-
     }
 
     private fun configureInsets() {
@@ -52,6 +50,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             insets
         }
     }
+
 
     private fun initializeComponentsView(){
         var items:Array<String>
@@ -84,48 +83,19 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
     }
 
-    private fun actionCancel() {
-        //metodo que se ejecuta al presionar el boton cancelar
-        Log.d(Definition.TAG_DEBUG,"Cancelando Geofence")
-
-        val resultIntent= Intent()
-        setResult(Activity.RESULT_CANCELED,resultIntent)
-
-        //ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
-        //se cierra la activity
-        finish()
-    }
-
-    private fun actionSave() {
-
-        //metodo que se ejecuta al presionar el boton guardar
-        Log.d(Definition.TAG_DEBUG,"confirmado datos Geofence")
-
-        val resultIntent= Intent()
-
-        resultIntent.putExtra("Intent_Event",spEvents?.selectedItemPosition)
-        resultIntent.putExtra("Intent_Priority",spPriority?.selectedItemPosition)
-        resultIntent.putExtra("Intent_SecurityZone",chkSecurityZone?.isActivated)
-        resultIntent.putExtra("Intent_Dweel_Time",txtDwellTime?.text.toString().toIntOrNull() ?:0)
-        resultIntent.putExtra("Intent_Description",txtDescription?.text.toString())
-        setResult(Activity.RESULT_OK,resultIntent)
-
-        //se cierra la activity
-        finish()
-    }
 
     private fun inititlizeSpinner(spinner: Spinner?,items:Array<String>,) {
 
         // Crea el adaptador personalizado
         val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            override fun getView(position: Int , convertView: View? , parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent)
                 (view as TextView).setTextColor(Color.BLACK) // Cambia el color del texto seleccionado
                 (view as TextView).textSize = 20F
                 return view
             }
 
-            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+            override fun getDropDownView(position: Int , convertView: View? , parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent)
                 (view as TextView).setTextColor(Color.WHITE) // Cambia el color del texto del desplegable
                 (view as TextView).textSize = 20F
@@ -143,7 +113,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
                 val selectedItem = parent?.getItemAtPosition(position).toString()
                 spEvents?.setSelection(position)
 
-                Log.d(Definition.TAG_DEBUG,"Seleccionaste: $selectedItem")
+                //Log.d(Definition.TAG_DEBUG,"Seleccionaste: $selectedItem")
             }
 
 
@@ -153,14 +123,44 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         }
     }
 
+    private fun actionCancel() {
+
+        val resultIntent= Intent()
+        setResult(Activity.RESULT_CANCELED,resultIntent)
+
+        //ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
+        //se cierra la activity
+        finish()
+    }
+
+    private fun actionSave() {
+
+        //metodo que se ejecuta al presionar el boton guardar
+        Log.d("Prueba","confirmado datos Geofence")
+
+        val resultIntent= Intent()
+
+        resultIntent.putExtra("Intent_Event",spEvents?.selectedItemPosition)
+        resultIntent.putExtra("Intent_Priority",spPriority?.selectedItemPosition)
+        resultIntent.putExtra("Intent_SecurityZone",chkSecurityZone?.isActivated)
+        resultIntent.putExtra("Intent_Dweel_Time",txtDwellTime?.text.toString().toIntOrNull() ?:0)
+        resultIntent.putExtra("Intent_Description",txtDescription?.text.toString())
+        setResult(Activity.RESULT_OK,resultIntent)
+
+        //se cierra la activity
+        finish()
+    }
+
+
     override fun onDestroy() {
         super.onDestroy()
 
-        spEvents=null
-        spPriority=null
 
         spPriority?.onItemSelectedListener=null
         spEvents?.onItemSelectedListener=null
+
+        spEvents=null
+        spPriority=null
 
         txtDescription=null
         txtDwellTime=null

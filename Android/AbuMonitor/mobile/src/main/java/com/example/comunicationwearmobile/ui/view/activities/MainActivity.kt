@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
 
         viewmodelMainActivity?.allPermissionGranted?.observe(this) { isRequired ->
             //Si se otorgaron todos los permisos, entonces se inicia el service
-            startGeofenceService()
+         //   startGeofenceService()
         }
     }
 
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted ->
         if (isGranted) {
             //Si se otorgaron todos los permisos, entonces se inicia el service
-            startGeofenceService()
+           // startGeofenceService()
         } else {
             val message = "ACCESS_BACKGROUND_LOCATION denegado"
             Toast.makeText(this , message , Toast.LENGTH_SHORT).show()
