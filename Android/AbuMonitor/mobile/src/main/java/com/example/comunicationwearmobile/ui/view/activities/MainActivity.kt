@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
+    private lateinit var backPressedCallback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,14 +33,49 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         configureInsets()
+        configCallbackBackPressed()
+        Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
+    }
+
+    private fun configCallbackBackPressed() {
+        backPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                //Log.d("ABUMONITOR_DEBUG", "Back button pressed - Finishing Activity")
+                finish() // Cierra la actividad
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        initComponent()
+        Log.d(Definition.TAG_DEBUG,"Onstart MainActivity")
+    }
+    private fun initComponent(){
         initializeViewModel()
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
 
-        // Verificar los permisos al iniciar
-        viewmodelMainActivity?.checkPermissions()
+    }
 
+    override fun onStop() {
+        super.onStop()
+        freeComponent()
+        Log.d(Definition.TAG_DEBUG,"onStop MainActivity")
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //remuevo el callback del boton back de Android
+        if (::backPressedCallback.isInitialized) {
+            backPressedCallback.remove() // Libera el callback
+        }
+        Log.d(Definition.TAG_DEBUG, "onDestroy MainActivity")
+        //System.exit(0)
     }
 
     private fun startGeofenceService() {
@@ -165,12 +202,8 @@ class MainActivity : AppCompatActivity() {
             findViewById<Button>(id).setOnClickListener(null)
         }
     }
-    override fun onDestroy() {
-        super.onDestroy()
 
-        //se libera los listeners de los botones
-        freeListeners()
-
+    private fun freeViewmodel(){
         // Desvincular observadores de LiveData para evitar fugas de memoria
         viewmodelMainActivity?.permissionsToRequest?.removeObservers(this)
         viewmodelMainActivity?.backgroundPermissionRequired?.removeObservers(this)
@@ -180,6 +213,12 @@ class MainActivity : AppCompatActivity() {
         viewmodelMainActivity?.onDestroyed()
         viewmodelMainActivity=null
 
+    }
+
+    private fun freeComponent(){
+        //se libera los listeners de los botones
+        freeListeners()
+        freeViewmodel()
     }
 
 }

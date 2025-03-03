@@ -137,15 +137,12 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
         return latLng
     }
 
-
     private fun showConfigGeofenceFragment() {
         val fragmentManager = supportFragmentManager
-        val configGeofenceFragment=ConfigGeofenceFragment()
+        val configGeofenceFragment = ConfigGeofenceFragment()
         val ft = fragmentManager.beginTransaction()
 
-        ft.add(configGeofenceFragment, "Fragment")
-        ft.addToBackStack(null)
-        ft.commit()
+        configGeofenceFragment.show(ft,"configGeofenceFragment")
     }
 
 
@@ -190,23 +187,24 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onDestroy() {
         super.onDestroy()
 
-        // Liberar listeners del mapa
-        mMap?.setOnMapLongClickListener(null)
-        mMap?.setOnMapClickListener(null)
-
-
-        // Eliminar los observadores de LiveData
-        viewmodelMapsActivity?.showMessage?.removeObservers(this)
 
         // Limpiar referencias del círculo
         circle?.remove() // Esto elimina el círculo del mapa
         circle=null
-        
+
+        // Liberar listeners del mapa
+        mMap?.setOnMapLongClickListener(null)
+        mMap?.setOnMapClickListener(null)
         mMap=null
-        
+
+        // Eliminar los observadores de LiveData
+        viewmodelMapsActivity?.showMessage?.removeObservers(this)
+
         // Limpiar referencias del ViewModel si es necesario
         viewmodelMapsActivity?.onDestroyed() // Personalizado si existe en tu implementación
         viewmodelMapsActivity=null
+
+        Log.d(Definition.TAG_DEBUG,"Ondestroy MapsActivity")
     }
 
 

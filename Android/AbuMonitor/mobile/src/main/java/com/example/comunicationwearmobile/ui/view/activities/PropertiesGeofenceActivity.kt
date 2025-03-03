@@ -169,6 +169,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         cmdSavGeofence=null
         cmdCancelGeofence=null
 
+        Log.d(Definition.TAG_DEBUG,"Ondestroy PropertiesGeofenceActvity")
+
     }
 
 

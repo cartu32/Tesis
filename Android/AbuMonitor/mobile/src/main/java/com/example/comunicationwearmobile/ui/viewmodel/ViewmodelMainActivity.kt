@@ -17,7 +17,7 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class ViewmodelMainActivity(private var application: Application): AndroidViewModel(application) {
+class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 
     private var tempAreaGeof:EntityAreaGeofence?=null
 
@@ -44,7 +44,7 @@ class ViewmodelMainActivity(private var application: Application): AndroidViewMo
 
 
     fun checkPermissions() {
-        val context =application.applicationContext
+        val context = getApplication<Application>().applicationContext
 
         val missingPermissions=checkGeneralPermissions(context)
         checkFineLocation(context,missingPermissions)

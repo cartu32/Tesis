@@ -43,6 +43,7 @@
         <!--ACTIVITY lAUNCHER-->
             <activity
            android:name=".ui.view.activities.MainActivity"
+           android:launchMode="singleTask"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />

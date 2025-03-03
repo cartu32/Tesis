@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -14,8 +13,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
@@ -23,7 +20,6 @@ import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
@@ -52,7 +48,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
 
     override fun onStop() {
         super.onStop()
-        Log.d(Definition.TAG_DEBUG,"Se destiene fragment")
+        Log.d(Definition.TAG_DEBUG,"OnStop en fragment")
     }
 
 
@@ -65,7 +61,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         activityResultLauncher=null
 
 
-        Log.d(Definition.TAG_DEBUG,"Se desturye fragment")
+        Log.d(Definition.TAG_DEBUG,"Ondestroy ConfigFragment")
     }
 
 
@@ -164,13 +160,12 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        val fragmentManager: FragmentManager = parentFragmentManager
-        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStack()
-            Log.d("Prueba" , "fragment destruido. (Ondismiss)")
+        val fragment = activity?.supportFragmentManager?.findFragmentByTag("configGeofenceFragment")
+        if (fragment is BottomSheetDialogFragment) {
+            activity?.supportFragmentManager?.beginTransaction()?.remove(fragment)?.commitAllowingStateLoss()
+            Log.d(Definition.TAG_DEBUG,"Se forzo la eliminacion del fragment en Ondismiss")
         }
-        fragmentTransaction.commit()
+
     }
 }
 
