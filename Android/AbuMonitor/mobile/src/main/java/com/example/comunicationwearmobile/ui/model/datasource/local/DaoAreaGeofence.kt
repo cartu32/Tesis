@@ -8,7 +8,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.data.model.RelationAreaGeofence
 
 @Dao
 
@@ -37,7 +36,7 @@ interface DaoAreaGeofence {
 
     @Transaction
     @Query("DELETE FROM Area_Geofence WHERE id_area = :idArea")
-    suspend fun deleteAreaWithId(idArea: Int):Int
+    suspend fun deleteAreaWithId(idArea: Long?):Int
 
     // Actualizar el área (solo actualiza la tabla principal)
     @Update

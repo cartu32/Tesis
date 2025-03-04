@@ -57,6 +57,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
         if (marker != null && circle != null)  {
             areaTemporary?.marker = marker
+            areaTemporary?.radius = circle.radius
             areaTemporary?.circle = circle
             areaTemporary?.latLng = latLng
 
@@ -174,36 +175,72 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     fun updateCircleRadius(radius: Int ){
 
        areaTemporary?.circle?.radius=radius.toDouble()
+       areaTemporary?.radius =radius.toDouble()
     }
 
     fun updateCircleColor(color:Int){
        //areaTemporary?.circle.strokeColor(color)
     }
 
-
-    fun determineWithinAnyCircle(latLng: LatLng){
+    fun deleteAreaGeofence(latLng: LatLng){
+        var idAreaSelected:Long?=null
+        var rowEliminated:Int?=null
+        val msg:String=""
 
         viewModelScope.launch {
-            var radius:Float=0f
+            withContext(Dispatchers.IO) {
+                //determino cual es el id del area seleccionada
+                idAreaSelected = determineWithinAnyCircle(latLng)
+                //lo borro en la base de datos
+                rowEliminated=repositoryArea?.deleteAreaWithId(idAreaSelected)
+                if(rowEliminated!!>0){
 
-            listAreaGeofence?.forEach { areaData ->
-                val circleRadius = areaData.circle?.radius?.toFloat()
-                val areaLatLng = areaData.latLng
-
-                if (circleRadius != null && areaLatLng != null) {
-                    // Realizar la verificación si los valores necesarios no son nulos
-                    val isInside = Tools.isPointInsideCircle(latLng, areaLatLng, circleRadius)
-
-                    if (isInside) {
-                        Log.d(Definition.TAG_DEBUG, "Está dentro del área: ${areaData.id_area}")
-                    } else {
-                        Log.d(Definition.TAG_DEBUG, "No se encuentra en el área: ${areaData.id_area}")
-                    }
-                } else {
-                    Log.w(Definition.TAG_DEBUG, "Datos incompletos para evaluar el área: ${areaData.id_area}")
                 }
+
+            }
+            withContext(Dispatchers.Main) {
+                if (rowEliminated!! > 0) {
+                    deleteAreaInListAreasAndMap(idAreaSelected)
+                    showMessage("Area de Geofence eliminada")
+                }
+                else{
+                    showMessage("No se enecontro el Id del area para borrar")
+                    }
             }
         }
+    }
+
+    private fun deleteAreaInListAreasAndMap(idAreaSelected: Long?) {
+        listAreaGeofence?.find { it.id_area == idAreaSelected }?.let { areaData ->
+            areaData.circle?.remove()
+            areaData.marker?.remove()
+            listAreaGeofence?.remove(areaData)
+        }
+    }
+
+    fun determineWithinAnyCircle(latLng: LatLng): Long? {
+        var idAreaSlected:Long?=null
+
+         listAreaGeofence?.forEach { areaData ->
+            val circleRadius = areaData.radius
+            val areaLatLng = areaData.latLng
+
+            if (circleRadius != null && areaLatLng != null) {
+                // Realizar la verificación si los valores necesarios no son nulos
+                val isInside = Tools.isPointInsideCircle(latLng, areaLatLng, circleRadius)
+
+                if (isInside) {
+                    idAreaSlected=areaData.id_area
+                    Log.d(Definition.TAG_DEBUG, "Está dentro del área: ${areaData.id_area}")
+                } else {
+                    Log.d(Definition.TAG_DEBUG, "No se encuentra en el área: ${areaData.id_area}")
+                }
+            } else {
+                Log.w(Definition.TAG_DEBUG, "Datos incompletos para evaluar el área: ${areaData.id_area}")
+            }
+        }
+
+        return idAreaSlected
     }
     private fun removeAllMarkersAndCircles() {
         viewModelScope.launch {

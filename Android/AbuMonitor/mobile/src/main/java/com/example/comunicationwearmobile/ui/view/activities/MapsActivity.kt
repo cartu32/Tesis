@@ -121,7 +121,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onMapLongClick(latLng: LatLng) {
         Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude${latLng.longitude}")
 
-        viewmodelMapsActivity?.determineWithinAnyCircle(latLng)
+        viewmodelMapsActivity?.deleteAreaGeofence(latLng)
        }
 
     override fun onLocationChanged(location: Location) {

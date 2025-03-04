@@ -1,25 +1,26 @@
 package com.example.comunicationwearmobile.ui.utils
 
 import android.location.Location
+import android.util.Log
+import com.example.abumonitor.constants.Definition
 import com.google.android.gms.maps.model.LatLng
 
 object Tools {
 
-    fun isPointInsideCircle(point: LatLng, center: LatLng?, radiusInMeters: Float): Boolean {
-        var distance=FloatArray(1)
+    fun isPointInsideCircle(point: LatLng, center: LatLng?, radiusInMeters: Double?): Boolean {
+        if (center == null || radiusInMeters == null) {
+            Log.e(Definition.TAG_DEBUG,"Error center o readiusInmeter son null")
+            return false // Si no hay centro o radio, no puede estar dentro.
+        }
 
-        center?.longitude?.let {
-            center.latitude.let { it1 ->
-                Location.distanceBetween( point.latitude,point.longitude,
-                    it1, it, distance)
-            }
-        };
+        val distance = FloatArray(1)
+        Location.distanceBetween(
+            point.latitude, point.longitude,
+            center.latitude, center.longitude,
+            distance
+        )
 
-        if( distance[0] > radiusInMeters  )
-            return false
-        else
-            return true
-
+        return distance[0] <= radiusInMeters
     }
 
 }

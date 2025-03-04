@@ -81,7 +81,7 @@ class ViewmodelAreaGeofence(application: Application):AndroidViewModel(applicati
         }
     }
 
-    fun deleteAreaGeofence(idArea:Int){
+    fun deleteAreaGeofence(idArea:Long){
         var rowEliminated:Int
         try {
             viewModelScope.launch {

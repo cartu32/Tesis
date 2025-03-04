@@ -26,7 +26,7 @@ class RepositoryAreaGeofence(
         daoAreaGeofence?.deleteArea(area)
     }
 
-    suspend fun deleteAreaWithId(idArea:Int): Int? {
+    suspend fun deleteAreaWithId(idArea: Long?): Int? {
         return daoAreaGeofence?.deleteAreaWithId(idArea)
     }
 
