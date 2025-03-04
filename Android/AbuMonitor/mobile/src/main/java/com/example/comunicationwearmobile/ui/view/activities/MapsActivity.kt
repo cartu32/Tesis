@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -119,10 +120,25 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
     override fun onMapLongClick(latLng: LatLng) {
-        Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude${latLng.longitude}")
+        Log.d(Definition.TAG_DEBUG,"LocacionLat:${latLng.latitude} Longitude:${latLng.longitude}")
 
-        viewmodelMapsActivity?.deleteAreaGeofence(latLng)
-       }
+        // Crear el cuadro de diálogo de confirmación
+        val dialog = AlertDialog.Builder(this) // 'this' puede ser tu contexto, dependiendo de donde estés llamando a la función
+            .setTitle("Eliminar área de geofence")
+            .setMessage("¿Estás seguro de que deseas eliminar esta área de geofence?")
+            .setPositiveButton("Sí") { _, _ ->
+                // Acción cuando el usuario confirma
+                viewmodelMapsActivity?.deleteAreaGeofence(latLng)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                // Acción cuando el usuario cancela
+                dialog.dismiss()
+            }
+            .create()
+
+        // Mostrar el cuadro de diálogo
+        dialog.show()
+    }
 
     override fun onLocationChanged(location: Location) {
         TODO("Not yet implemented")
