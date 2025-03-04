@@ -113,7 +113,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     override fun onMapClick(latLng: LatLng) {
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
 
-        addMarkerGeofence(latLng)
+        drawGeofenceArea(latLng)
         showConfigGeofenceFragment()
 
     }
@@ -146,11 +146,11 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
     }
 
 
-    private fun addMarkerGeofence(latLng: LatLng ) {
+    private fun drawGeofenceArea(latLng: LatLng ) {
        val marker = addMarker(latLng)
        val circle = addCircle(latLng)
 
-       viewmodelMapsActivity?.loadAreaTemporary(latLng,marker,circle)
+       viewmodelMapsActivity?.storeInTemporaryArea(latLng,marker,circle)
     }
 
     private fun addMarker(latLng: LatLng): Marker? {

@@ -135,17 +135,25 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
     private fun actionSave() {
 
-        //metodo que se ejecuta al presionar el boton guardar
-        Log.d("Prueba","confirmado datos Geofence")
+        //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
+        val eventSelected     = spEvents?.selectedItemPosition?.plus(1) ?: 0
+        //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
+        val prioritySelected  = spPriority?.selectedItemPosition?.plus(1) ?: 0
+        val securityZoneValue = chkSecurityZone?.isActivated
+        val dweelTimeValue    = txtDwellTime?.text.toString().toIntOrNull() ?:0
+        val descriptionValue  = txtDescription?.text.toString()
 
         val resultIntent= Intent()
 
-        resultIntent.putExtra("Intent_Event",spEvents?.selectedItemPosition)
-        resultIntent.putExtra("Intent_Priority",spPriority?.selectedItemPosition)
-        resultIntent.putExtra("Intent_SecurityZone",chkSecurityZone?.isActivated)
-        resultIntent.putExtra("Intent_Dweel_Time",txtDwellTime?.text.toString().toIntOrNull() ?:0)
-        resultIntent.putExtra("Intent_Description",txtDescription?.text.toString())
+        resultIntent.putExtra("Intent_Event", eventSelected)
+        resultIntent.putExtra("Intent_Priority", prioritySelected)
+        resultIntent.putExtra("Intent_SecurityZone",securityZoneValue)
+        resultIntent.putExtra("Intent_Dweel_Time",dweelTimeValue)
+        resultIntent.putExtra("Intent_Description",descriptionValue)
         setResult(Activity.RESULT_OK,resultIntent)
+
+        //metodo que se ejecuta al presionar el boton guardar
+        Log.d(Definition.TAG_DEBUG,"confirmado datos Geofence")
 
         //se cierra la activity
         finish()

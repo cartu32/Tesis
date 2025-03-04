@@ -10,7 +10,7 @@ import leakcanary.LeakCanary
 
 
 class AbuMonitorApplication: Application() {
-    private val ACTIVATE_LEAK_CANARY:Boolean= false
+    private val ACTIVATE_LEAK_CANARY:Boolean= true
 
     override fun onCreate() {
         super.onCreate()

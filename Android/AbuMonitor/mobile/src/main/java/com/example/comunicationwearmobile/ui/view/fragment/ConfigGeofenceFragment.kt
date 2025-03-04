@@ -110,14 +110,15 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
                 val isSecurityZone = data?.getBooleanExtra("Intent_SecurityZone" , false)
                 val dwellTime = data?.getIntExtra("Intent_Dweel_Time" , 0)
                 val description = data?.getStringExtra("Intent_Description")
+                val meters      = lblMetros?.text.toString()
 
-
-                viewmodelMapsActivity?.saveAreaGeofence(
+                viewmodelMapsActivity?.saveGeofenceAreaInBD(
                     itemEvent ,
                     itemPriority ,
                     isSecurityZone ,
                     dwellTime ,
                     description ,
+                    meters
                 )
             }
             else{

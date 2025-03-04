@@ -45,8 +45,8 @@ import java.time.LocalTime
 )
 data class EntityAreaGeofence(
     @PrimaryKey(autoGenerate = true) var id_area: Int =0 ,
-    var latitude:Double=0.0 ,
-    var longitude:Double=0.0 ,
+    var latitude:String= null.toString() ,
+    var longitude:String= null.toString() ,
     var meters:Int=0 ,
     var security_zone:Boolean=false ,
     var dwell_time: Int=0 ,
