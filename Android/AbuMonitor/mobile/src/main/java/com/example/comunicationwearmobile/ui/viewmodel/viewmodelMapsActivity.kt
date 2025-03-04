@@ -15,9 +15,10 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.sql.Time
+import kotlinx.coroutines.withContext
 
 
 class ViewmodelMapsActivity(application: Application): AndroidViewModel(application) {
@@ -69,6 +70,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         val itemColor=1
         val idContact=null
 
+        var idNewArea:Long?=null
         var entityAreaGeofence:EntityAreaGeofence?=null
 
         storeNewAreaInListAreas()
@@ -82,8 +84,20 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             idContact,
             itemColor
         )
-        saveInDatabase(entityAreaGeofence)
 
+        viewModelScope.launch {
+            idNewArea=saveInDatabase(entityAreaGeofence)
+            storeNewIdAreaInListAreas(idNewArea)
+        }
+    }
+
+
+    private fun storeNewIdAreaInListAreas(idNewArea: Long?) {
+        if (idNewArea != null) {
+            listAreaGeofence?.last()?.id_area=idNewArea
+        }else{
+            Log.e(Definition.TAG_DEBUG,"Error idNewArea is null")
+        }
     }
 
     private fun createObjEntityAreaGeofence(itemEvent: Int?, itemPriority: Int?, isSecurityZone: Boolean?, dwellTime: Int?, description: String?, meters: String,idContact:Int?, itemColor: Int?): EntityAreaGeofence? {
@@ -127,50 +141,34 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         _showMessage?.value="Area Cancelada"
     }
 
-    private fun saveInDatabase(entityAreaGeofence: EntityAreaGeofence?) {
+    private suspend  fun saveInDatabase(entityAreaGeofence: EntityAreaGeofence?): Long? {
+        var lastIdArea:Long?=null
         try {
-/*            val entityAreaGeofence=EntityAreaGeofence(
-                latitude = (-34.681680).toString(),
-                longitude = (-58.554367).toString(),
-                meters = 100,
-                id_type_area = 1,
-                id_color = 1,
-                id_event = 2,
-                security_zone = false,
-                dwell_time = 10,
-                id_contact = 2,
-                id_priority = 1
-            )*/
-            viewModelScope.launch{
                 if (entityAreaGeofence != null) {
-
-                    repositoryArea?.insertAreaGeonfence(entityAreaGeofence)
+                    withContext(Dispatchers.IO) {
+                        lastIdArea = repositoryArea?.insertAreaGeonfence(entityAreaGeofence)
+                    }
                     showMessage("Area agregada")
                 }else{
                     Log.e(Definition.TAG_DEBUG,"EntityAreaGeofence es null")
                 }
-            }
         }catch(e:Exception){
             showMessage("Error:No se puedo inserta el area de geofence")
             Log.e(Definition.TAG_DEBUG,"Error: No se pudo insertar el area.${e.message}")
         }
 
-        return
+        return lastIdArea
     }
 
     private fun storeNewAreaInListAreas() {
         //agrego en la lista el area geofen que se fue llenando anterirormente en areaTemporary
         areaTemporary?.let {
             //le asigno el id al area
-            it.id_area=lastIdArea
             listAreaGeofence?.add(it)
         }
 
         // Reinicia el estado de areaTemporary para el siguiente uso
         areaTemporary = AreaGeofenceInMap()
-
-        //creo el siguiente id para una nueva area
-        lastIdArea++
     }
 
     fun updateCircleRadius(radius: Int ){

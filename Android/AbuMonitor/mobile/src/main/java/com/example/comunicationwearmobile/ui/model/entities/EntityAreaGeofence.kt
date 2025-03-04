@@ -44,7 +44,7 @@ import java.time.LocalTime
     ]
 )
 data class EntityAreaGeofence(
-    @PrimaryKey(autoGenerate = true) var id_area: Int =0 ,
+    @PrimaryKey(autoGenerate = true) var id_area: Long =0 ,
     var latitude:String= null.toString() ,
     var longitude:String= null.toString() ,
     var meters:Int=0 ,

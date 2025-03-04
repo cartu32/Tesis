@@ -16,7 +16,7 @@ interface DaoAreaGeofence {
 
     // Insertar una nueva área geofence
     @Insert
-    suspend fun insertAreaGeofence(area: EntityAreaGeofence)
+    suspend fun insertAreaGeofence(area: EntityAreaGeofence):Long
 
     // Obtener todas las áreas con sus relaciones (relación 1 a N)
     @Transaction

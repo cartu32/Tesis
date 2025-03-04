@@ -12,7 +12,7 @@ que necesito.Es para no utilizar toda la
 todos los datos de EntityAreaGeofence que corresponde a la base de datos
 */
 class AreaGeofenceInMap : Serializable {
-    var id_area: Int =0
+    var id_area: Long =0
     var latLng: LatLng ?= null
     var circle: Circle ?= null
     var marker: Marker ?= null

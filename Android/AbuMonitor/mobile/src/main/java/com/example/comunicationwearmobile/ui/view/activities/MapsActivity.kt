@@ -160,6 +160,7 @@ class MapsActivity : FragmentActivity() , OnMapReadyCallback , OnMapLongClickLis
        return marker
     }
 
+
     private fun addCircle(latLng: LatLng? , radius: Int=Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
         val alpha = 64
 

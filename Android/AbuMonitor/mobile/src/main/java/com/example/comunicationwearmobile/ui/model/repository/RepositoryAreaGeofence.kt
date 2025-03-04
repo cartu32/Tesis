@@ -13,9 +13,10 @@ class RepositoryAreaGeofence(
     val listAreaGeofence:LiveData<List<EntityAreaGeofence>> = daoAreaGeofence!!.getAllAreas()
     val listJoinAreaGeofence:LiveData<List<JoinAreaGeofence>> = daoJoinAreaGeofence!!.getJoinAreaGeofence()
 
-    suspend fun insertAreaGeonfence(area:EntityAreaGeofence ) {
-      daoAreaGeofence?.insertAreaGeofence(area)
+    suspend fun insertAreaGeonfence(area:EntityAreaGeofence ): Long? {
+      return daoAreaGeofence?.insertAreaGeofence(area)
     }
+
 
     suspend fun getAreaWithId(areaId:Int):EntityAreaGeofence?{
         return daoAreaGeofence?.getAreaWithId(areaId)
