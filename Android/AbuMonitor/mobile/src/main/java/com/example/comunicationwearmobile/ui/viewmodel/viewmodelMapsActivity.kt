@@ -53,7 +53,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun storeInTemporaryArea(latLng: LatLng , marker: Marker? , circle: Circle?) {
+    fun storeInTemporaryArea(latLng: LatLng , circle: Circle?, marker: Marker? ) {
 
         if (marker != null && circle != null)  {
             areaTemporary?.marker = marker
