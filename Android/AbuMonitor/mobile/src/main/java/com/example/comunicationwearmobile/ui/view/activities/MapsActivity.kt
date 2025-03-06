@@ -20,8 +20,6 @@ class MapsActivity : AppCompatActivity() {
     private var mapsActivity:MapsManagerHelper ?= null
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
-
-
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

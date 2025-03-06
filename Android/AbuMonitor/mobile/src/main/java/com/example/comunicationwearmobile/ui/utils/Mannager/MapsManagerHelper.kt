@@ -111,7 +111,7 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
         return marker
     }
 
-    fun addCircle(latLng: LatLng, radius: Int = Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
+    fun addCircle(latLng: LatLng, radius: Double = Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
         val alpha = 64
         val colorCircle = Color.BLUE
         this.circle = mMap?.addCircle(

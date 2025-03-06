@@ -26,7 +26,7 @@ interface DaoAreaGeofence {
     // Obtener una sola área con todas sus relaciones (relación 1 a N)
     @Transaction
     @Query("SELECT * FROM Area_Geofence WHERE id_area = :idArea")
-    suspend fun getAreaWithId(idArea: Int): EntityAreaGeofence
+    suspend fun getAreaWithId(idArea: Long): EntityAreaGeofence
 
     // Eliminar un área (y todas sus relaciones con colores, eventos, prioridades, recordatorios, etc.)
     @Transaction

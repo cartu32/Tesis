@@ -27,7 +27,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     private var cmdConfigArea: Button? = null
     private var lblMetros: TextView? = null
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
-    private var radius: Int =Definition.GEOFENCE_RADIUS_DEFAULT
+    private var radius: Double =Definition.GEOFENCE_RADIUS_DEFAULT
 
 
 
@@ -84,7 +84,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
 
         seekBar?.setOnSeekBarChangeListener(listenerSeekBar)
         cmdConfigArea?.setOnClickListener(listenerCmdConfig)
-        seekBar?.progress = radius
+        seekBar?.progress = radius.toInt()
 
         initializeViewModel()
         configActivityResult()
@@ -140,7 +140,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         @SuppressLint("SetTextI18n")
         override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
 
-            radius = progress
+            radius = progress.toDouble()
             lblMetros?.text = progress.toString()
 
             viewmodelMapsActivity?.updateCircleRadius(radius)
