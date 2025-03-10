@@ -26,21 +26,24 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 
 
 class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListener,
-    OnMapClickListener, LocationListener {
+    OnMapClickListener, LocationListener, GoogleMap.OnCircleClickListener {
 
     private var mMap: GoogleMap? = null
     private var circle: Circle? = null
-    private var marker:Marker? = null
     private val RC_HANDLE_GMS = 9001
+
+    private val circlesMap = mutableMapOf<String?, Circle?>()
+
+    private var tempIdSelected:String?=null
 
     // Para notificar a la actividad sobre eventos
     var onMapClickListener: ((LatLng) -> Unit)? = null
     var onMapLongClickListener: ((LatLng) -> Unit)? = null
+    var onMapCircleClickListener: ((Circle) -> Unit)? = null
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -67,6 +70,8 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
 
         mMap?.setOnMapLongClickListener(this)
         mMap?.setOnMapClickListener(this)
+        mMap?.setOnCircleClickListener(this)
+
         enableFeatureMaps()
     }
 
@@ -93,25 +98,33 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
         onMapLongClickListener?.invoke(latLng)
     }
 
-    fun updateCircleColorGraphic(colorCircle: Int) {
-        val alpha = 64
-        circle?.strokeColor = colorCircle
+
+    override fun onCircleClick(circle: Circle) {
+        tempIdSelected=circle.tag.toString()
+        onMapCircleClickListener?.invoke(circle)
+
     }
 
-    fun drawGeofenceArea(latLng: LatLng): Pair<Circle?, Marker?> {
-        val marker = addMarker(latLng)
-        val circle = addCircle(latLng)
 
-        return Pair(circle,marker)
+    fun cleanMap(){
+        mMap?.clear()
     }
 
-    fun addMarker(latLng: LatLng): Marker? {
-        val geoFenceMarker = MarkerOptions().position(latLng)
-        marker = mMap?.addMarker(geoFenceMarker)
-        return marker
+    fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double=Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
+        val latLng=LatLng(latitude,longitude)
+
+        val circle = addCircle(latLng,meters)
+
+
+        return circle
     }
 
-    fun addCircle(latLng: LatLng, radius: Double = Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
+    fun deleteDrawnArea() {
+        circlesMap[tempIdSelected]?.remove() //Borra el círculo del mapa (visualmente)
+        circlesMap.remove(tempIdSelected)    //Elimina la referencia del círculo en el Map
+    }
+
+    fun addCircle(latLng: LatLng, radius: Double): Circle? {
         val alpha = 64
         val colorCircle = Color.BLUE
         this.circle = mMap?.addCircle(
@@ -121,6 +134,7 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
                 .fillColor(ColorUtils.setAlphaComponent(colorCircle, alpha))
                 .radius(radius.toDouble())
                 .strokeWidth(4f)
+                .clickable(true)
         )
         return circle
     }
@@ -134,25 +148,48 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
         return latLng
     }
 
+    fun setIdDrawnArea(id:Long){
+        val tag:String
+
+        tag=id.toString()
+        circle?.tag= tag
+        circlesMap[tag]=circle
+    }
+
+    fun cancelDrawnArea(){
+        circle?.remove()
+    }
+
     override fun onLocationChanged(p0: Location) {
         positionUpdate(p0)
     }
 
-    fun clean() {
+    fun removeAllCircle(){
+        circlesMap.values.forEach{it?.remove()}
+        circlesMap.clear()
+
         // Limpiar referencias del círculo
         circle?.remove() // Esto elimina el círculo del mapa
         circle=null
 
-        marker?.remove()
-        marker=null
-
-        onMapClickListener=null
-        onMapLongClickListener=null
+    }
+    fun clean() {
+        //libero todos los circulos
+        removeAllCircle()
 
         // Liberar listeners del mapa
+        onMapClickListener=null
+        onMapLongClickListener=null
+        onMapCircleClickListener=null
+
         mMap?.setOnMapLongClickListener(null)
         mMap?.setOnMapClickListener(null)
+        mMap?.setOnCircleClickListener(null)
         mMap=null
 
     }
+
+
+
+
 }

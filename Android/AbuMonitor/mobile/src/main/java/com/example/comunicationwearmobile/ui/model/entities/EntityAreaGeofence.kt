@@ -1,11 +1,14 @@
 package com.example.abumonitor.data.model
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 import java.time.LocalTime
 
+@Parcelize
 @Entity(
     tableName = "Area_Geofence",
     foreignKeys = [ForeignKey(
@@ -58,4 +61,4 @@ data class EntityAreaGeofence(
     var id_priority: Int =0 ,
     var id_reminder: Int ?=null ,
     var id_type_area: Int =0 ,
-)
+) : Parcelable

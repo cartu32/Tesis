@@ -8,26 +8,27 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaGeofence
-import com.example.comunicationwearmobile.ui.utils.Mannager.GeofenceManager
-import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class ViewmodelMapsActivity(application: Application): AndroidViewModel(application) {
 
-    private var geofenceManager: GeofenceManager?=null
-
     private var _showMessage:MutableLiveData<String>? = MutableLiveData<String>()
     val showMessage: LiveData<String>? = _showMessage
 
-    private var repositoryArea: RepositoryAreaGeofence ?=null
+    private var _idNewAreaGeof:MutableLiveData<Long>? = MutableLiveData<Long>()
+    val idNewAreaGeof: LiveData<Long>? = _idNewAreaGeof
 
+    private var _resultDeleteArea: MutableLiveData<Int>? = MutableLiveData<Int>()
+    val resultDeleteArea: MutableLiveData<Int>? = _resultDeleteArea
+
+    private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
+    val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
+
+    private var repositoryArea: RepositoryAreaGeofence ?=null
 
     init {
         viewModelScope.launch {
@@ -36,42 +37,50 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             val daoJoinAreaGeofence = database.joinAreaGeofence()
 
             repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
-            geofenceManager = GeofenceManager(repositoryArea!!)
+            //geofenceManager = GeofenceManager(repositoryArea!!)
+
+            getListAreasGefence()
 
             Log.d(Definition.TAG_DEBUG,"Base de datos abierta en ViewmodelMapsActivity")
+
         }
 
     }
 
-    fun storeInTemporaryArea(latLng: LatLng, circle: Circle?, marker: Marker?) {
-        geofenceManager?.storeInTemporaryArea(
-            latLng=latLng,
-            circle=circle,
-            marker=marker
-        )
-    }
 
-    fun saveGeofenceAreaInBD(itemEvent: Int?, itemPriority: Int?, isSecurityZone: Boolean?, dwellTime: Int?, description: String?, meters: String) {
-        var idNewArea:Long?=null
 
+    private fun getListAreasGefence() {
         viewModelScope.launch {
-            idNewArea=geofenceManager?.saveGeofenceAreaInBD(
-                itemEvent = itemEvent,
-                itemPriority = itemPriority,
-                isSecurityZone = isSecurityZone,
-                dwellTime = dwellTime,
-                description = description,
-                meters = meters
-            )
+            //obtengfo el listado de la base de datos
+            val rawGeofenceList = repositoryArea?.getListAllAreas()
 
-            if(idNewArea!=null){
-                showMessage("Nueva area agreagada")
-            }else{
-                showMessage("No se pudo agregar el area en la BD")
+            //configuro el livedata para la view y le envio el el listado de todas las areas que estan en la bd
+            //a mapactivity
+            rawGeofenceList?.let { listAllAreasGeof ->
+                _allAreas?.postValue(listAllAreasGeof)
             }
         }
+
     }
 
+    fun insertAreaInBD(areaGeofence: EntityAreaGeofence){
+
+        viewModelScope.launch {
+            val error=-1L
+            val newId:Long?=repositoryArea?.insertAreaGeofence(areaGeofence)
+            //si newId es null postvalue envia error, si no envia el newid
+            _idNewAreaGeof?.postValue(newId?:error)
+       }
+    }
+
+    fun deleteAreaInBD(idArea:Long){
+        viewModelScope.launch {
+            val error=-1
+            val result=repositoryArea?.deleteAreaWithId(idArea)
+
+            _resultDeleteArea?.postValue(result?:error)
+        }
+    }
     fun showMessage(msg:String) {
         //para seguir el patron MVVM no se muestra el Toast desde el viewmodel
         //sino que lo muestra la activity, atreves del observer modificando el livedata
@@ -79,50 +88,15 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         _showMessage?.postValue(msg)
     }
 
-    fun cancelInMap(){
-        geofenceManager?.cancelInMap()
-        showMessage("Area eliminada")
-    }
-
-
-    fun updateCircleRadius(radius: Double){
-        geofenceManager?.updateCircleRadius(radius)
-    }
-    fun deleteAreaGeofence(latLng: LatLng) {
-        viewModelScope.launch {
-            val idAreaSelected = geofenceManager?.determineWithinAnyCircle(latLng) ?: return@launch
-            val rowEliminated = geofenceManager?.deleteAreaGeofence(idAreaSelected)
-
-            if(rowEliminated==null){
-                Log.e(Definition.TAG_DEBUG,"Error rowElminated es null")
-                return@launch
-            }
-
-            withContext(Dispatchers.Main) {
-                if (rowEliminated > 0) {
-                    geofenceManager?.deleteAreaInListAreasAndMap(idAreaSelected)
-                    showMessage("Área de Geofence eliminada")
-                } else {
-                    showMessage("No se encontró el ID del área para borrar")
-                }
-            }
-        }
-    }
-
-
-    fun clearGeofenceManagerHelper(){
-        viewModelScope.launch {
-            geofenceManager?.clear()
-            geofenceManager=null
-        }
-    }
-
     fun onDestroyed() {
-        clearGeofenceManagerHelper()
 
         repositoryArea=null
+
         // Limpio el LiveData
         _showMessage = null
+        _allAreas=null
+        _resultDeleteArea=null
+        _idNewAreaGeof=null
 
         // Finalmente cancelo el scope
         viewModelScope.cancel()

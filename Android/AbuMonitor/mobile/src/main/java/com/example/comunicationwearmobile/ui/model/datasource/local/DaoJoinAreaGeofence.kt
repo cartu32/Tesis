@@ -18,5 +18,5 @@ interface DaoJoinAreaGeofence {
     FROM Area_Geofence AS Area
     INNER JOIN Color ON Area.id_color = Color.id_color
     """)
-    fun getJoinAreaGeofence():LiveData<List<JoinAreaGeofence>>
+    fun getJoinAreaGeofence():List<JoinAreaGeofence>
 }

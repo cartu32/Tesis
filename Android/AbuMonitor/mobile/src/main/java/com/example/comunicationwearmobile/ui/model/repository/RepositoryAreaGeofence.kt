@@ -12,8 +12,18 @@ class RepositoryAreaGeofence(
     val daoAreaGeofence: DaoAreaGeofence? ,
     val daoJoinAreaGeofence: DaoJoinAreaGeofence? ,
 ) {
-    val listAreaGeofence:LiveData<List<EntityAreaGeofence>> = daoAreaGeofence!!.getAllAreas()
-    val listJoinAreaGeofence:LiveData<List<JoinAreaGeofence>> = daoJoinAreaGeofence!!.getJoinAreaGeofence()
+
+    suspend fun getListAllAreas(): List<EntityAreaGeofence>? {
+        return withContext(Dispatchers.IO) {
+            val list=daoAreaGeofence?.getAllAreas()
+            list
+        }
+    }
+
+    suspend fun getListJoinAreaGeofence(): List<JoinAreaGeofence>? {
+        val list=daoJoinAreaGeofence?.getJoinAreaGeofence()
+        return list
+    }
 
     suspend fun insertAreaGeofence(area: EntityAreaGeofence?): Long? {
         return withContext(Dispatchers.IO) {

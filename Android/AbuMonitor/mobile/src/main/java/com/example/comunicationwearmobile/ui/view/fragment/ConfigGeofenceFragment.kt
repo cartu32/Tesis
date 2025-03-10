@@ -5,6 +5,8 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -15,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
@@ -99,36 +102,52 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         viewmodelMapsActivity = ViewModelProvider(requireActivity(), factory)[ViewmodelMapsActivity::class.java]
     }
 
+
     private fun configActivityResult() {
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                // Obtén los datos del Intent
-                val data = result.data
+            // Obtén los datos del Intent
+            val data = result.data
+            var dataNewAreaGeof:EntityAreaGeofence?=null
 
-                val itemEvent = data?.getIntExtra("Intent_Event" , 0)
-                val itemPriority = data?.getIntExtra("Intent_Priority" , 0)
-                val isSecurityZone = data?.getBooleanExtra("Intent_SecurityZone" , false)
-                val dwellTime = data?.getIntExtra("Intent_Dweel_Time" , 0)
-                val description = data?.getStringExtra("Intent_Description")
-                val meters      = lblMetros?.text.toString()
+            //obtengo el objeto EntityAreaGeofence con
+            //los datos que se ingresaron en la activty Properties
+            dataNewAreaGeof=data?.let {
+                extractDataNewAreaOfIntent(it)
+            }
 
-                viewmodelMapsActivity?.saveGeofenceAreaInBD(
-                    itemEvent ,
-                    itemPriority ,
-                    isSecurityZone ,
-                    dwellTime ,
-                    description ,
-                    meters
-                )
-            }
-            else{
-                viewmodelMapsActivity?.cancelInMap()
-            }
+            //le agrego los metros al objeto EntityAreaGeofence
+            dataNewAreaGeof?.meters=lblMetros?.text.toString().toInt()
+
+            //Envio el objeto EntityAreaGeofence y el resultado(OK o Cancel)
+            //al Maps Activty
+            sendDataNewAreaGeoToMapsActivty(result.resultCode,dataNewAreaGeof)
 
             dismiss()
 
         }
     }
+
+    private fun sendDataNewAreaGeoToMapsActivty(resultCode: Int, dataNewAreaGeof: EntityAreaGeofence?=null) {
+        //le retorno los datos a la mapsActivtivity(que es la actvity llamador
+        val bundle=Bundle().apply {
+            putParcelable(Definition.INTENT_DATA_NEW_AREA_GEOF,dataNewAreaGeof)
+            putInt(Definition.INTENT_STATE_OPERATION,resultCode)
+        }
+
+        parentFragmentManager.setFragmentResult(Definition.BUNDLE_FRAGMENT_RESULT_NEW_AREA,bundle)
+
+    }
+
+    private fun extractDataNewAreaOfIntent(data:Intent): EntityAreaGeofence? {
+        //Recibo los datos desde la activty PropertiesGeofence Activty
+        val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data.getParcelableExtra<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF,EntityAreaGeofence::class.java)
+        } else {
+            data.getParcelableExtra<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+        }
+        return dataNewAreaGeof
+    }
+
     private val listenerCmdConfig =View.OnClickListener {
         val intent=Intent(context, PropertiesGeofenceActivity::class.java)
         activityResultLauncher?.launch(intent)
@@ -140,10 +159,11 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         @SuppressLint("SetTextI18n")
         override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
 
+
             radius = progress.toDouble()
             lblMetros?.text = progress.toString()
 
-            viewmodelMapsActivity?.updateCircleRadius(radius)
+           // viewmodelMapsActivity?.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -154,9 +174,10 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     }
     //@Override
     private fun handleUserExit() {
+        val resultCanceled:Int=0
 
         Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
-        viewmodelMapsActivity?.cancelInMap()
+        sendDataNewAreaGeoToMapsActivty(resultCanceled)
     }
 
     override fun onDismiss(dialog: DialogInterface) {

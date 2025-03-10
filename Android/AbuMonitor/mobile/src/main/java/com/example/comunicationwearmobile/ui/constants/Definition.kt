@@ -10,6 +10,13 @@ object Definition {
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
 
+    //Intent que se usa para pasar al viewmodel los datos de la nueva area de gofecne
+    // cuando el usuario crea una nueva
+    const val INTENT_DATA_NEW_AREA_GEOF = "INTENT_DATA_NEW_AREA_GEOF"
+    const val INTENT_STATE_OPERATION = "INTENT_STATE_OPERATION"
+
+    const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
+
     //Definicion de configuracion del mapa
     const val GEOFENCE_RADIUS_DEFAULT:Double = 100.0
 

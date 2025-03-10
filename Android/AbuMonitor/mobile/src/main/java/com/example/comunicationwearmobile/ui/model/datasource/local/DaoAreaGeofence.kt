@@ -20,7 +20,7 @@ interface DaoAreaGeofence {
     // Obtener todas las áreas con sus relaciones (relación 1 a N)
     @Transaction
     @Query("SELECT * FROM Area_Geofence")
-    fun getAllAreas(): LiveData<List<EntityAreaGeofence>>
+    fun getAllAreas(): List<EntityAreaGeofence>
 
 
     // Obtener una sola área con todas sus relaciones (relación 1 a N)

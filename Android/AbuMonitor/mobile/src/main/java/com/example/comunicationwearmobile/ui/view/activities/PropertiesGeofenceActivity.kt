@@ -22,7 +22,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
+
 class PropertiesGeofenceActivity: AppCompatActivity() {
     private var spEvents:Spinner ?=null
     private var spPriority:Spinner ?=null
@@ -125,31 +128,38 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
     private fun actionCancel() {
 
+        //retorno al fragement ConfigGeofence que se presiono el boton cancelar
         val resultIntent= Intent()
         setResult(Activity.RESULT_CANCELED,resultIntent)
 
-        //ViewModelManager.sharedViewmodelMapsActivity.cancelInMap()
         //se cierra la activity
         finish()
     }
 
+
     private fun actionSave() {
+        //por el momento hardcodeo estos el color y el tipo de area
+        val color_blue=1
+        val type_area_geof=1
 
-        //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
-        val eventSelected     = spEvents?.selectedItemPosition?.plus(1) ?: 0
-        //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
-        val prioritySelected  = spPriority?.selectedItemPosition?.plus(1) ?: 0
-        val securityZoneValue = chkSecurityZone?.isActivated
-        val dweelTimeValue    = txtDwellTime?.text.toString().toIntOrNull() ?:0
-        val descriptionValue  = txtDescription?.text.toString()
+        var entityAreaAux=EntityAreaGeofence()
+        val resultIntent= Intent(this,ConfigGeofenceFragment::class.java)
 
-        val resultIntent= Intent()
+        with(entityAreaAux) {
+            //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
+            id_event = spEvents?.selectedItemPosition?.plus(1) ?: 0
+            id_priority = spPriority?.selectedItemPosition?.plus(1) ?: 0
+            security_zone = chkSecurityZone?.isChecked == true
+            dwell_time = txtDwellTime?.text.toString().toIntOrNull() ?: 0
+            description = txtDescription?.text.toString()
 
-        resultIntent.putExtra("Intent_Event", eventSelected)
-        resultIntent.putExtra("Intent_Priority", prioritySelected)
-        resultIntent.putExtra("Intent_SecurityZone",securityZoneValue)
-        resultIntent.putExtra("Intent_Dweel_Time",dweelTimeValue)
-        resultIntent.putExtra("Intent_Description",descriptionValue)
+            id_color=color_blue
+            id_type_area=type_area_geof
+        }
+
+        //retorno al fragement ConfigGeofence que se presiono el boton ok y
+        //ademas le envio el objeto EntityAreaGeofence con los datos ingresados
+        resultIntent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,entityAreaAux)
         setResult(Activity.RESULT_OK,resultIntent)
 
         //metodo que se ejecuta al presionar el boton guardar

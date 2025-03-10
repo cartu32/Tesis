@@ -34,9 +34,7 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
         viewModelScope.launch {
             val database = AbuMonitorDatabase.getDatabase(application.applicationContext, this)
 
-            if(database!=null)
-            //se creo e inicializo la base de datos
-                Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
+            Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
 
             tempAreaGeof=EntityAreaGeofence()
         }
