@@ -139,6 +139,10 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
         return circle
     }
 
+    fun updateGraphicsCircleRadius(meters: Double) {
+        circle?.radius= meters
+    }
+
     fun positionUpdate(location: Location): LatLng {
         val zoomLevel = 16.0f //This goes up to 21
         val latLng = LatLng(location.latitude , location.longitude)
@@ -188,7 +192,6 @@ class MapsManagerHelper : Fragment() , OnMapReadyCallback, OnMapLongClickListene
         mMap=null
 
     }
-
 
 
 

@@ -14,13 +14,14 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Mannager.MapsManagerHelper
+import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
 
-class MapsActivity : AppCompatActivity() {
+class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
     private var mapsActivity:MapsManagerHelper ?= null
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
@@ -120,6 +121,10 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
+    override fun updateCircleRadius(meters: Double){
+        //al mapsactivity lo uso como intermediario
+        mapsActivity?.updateGraphicsCircleRadius(meters)
+    }
 
     private fun initializeViewModel() {
         // Obtén una instancia del ViewModel usando el GenericViewModelFactory
@@ -239,6 +244,7 @@ class MapsActivity : AppCompatActivity() {
 
         Log.d(Definition.TAG_DEBUG,"Ondestroy MapsActivity")
     }
+
 
 
 }

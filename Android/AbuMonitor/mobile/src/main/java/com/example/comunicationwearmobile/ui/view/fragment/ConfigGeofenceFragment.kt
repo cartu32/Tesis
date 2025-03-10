@@ -1,8 +1,8 @@
 package com.example.comunicationwearmobile.ui.view.fragment
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
@@ -15,13 +15,11 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -32,9 +30,8 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
     private var radius: Double =Definition.GEOFENCE_RADIUS_DEFAULT
 
+    private var listener: OnDataSentListenerMapAct? = null
 
-
-    private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
 
 
@@ -62,13 +59,25 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         cmdConfigArea=null
         lblMetros=null
         activityResultLauncher=null
+        listener=null
 
 
         Log.d(Definition.TAG_DEBUG,"Ondestroy ConfigFragment")
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnDataSentListenerMapAct){
+            listener=context
+        }else {
+            throw RuntimeException("$context debe implementar OnDataSentListener")
+        }
+    }
 
-
+    override fun onDetach() {
+        super.onDetach()
+        listener=null
+    }
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog , style: Int) {
         val contentView = View.inflate(context , R.layout.fragment_config_geofence , null)
@@ -89,17 +98,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
         cmdConfigArea?.setOnClickListener(listenerCmdConfig)
         seekBar?.progress = radius.toInt()
 
-        initializeViewModel()
         configActivityResult()
-    }
-
-    private fun initializeViewModel() {
-        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
-        val factory = GenericViewModelFactory {
-            ViewmodelMapsActivity(requireActivity().application)
-        }
-
-        viewmodelMapsActivity = ViewModelProvider(requireActivity(), factory)[ViewmodelMapsActivity::class.java]
     }
 
 
@@ -163,7 +162,9 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
             radius = progress.toDouble()
             lblMetros?.text = progress.toString()
 
-           // viewmodelMapsActivity?.updateCircleRadius(radius)
+            //le envio el radio a mapsActivty para actualizar el circulo en tiempo real.
+            //No se lo envio como rerturn porque debe ser actualizado en tiempo real
+            listener?.updateCircleRadius(radius)
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar) {
