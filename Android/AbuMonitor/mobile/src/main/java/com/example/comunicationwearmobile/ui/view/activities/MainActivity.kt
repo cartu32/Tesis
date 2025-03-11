@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openMapsActivity() {
-        startActivity(Intent(this , MapsActivity::class.java))
+        startActivity(Intent(this , MapsDefineAreasActivity::class.java))
     }
 
     private fun showUnderConstruction() {

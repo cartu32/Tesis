@@ -54,7 +54,7 @@
 
        <!--OTHER ACTIVITIES-->
        <activity
-           android:name=".ui.view.activities.MapsActivity"
+           android:name=".ui.view.activities.MapsDefineAreasActivity"
            android:exported="true">
        </activity>
        <activity android:name=".ui.view.activities.EnableGpsDialog" />

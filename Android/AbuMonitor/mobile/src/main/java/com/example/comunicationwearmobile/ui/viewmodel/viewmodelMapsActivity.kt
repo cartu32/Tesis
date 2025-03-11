@@ -31,19 +31,16 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var repositoryArea: RepositoryAreaGeofence ?=null
 
     init {
-        viewModelScope.launch {
-            val database = AbuMonitorDatabase.getDatabase(application, this)
-            val daoAreaGeofence = database.entityAreaGeofenceDao()
-            val daoJoinAreaGeofence = database.joinAreaGeofence()
+        val database = AbuMonitorDatabase.getDatabase(application, viewModelScope)
+        val daoAreaGeofence = database.entityAreaGeofenceDao()
+        val daoJoinAreaGeofence = database.joinAreaGeofence()
 
-            repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
-            //geofenceManager = GeofenceManager(repositoryArea!!)
+        repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
+        //geofenceManager = GeofenceManager(repositoryArea!!)
 
-            getListAreasGefence()
+        getListAreasGefence()
 
-            Log.d(Definition.TAG_DEBUG,"Base de datos abierta en ViewmodelMapsActivity")
-
-        }
+        Log.d(Definition.TAG_DEBUG,"Base de datos abierta en ViewmodelMapsActivity")
 
     }
 

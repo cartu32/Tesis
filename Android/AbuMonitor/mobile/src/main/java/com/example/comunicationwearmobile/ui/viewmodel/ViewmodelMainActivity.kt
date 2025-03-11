@@ -31,13 +31,12 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     val allPermissionGranted: LiveData<Boolean?> = _allPermissionGranted
 
     init {
-        viewModelScope.launch {
-            val database = AbuMonitorDatabase.getDatabase(application.applicationContext, this)
+        val database = AbuMonitorDatabase.getDatabase(application.applicationContext, viewModelScope)
 
-            Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
+        Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
 
-            tempAreaGeof=EntityAreaGeofence()
-        }
+        tempAreaGeof=EntityAreaGeofence()
+
     }
 
 

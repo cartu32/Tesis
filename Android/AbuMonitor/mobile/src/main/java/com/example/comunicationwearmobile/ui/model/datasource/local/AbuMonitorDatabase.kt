@@ -49,7 +49,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
         private var INSTANCE: AbuMonitorDatabase? = null
 
 
-        suspend fun getDatabase(context: Context, scope: CoroutineScope): AbuMonitorDatabase {
+        fun getDatabase(context: Context, scope: CoroutineScope): AbuMonitorDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
@@ -62,15 +62,16 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
 
                 INSTANCE = instance
 
-                scope.launch {
-                    saveFirstState(instance)
+                // Ejecutar en un hilo separado
+                scope.launch(Dispatchers.IO) {
+                    if (!getFirstState(instance)) {
+                        saveFirstState(instance)
+                    }
                 }
 
-                instance // Devuelve la instancia creada
+                instance
             }.also { database ->
-                if (!getFirstState(database)) {
-                    database.openHelper.writableDatabase // Asegura que la BD se inicialice antes de continuar
-                }
+                database.openHelper.writableDatabase // Asegura que la BD se inicialice
             }
         }
 

@@ -6,14 +6,10 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
-import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Mannager.MapsManagerHelper
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
@@ -21,65 +17,61 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
 
-class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
-    private var mapsActivity:MapsManagerHelper ?= null
+class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     private var viewmodelMapsActivity:ViewmodelMapsActivity?=null
 
-
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        configInitial()
-        configListener()
         initializeViewModel()
         configOberserverLivedata()
     }
 
-    private fun configListener() {
-        // Establecer listeners para el mapa
-        mapsActivity?.onMapClickListener = { latLng ->
-            // Manejar el click en el mapa
-            listenerMapClick(latLng)
+
+    private fun initializeViewModel() {
+        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
+        val factory = GenericViewModelFactory {
+            ViewmodelMapsActivity(application)
         }
 
+        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
+    }
 
-        mapsActivity?.onMapCircleClickListener={circle->
-            listenerCircleClick(circle)
-        }
+
+    private fun configOberserverLivedata() {
+        configObserverShowMessage()
+        configObserverGetAllAreasGeofence()
+        configObserverIdNewArea()
+        configObserverResultDelete()
+    }
+
+    override fun onMapClick(latLng: LatLng) {
+        super.onMapClick(latLng)
+
+        //grafico en el mapa la nueva area
+        drawGeofenceArea(latLng.latitude,latLng.longitude)
+        showConfigGeofenceFragment(latLng)
+
+        Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
 
     }
 
-    private fun listenerCircleClick(circle: Circle) {
+    override fun onCircleClick(circle: Circle) {
+        super.onCircleClick(circle)
         showDeleteGeofenceDialog(circle.tag.toString().toLong())
         Log.d(Definition.TAG_DEBUG,"Circulo id:${circle.tag}")
         Toast.makeText(this,"Id Circulo${circle.tag}",Toast.LENGTH_SHORT).show()
     }
 
-    private fun configInitial() {
-        setContentView(R.layout.activity_maps)
-        mapsActivity=MapsManagerHelper()
-
-        // Configurar el mapa con callbacks
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, mapsActivity!!)
-            .commit()
-    }
 
 
-    private fun configOberserverLivedata() {
-       configObserverShowMessage()
-       configObserverGetAllAreasGeofence()
-       configObserverIdNewArea()
-       configObserverResultDelete()
-    }
 
     private fun configObserverResultDelete() {
         val error:Int=-1
         viewmodelMapsActivity?.resultDeleteArea?.observe(this){result->
 
             if(result!=error){
-                mapsActivity?.deleteDrawnArea()
+                deleteDrawnArea()
                 Toast.makeText(this,"Area eliminada",Toast.LENGTH_SHORT).show()
             }else{
                 Toast.makeText(this,"No se pudo eliminar el area",Toast.LENGTH_SHORT).show()
@@ -94,7 +86,7 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
 
         viewmodelMapsActivity?.idNewAreaGeof?.observe(this){id->
             if (id!=error){
-                mapsActivity?.setIdDrawnArea(id)
+                setIdDrawnArea(id)
                 Toast.makeText(this,"Area nueva registrada",Toast.LENGTH_SHORT).show()
             }else{
                 Toast.makeText(this,"No se pude registrar el Area",Toast.LENGTH_SHORT).show()
@@ -105,12 +97,12 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
 
     private fun configObserverGetAllAreasGeofence() {
         viewmodelMapsActivity?.allAreas?.observe(this){listAllAreas->
-            mapsActivity?.cleanMap()
+            cleanMap()
 
             listAllAreas.forEach{
                 Log.d(Definition.TAG_DEBUG,"Id:{${it.id_area} Description{${it.description}}")
-                mapsActivity?.drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble())
-                mapsActivity?.setIdDrawnArea(it.id_area)
+                drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble())
+                setIdDrawnArea(it.id_area)
             }
         }
     }
@@ -121,33 +113,11 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
         }
     }
 
-    override fun updateCircleRadius(meters: Double){
-        //al mapsactivity lo uso como intermediario
-        mapsActivity?.updateGraphicsCircleRadius(meters)
+    override fun updateCircleRadius(meters: Double) {
+        circle?.radius= meters
     }
 
-    private fun initializeViewModel() {
-        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
-        val factory = GenericViewModelFactory {
-            ViewmodelMapsActivity(application)
-        }
-
-        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
-    }
-
-
-    fun listenerMapClick(latLng: LatLng) {
-
-        //grafico en el mapa la nueva area
-        mapsActivity?.drawGeofenceArea(latLng.latitude,latLng.longitude)
-
-        showConfigGeofenceFragment(latLng)
-
-        Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
-
-    }
-
-  fun showDeleteGeofenceDialog(idArea:Long) {
+    fun showDeleteGeofenceDialog(idArea:Long) {
 
         // Crear el cuadro de diálogo de confirmación
         val dialog = AlertDialog.Builder(this) // 'this' puede ser tu contexto, dependiendo de donde estés llamando a la función
@@ -204,7 +174,7 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
     }
 
     private fun operationResultCanceled() {
-        mapsActivity?.cancelDrawnArea()
+        cancelDrawnArea()
         Toast.makeText(this,"Cancelado",Toast.LENGTH_SHORT).show()
     }
 
@@ -218,13 +188,19 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
             viewmodelMapsActivity?.insertAreaInBD(dataNewAreaGeofence)
         }
     }
+    fun cancelDrawnArea(){
+        circle?.remove()
+    }
 
+
+    open fun deleteDrawnArea() {
+        circlesMap[tempIdSelected]?.remove() //Borra el círculo del mapa (visualmente)
+        circlesMap.remove(tempIdSelected)    //Elimina la referencia del círculo en el Map
+    }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        mapsActivity?.clean()
-        mapsActivity=null
 
         supportFragmentManager.clearFragmentResult(Definition.BUNDLE_FRAGMENT_RESULT_NEW_AREA)
 
@@ -233,10 +209,6 @@ class MapsActivity : AppCompatActivity(),OnDataSentListenerMapAct{
         viewmodelMapsActivity?.resultDeleteArea?.removeObservers(this)
         viewmodelMapsActivity?.idNewAreaGeof?.removeObservers(this)
         viewmodelMapsActivity?.allAreas?.removeObservers(this)
-
-        mapsActivity?.onMapCircleClickListener=null
-        mapsActivity?.onMapClickListener=null
-        mapsActivity?.onMapLongClickListener=null
 
         // Limpiar referencias del ViewModel si es necesario
         viewmodelMapsActivity?.onDestroyed() // Personalizado si existe en tu implementación
