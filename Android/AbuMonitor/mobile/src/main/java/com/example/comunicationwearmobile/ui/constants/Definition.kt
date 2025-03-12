@@ -23,6 +23,11 @@ object Definition {
     //ID de la primera notificacion generada
     const val FIRST_NOTIFICATION_ID          = 1
 
+    //constantes que indican cada cuanto tiempo se lee del gps para mover el
+    //mapa
+    const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=30000
+    const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 15000
+
     //ID del Request permisson
     lateinit var application:Application
 

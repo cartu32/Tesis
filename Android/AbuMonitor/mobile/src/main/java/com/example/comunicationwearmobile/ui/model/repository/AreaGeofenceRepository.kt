@@ -1,6 +1,5 @@
 package com.example.abumonitor.data.repository
 
-import androidx.lifecycle.LiveData
 import com.example.abumonitor.data.datasource.local.DaoAreaGeofence
 import com.example.abumonitor.data.datasource.local.DaoJoinAreaGeofence
 import com.example.abumonitor.data.model.EntityAreaGeofence
@@ -8,7 +7,7 @@ import com.example.abumonitor.data.model.JoinAreaGeofence
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class RepositoryAreaGeofence(
+class AreaGeofenceRepository(
     val daoAreaGeofence: DaoAreaGeofence? ,
     val daoJoinAreaGeofence: DaoJoinAreaGeofence? ,
 ) {

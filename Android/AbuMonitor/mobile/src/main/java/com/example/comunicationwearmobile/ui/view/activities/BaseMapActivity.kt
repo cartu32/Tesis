@@ -1,17 +1,21 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.annotation.SuppressLint
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
@@ -30,6 +34,8 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     val RC_HANDLE_GMS = 9001
 
     var viewmodelMapsActivity: ViewmodelMapsActivity?=null
+    var viewmodelLoaction:ViewmodelLocation ?=null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +45,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
         mapFragment.getMapAsync(this)
 
         initializeViewModel()
+
     }
 
 
@@ -49,6 +56,8 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
         }
 
         viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
+
+        viewmodelLoaction= ViewmodelLocation(application)
     }
 
 
@@ -83,6 +92,21 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     open fun configOberserverLivedata() {
         configObserverShowMessage()
         configObserverGetAllAreasGeofence()
+        configObserverLocation()
+    }
+
+    open fun configObserverLocation(){
+        viewmodelLoaction?.locationLiveData?.observe(this){ location->
+            updateMapLoaction(location)
+        }
+        viewmodelLoaction?.startTracking()
+
+    }
+
+    open fun updateMapLoaction(location: Location?){
+        val zoomLevel=14f
+        val newLatLng = LatLng(location?.latitude ?: 0.0, location?.longitude ?:0.0 )
+        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(newLatLng,zoomLevel ))
     }
 
     private fun configObserverGetAllAreasGeofence() {
@@ -145,6 +169,9 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     override fun onDestroy() {
         super.onDestroy()
 
+        viewmodelLoaction?.stopTracking()
+        viewmodelLoaction?.locationLiveData?.removeObservers(this)
+        viewmodelLoaction=null
         viewmodelMapsActivity?.allAreas?.removeObservers(this)
         viewmodelMapsActivity?.showMessage?.removeObservers(this)
 

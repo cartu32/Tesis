@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
@@ -26,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
     private lateinit var backPressedCallback: OnBackPressedCallback
+    private var locationManagerHelper: LocationManagerHelper?=null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +37,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         configureInsets()
         configCallbackBackPressed()
+        configLocatioManager()
+
         Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
+    }
+
+    private fun configLocatioManager() {
+        locationManagerHelper=LocationManagerHelper(this)
+        locationManagerHelper?.configCheckStatusGps()
+
     }
 
     private fun configCallbackBackPressed() {
@@ -58,24 +69,7 @@ class MainActivity : AppCompatActivity() {
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-        freeComponent()
-        Log.d(Definition.TAG_DEBUG,"onStop MainActivity")
-
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        //remuevo el callback del boton back de Android
-        if (::backPressedCallback.isInitialized) {
-            backPressedCallback.remove() // Libera el callback
-        }
-        Log.d(Definition.TAG_DEBUG, "onDestroy MainActivity")
-        //System.exit(0)
+        locationManagerHelper?.checkLocationSettings(this)
     }
 
     private fun startGeofenceService() {
@@ -219,6 +213,24 @@ class MainActivity : AppCompatActivity() {
         //se libera los listeners de los botones
         freeListeners()
         freeViewmodel()
+        locationManagerHelper=null
+    }
+
+    override fun onStop() {
+        super.onStop()
+        freeComponent()
+        Log.d(Definition.TAG_DEBUG,"onStop MainActivity")
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //remuevo el callback del boton back de Android
+        if (::backPressedCallback.isInitialized) {
+            backPressedCallback.remove() // Libera el callback
+        }
+        Log.d(Definition.TAG_DEBUG, "onDestroy MainActivity")
+        //System.exit(0)
     }
 
 }

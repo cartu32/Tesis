@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.data.repository.RepositoryAreaGeofence
+import com.example.abumonitor.data.repository.AreaGeofenceRepository
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
@@ -35,7 +35,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
     val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
 
-    private var repositoryArea: RepositoryAreaGeofence ?=null
+    private var repositoryArea: AreaGeofenceRepository ?=null
     var circlesMap = mutableMapOf<Long?, Circle?>()
     var tempIdSelected:Long?=null
 
@@ -44,7 +44,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         val daoAreaGeofence = database.entityAreaGeofenceDao()
         val daoJoinAreaGeofence = database.joinAreaGeofence()
 
-        repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
+        repositoryArea = AreaGeofenceRepository(daoAreaGeofence, daoJoinAreaGeofence)
 
         getListAreasGefence()
 
