@@ -1,7 +1,11 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
+import android.graphics.Color
+import android.os.Build
+import android.os.Bundle
 import android.util.Log
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +14,9 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaGeofence
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
@@ -22,13 +29,15 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _idNewAreaGeof:MutableLiveData<Long>? = MutableLiveData<Long>()
     val idNewAreaGeof: LiveData<Long>? = _idNewAreaGeof
 
-    private var _resultDeleteArea: MutableLiveData<Int>? = MutableLiveData<Int>()
-    val resultDeleteArea: MutableLiveData<Int>? = _resultDeleteArea
+    private var _resultDeleteArea: MutableLiveData<Circle?>? = MutableLiveData<Circle?>()
+    val resultDeleteArea: LiveData<Circle?>? = _resultDeleteArea
 
     private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
     val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
 
     private var repositoryArea: RepositoryAreaGeofence ?=null
+    var circlesMap = mutableMapOf<Long?, Circle?>()
+    var tempIdSelected:Long?=null
 
     init {
         val database = AbuMonitorDatabase.getDatabase(application, viewModelScope)
@@ -36,14 +45,12 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         val daoJoinAreaGeofence = database.joinAreaGeofence()
 
         repositoryArea = RepositoryAreaGeofence(daoAreaGeofence, daoJoinAreaGeofence)
-        //geofenceManager = GeofenceManager(repositoryArea!!)
 
         getListAreasGefence()
 
         Log.d(Definition.TAG_DEBUG,"Base de datos abierta en ViewmodelMapsActivity")
 
     }
-
 
 
     private fun getListAreasGefence() {
@@ -70,14 +77,42 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
        }
     }
 
-    fun deleteAreaInBD(idArea:Long){
-        viewModelScope.launch {
-            val error=-1
-            val result=repositoryArea?.deleteAreaWithId(idArea)
 
-            _resultDeleteArea?.postValue(result?:error)
+    fun createCircle(latLng: LatLng, radius: Double): CircleOptions {
+        val alpha = 64
+        val colorCircle = Color.BLUE
+        val circleOptions = CircleOptions()
+                .center(latLng)
+                .strokeColor(colorCircle)
+                .fillColor(ColorUtils.setAlphaComponent(colorCircle, alpha))
+                .radius(radius.toDouble())
+                .strokeWidth(4f)
+                .clickable(true)
+        return circleOptions
+    }
+
+    fun deleteAreaInBD(idArea: Long) {
+        viewModelScope.launch {
+            var circleToDeleteinGraphic:Circle?=null
+            val error=-1
+
+            val result = repositoryArea?.deleteAreaWithId(idArea)
+
+            if (result!=error)
+            {
+                circleToDeleteinGraphic= circlesMap[idArea]
+                circlesMap.remove(idArea)
+                _resultDeleteArea?.postValue(circleToDeleteinGraphic)
+
+            }
+            else{
+                _resultDeleteArea?.postValue(null)
+
+            }
+
         }
     }
+
     fun showMessage(msg:String) {
         //para seguir el patron MVVM no se muestra el Toast desde el viewmodel
         //sino que lo muestra la activity, atreves del observer modificando el livedata
@@ -85,8 +120,32 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         _showMessage?.postValue(msg)
     }
 
+    fun addCircleInList(circleWithId:Circle){
+        var id:Long
+
+        id= circleWithId.tag as Long
+        circlesMap[id]=circleWithId
+    }
+
+    fun removeAllCircle(){
+        circlesMap.values.forEach{it?.remove()} // Elimina los círculos del mapa
+        circlesMap.clear() // Limpia todas las referencias del Map
+
+    }
+
+    fun extractDataNewAreaOfIntent(data: Bundle): EntityAreaGeofence? {
+        //Recibo los datos desde la activty PropertiesGeofence Activty
+        val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data.getParcelable<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF,EntityAreaGeofence::class.java)
+        } else {
+            data.getParcelable<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+        }
+        return dataNewAreaGeof
+    }
+
     fun onDestroyed() {
 
+        removeAllCircle()
         repositoryArea=null
 
         // Limpio el LiveData

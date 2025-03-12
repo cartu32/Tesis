@@ -1,12 +1,15 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.GoogleMap
@@ -15,33 +18,41 @@ import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 
 
 abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMapLongClickListener,
     OnMapClickListener, GoogleMap.OnCircleClickListener {
 
-    private val RC_HANDLE_GMS = 9001
 
     var mMap: GoogleMap? = null
     var circle: Circle? = null
+    val RC_HANDLE_GMS = 9001
 
-    val circlesMap = mutableMapOf<String?, Circle?>()
+    var viewmodelMapsActivity: ViewmodelMapsActivity?=null
 
-    var tempIdSelected:String?=null
-
-
-    open override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_base_map)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        initializeViewModel()
     }
 
 
-    open override fun onMapReady(googleMap: GoogleMap) {
+    private fun initializeViewModel() {
+        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
+        val factory = GenericViewModelFactory {
+            ViewmodelMapsActivity(application)
+        }
+
+        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
+    }
+
+
+    override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
 
@@ -53,9 +64,11 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
         }
 
         mMap?.setOnCircleClickListener(this)
-        mMap?.setOnMapClickListener (this)
+
         enableFeatureMaps()
+        configOberserverLivedata()
     }
+
 
     @SuppressLint("MissingPermission")
     private fun enableFeatureMaps() {
@@ -67,88 +80,83 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    open override fun onMapClick(latLng: LatLng) {
+    open fun configOberserverLivedata() {
+        configObserverShowMessage()
+        configObserverGetAllAreasGeofence()
+    }
+
+    private fun configObserverGetAllAreasGeofence() {
+
+        viewmodelMapsActivity?.allAreas?.observe(this){listAllAreas->
+            cleanMap()
+
+            listAllAreas.forEach{
+                Log.d(Definition.TAG_DEBUG,"Id:{${it.id_area} Description{${it.description}}")
+                circle=drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble())
+                setIdDrawnArea(it.id_area)
+            }
+        }
+    }
+
+    private fun configObserverShowMessage() {
+        viewmodelMapsActivity?.showMessage?.observe(this) { message ->
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onMapClick(latLng: LatLng) {
 
     }
 
-    open override fun onMapLongClick(latLng: LatLng) {
+    override fun onMapLongClick(latLng: LatLng) {
 
     }
 
 
-    open override fun onCircleClick(circle: Circle) {
-        tempIdSelected=circle.tag.toString()
+    override fun onCircleClick(circle: Circle) {
 
     }
 
+
+    open fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double=Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
+        val latLng=LatLng(latitude,longitude)
+        var newCicle:Circle?=null
+
+        val circleOptions=viewmodelMapsActivity?.createCircle(latLng,meters)
+
+        circleOptions?.let {
+            newCicle=mMap?.addCircle(it)
+        }
+        return newCicle
+    }
+
+
+    open fun setIdDrawnArea(idCircle: Long) {
+        circle?.let {
+            circle?.tag = idCircle
+            viewmodelMapsActivity?.addCircleInList(it)
+        }
+    }
 
     open fun cleanMap(){
         mMap?.clear()
     }
 
-    open fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double=Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
-        val latLng=LatLng(latitude,longitude)
-
-        val circle = addCircle(latLng,meters)
-
-
-        return circle
-    }
-
-
-    open fun addCircle(latLng: LatLng, radius: Double): Circle? {
-        val alpha = 64
-        val colorCircle = Color.BLUE
-        this.circle = mMap?.addCircle(
-            CircleOptions()
-                .center(latLng)
-                .strokeColor(colorCircle)
-                .fillColor(ColorUtils.setAlphaComponent(colorCircle, alpha))
-                .radius(radius.toDouble())
-                .strokeWidth(4f)
-                .clickable(true)
-        )
-        return circle
-    }
-
-
-
-    open fun setIdDrawnArea(id:Long){
-        val tag:String
-
-        tag=id.toString()
-        circle?.tag= tag
-        circlesMap[tag]=circle
-    }
-
-
-
-
-    fun removeAllCircle(){
-        circlesMap.values.forEach{it?.remove()}
-        circlesMap.clear()
-
-        // Limpiar referencias del círculo
-        circle?.remove() // Esto elimina el círculo del mapa
-        circle=null
-
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
-        //libero todos los circulos
-        removeAllCircle()
+        viewmodelMapsActivity?.allAreas?.removeObservers(this)
+        viewmodelMapsActivity?.showMessage?.removeObservers(this)
 
-        mMap?.setOnMapLongClickListener(null)
-        mMap?.setOnMapClickListener(null)
+        // Limpiar referencias del ViewModel si es necesario
+        viewmodelMapsActivity?.onDestroyed()
+
+        // Limpiar referencias del círculo
+        circle?.remove() // Esto elimina el círculo del mapa
         mMap?.setOnCircleClickListener(null)
-        mMap=null
+
+        circle=null
 
     }
-
-    //***********************
-
-
 
 }
