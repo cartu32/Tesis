@@ -57,6 +57,10 @@
            android:name=".ui.view.activities.MapsDefineAreasActivity"
            android:exported="true">
        </activity>
+        <activity
+            android:name=".ui.view.activities.MapsElderlyTrackActivity"
+            android:exported="true">
+        </activity>
        <activity android:name=".ui.view.activities.EnableGpsDialog" />
         <activity android:name=".ui.view.activities.PropertiesGeofenceActivity" />
 

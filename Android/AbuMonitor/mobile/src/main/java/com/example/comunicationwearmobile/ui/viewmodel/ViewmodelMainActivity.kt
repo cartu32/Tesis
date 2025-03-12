@@ -15,7 +15,6 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 

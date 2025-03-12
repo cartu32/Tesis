@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Application
 
 object Definition {
+    const val ZOOM_MAP: Float = 15f
+
     //nombre del archivo de la  base de datos Room
     const val DATABASE_NAME= "AbuMonitorDatabase.db"
     //TAG para hacer los logs
@@ -25,7 +27,7 @@ object Definition {
 
     //constantes que indican cada cuanto tiempo se lee del gps para mover el
     //mapa
-    const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=30000
+    const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=50000
     const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 15000
 
     //ID del Request permisson

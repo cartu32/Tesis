@@ -78,7 +78,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         }
     }
 
-    fun cancelDrawnArea(){
+    private fun cancelDrawnArea(){
         circle?.remove()
     }
 
@@ -86,7 +86,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         circle?.radius= meters
     }
 
-    fun showDeleteGeofenceDialog(idArea:Long) {
+    private fun showDeleteGeofenceDialog(idArea:Long) {
 
         // Crear el cuadro de diálogo de confirmación
         val dialog = AlertDialog.Builder(this) // 'this' puede ser tu contexto, dependiendo de donde estés llamando a la función
@@ -140,7 +140,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     }
 
     private fun operationResultOK(bundle: Bundle,latLng: LatLng) {
-        var dataNewAreaGeofence = viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
+        val dataNewAreaGeofence = viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
 
         dataNewAreaGeofence?.latitude= latLng.latitude.toString()
         dataNewAreaGeofence?.longitude= latLng.longitude.toString()

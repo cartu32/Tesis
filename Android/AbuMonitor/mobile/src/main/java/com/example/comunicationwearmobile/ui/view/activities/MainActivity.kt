@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         //sin necesidad de crear objetos botones
         val buttons = mapOf(
             R.id.cmdDefineAreas to ::openMapsActivity ,
-            R.id.cmdDefineRoutes to ::showUnderConstruction ,
+            R.id.cmdDefineRoutes to ::openMapsElderlyTrackActivity ,
             R.id.cmdDefineReminder to ::showUnderConstruction ,
             R.id.cmdDefineContacts to ::showUnderConstruction
         )
@@ -179,6 +179,9 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this , MapsDefineAreasActivity::class.java))
     }
 
+    private fun openMapsElderlyTrackActivity() {
+        startActivity(Intent(this , MapsElderlyTrackActivity::class.java))
+    }
     private fun showUnderConstruction() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
     }

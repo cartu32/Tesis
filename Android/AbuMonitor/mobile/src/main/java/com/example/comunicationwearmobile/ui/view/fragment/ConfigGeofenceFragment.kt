@@ -23,7 +23,7 @@ import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceA
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
+class ConfigGeofenceFragment : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
     private var cmdConfigArea: Button? = null
     private var lblMetros: TextView? = null
@@ -175,7 +175,7 @@ class ConfigGeofenceFragment() : BottomSheetDialogFragment() {
     }
     //@Override
     private fun handleUserExit() {
-        val resultCanceled:Int=0
+        val resultCanceled =0
 
         Log.d(Definition.TAG_DEBUG,"Fragment cerrado por el usuario")
         sendDataNewAreaGeoToMapsActivty(resultCanceled)
