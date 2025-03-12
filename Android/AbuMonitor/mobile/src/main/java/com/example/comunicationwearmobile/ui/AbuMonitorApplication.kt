@@ -13,7 +13,7 @@ class AbuMonitorApplication: Application() {
     private val ACTIVATE_LEAK_CANARY:Boolean= true
 
     override fun onCreate() {
-        super.onCreate() 
+        super.onCreate()
 
         // Modifica la configuración de LeakCanary para evitar heap dumps automáticos
         LeakCanary.config = LeakCanary.config.copy(dumpHeap = ACTIVATE_LEAK_CANARY)
