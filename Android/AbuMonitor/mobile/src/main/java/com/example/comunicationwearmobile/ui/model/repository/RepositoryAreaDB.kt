@@ -7,7 +7,7 @@ import com.example.abumonitor.data.model.JoinAreaGeofence
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class AreaGeofenceRepository(
+class RepositoryAreaDB(
     val daoAreaGeofence: DaoAreaGeofence? ,
     val daoJoinAreaGeofence: DaoJoinAreaGeofence? ,
 ) {

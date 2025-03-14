@@ -94,7 +94,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
             .setMessage("¿Estás seguro de que deseas eliminar esta área de geofence?")
             .setPositiveButton("Sí") { _, _ ->
                 // Acción cuando el usuario confirma
-                viewmodelMapsActivity?.deleteAreaInBD(idArea)
+                viewmodelMapsActivity?.deleteAreaGeof(this,idArea)
             }
             .setNegativeButton("No") { dialog, _ ->
                 // Acción cuando el usuario cancela
@@ -146,7 +146,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         dataNewAreaGeofence?.longitude= latLng.longitude.toString()
 
         if (dataNewAreaGeofence != null) {
-            viewmodelMapsActivity?.insertAreaInBD(dataNewAreaGeofence)
+            viewmodelMapsActivity?.insertAreaGeof(this,dataNewAreaGeofence)
         }
     }
 

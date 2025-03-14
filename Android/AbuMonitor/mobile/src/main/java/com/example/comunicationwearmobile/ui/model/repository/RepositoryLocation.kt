@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.abumonitor.constants.Definition
 import com.google.android.gms.location.*
 
-class LocationRepository(context: Context) {
+class RepositoryLocation(context: Context) {
 
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     private val locationLiveData = MutableLiveData<Location>()

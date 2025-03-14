@@ -71,6 +71,15 @@
             android:label="Geofences Intent Service"
             android:foregroundServiceType="location">
         </service>
+
+        <receiver
+            android:name=".ui.utils.broadcast.GeofenceBroadcastReceiver"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.example.app.ACTION_GEOFENCE_EVENT"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

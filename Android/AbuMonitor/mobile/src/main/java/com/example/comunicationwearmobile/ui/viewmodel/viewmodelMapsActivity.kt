@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -13,7 +14,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.data.repository.AreaGeofenceRepository
+import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
@@ -35,7 +37,9 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
     val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
 
-    private var repositoryArea: AreaGeofenceRepository ?=null
+    private var repositoryAreaDB: RepositoryAreaDB ?=null
+    private var repositoryGeofActivate: RepositoryGeofActivate ?=null
+
     var circlesMap = mutableMapOf<Long?, Circle?>()
     var tempIdSelected:Long?=null
 
@@ -44,7 +48,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         val daoAreaGeofence = database.entityAreaGeofenceDao()
         val daoJoinAreaGeofence = database.joinAreaGeofence()
 
-        repositoryArea = AreaGeofenceRepository(daoAreaGeofence, daoJoinAreaGeofence)
+        repositoryAreaDB = RepositoryAreaDB(daoAreaGeofence, daoJoinAreaGeofence)
+        repositoryGeofActivate = RepositoryGeofActivate()
 
         getListAreasGefence()
 
@@ -56,7 +61,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private fun getListAreasGefence() {
         viewModelScope.launch {
             //obtengfo el listado de la base de datos
-            val rawGeofenceList = repositoryArea?.getListAllAreas()
+            val rawGeofenceList = repositoryAreaDB?.getListAllAreas()
 
             //configuro el livedata para la view y le envio el el listado de todas las areas que estan en la bd
             //a mapactivity
@@ -67,15 +72,24 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun insertAreaInBD(areaGeofence: EntityAreaGeofence){
+    fun insertAreaGeof(context: Context,areaGeofence: EntityAreaGeofence){
 
         viewModelScope.launch {
             val error=-1L
-            val newId:Long?=repositoryArea?.insertAreaGeofence(areaGeofence)
+            val newId:Long?=repositoryAreaDB?.insertAreaGeofence(areaGeofence)
+
+            if((newId!=error)&&(newId!=null)) {
+                areaGeofence.id_area = newId
+                repositoryGeofActivate?.activateGeofence(context, areaGeofence)
+            }
+
             //si newId es null postvalue envia error, si no envia el newid
             _idNewAreaGeof?.postValue(newId?:error)
+
        }
     }
+
+
 
 
     fun createCircle(latLng: LatLng, radius: Double): CircleOptions {
@@ -91,17 +105,23 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
         return circleOptions
     }
 
-    fun deleteAreaInBD(idArea: Long) {
+    fun deleteAreaGeof(context: Context,idArea: Long) {
         viewModelScope.launch {
             var circleToDeleteinGraphic:Circle?=null
             val error=-1
 
-            val result = repositoryArea?.deleteAreaWithId(idArea)
+            val result = repositoryAreaDB?.deleteAreaWithId(idArea)
 
             if (result!=error)
             {
+                //desactivo el area de geofence
+                repositoryGeofActivate?.desactivateGeofence(context,idArea.toString())
+
+                //elimino el area del listado de circulos
                 circleToDeleteinGraphic= circlesMap[idArea]
                 circlesMap.remove(idArea)
+
+                //le aviso a la view que borre el circulo del mapa grafico
                 _resultDeleteArea?.postValue(circleToDeleteinGraphic)
 
             }
@@ -146,7 +166,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     fun onDestroyed() {
 
         removeAllCircle()
-        repositoryArea=null
+        repositoryAreaDB=null
+        repositoryGeofActivate=null
 
         // Limpio el LiveData
         _showMessage = null
