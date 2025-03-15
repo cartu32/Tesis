@@ -34,7 +34,7 @@
         android:roundIcon="@mipmap/ic_old_people_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight"
-        tools:targetApi="31">
+        >
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

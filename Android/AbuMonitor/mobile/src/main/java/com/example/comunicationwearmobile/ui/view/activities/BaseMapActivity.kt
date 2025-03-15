@@ -20,6 +20,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
+//Esta es la clase padre que se usa para crear los mapas con las areas de geofencing
+//De esta clase heredan las demas.Por ejemplo:
+//-MapDefineAreasActvity
+//-MapsElderlyTrackActivity
 
 abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMapLongClickListener,
     OnMapClickListener, GoogleMap.OnCircleClickListener {

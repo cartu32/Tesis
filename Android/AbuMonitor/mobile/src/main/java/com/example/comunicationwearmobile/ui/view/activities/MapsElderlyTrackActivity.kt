@@ -13,6 +13,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
+//Esta es la clase hija que hereda de BaseMapActivity
+//Esta clase hija define metodos que solo deben usarse en este mapa.
+//Por ejemplo updateMapLocation: que actualiza la camara del mapa a la ubicacion actual
 
 class MapsElderlyTrackActivity : BaseMapActivity(){
     private var viewmodelLoaction: ViewmodelLocation?=null

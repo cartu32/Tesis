@@ -15,7 +15,9 @@ import com.google.android.gms.location.LocationServices
 class RepositoryGeofActivate() {
 
     @SuppressLint("MissingPermission")
-    fun activateGeofence(context:Context,areaGeof: EntityAreaGeofence) {
+    fun activateGeofence(context:Context,areaGeof: EntityAreaGeofence): Boolean {
+
+        var resultOperation:Boolean=false
 
         val geofencingClient = LocationServices.getGeofencingClient(context)
 
@@ -34,8 +36,15 @@ class RepositoryGeofActivate() {
         val pendingIntent = getGeofencePendingIntent(context)
 
         geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-            .addOnSuccessListener { Log.d("GeofenceRepo", "Geofence agregado: $geofencingRequest.") }
-            .addOnFailureListener { Log.e("GeofenceRepo", "Error al agregar geofence: ${it.message}") }
+            .addOnSuccessListener {
+                resultOperation=true
+                Log.d("GeofenceRepo", "Geofence agregado: $geofencingRequest.")
+            }
+            .addOnFailureListener {
+                resultOperation=false
+                Log.e("GeofenceRepo", "Error al agregar geofence: ${it.message}")
+            }
+        return resultOperation
     }
 
     private fun getGeofencePendingIntent(context: Context): PendingIntent {

@@ -12,7 +12,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
-
+//Esta es la clase hija que hereda de BaseMapActivity
+//Esta clase hija define metodos que solo deben usarse en este mapa.
+//Por ejemplo showDeleteGeofenceDialog: ya que este se usa para borrar los ciruclos del mapa,
+//cuando se crean las areas de geofence
 class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
 
     override fun onMapReady(googleMap: GoogleMap) {
