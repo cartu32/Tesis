@@ -24,7 +24,6 @@ import com.google.android.gms.maps.model.LatLng
 //De esta clase heredan las demas.Por ejemplo:
 //-MapDefineAreasActvity
 //-MapsElderlyTrackActivity
-
 abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMapLongClickListener,
     OnMapClickListener, GoogleMap.OnCircleClickListener {
 

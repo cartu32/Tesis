@@ -68,14 +68,23 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     }
 
     private fun configObserverIdNewArea() {
-        val error:Long=-1L
 
         viewmodelMapsActivity?.idNewAreaGeof?.observe(this){id->
-            if (id!=error){
-               setIdDrawnArea(id)
-               Toast.makeText(this,"Area nueva registrada",Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(this,"No se pude registrar el Area",Toast.LENGTH_SHORT).show()
+            when {
+                id > Definition.ERROR_NULL -> {
+                    setIdDrawnArea(id)
+                    Toast.makeText(this, "Area nueva registrada", Toast.LENGTH_SHORT).show()
+                }
+
+                id == Definition.ERROR_INSERT_BD_GEOF -> {
+                    cancelDrawnArea()
+                    Toast.makeText(this, "No se pude registrar el Area en la BD", Toast.LENGTH_SHORT).show()
+                }
+
+                id == Definition.ERROR_ACTIVATE_GEOF -> {
+                    cancelDrawnArea()
+                    Toast.makeText(this, "No se pude activar el area de geof", Toast.LENGTH_SHORT).show()
+                }
             }
 
         }
