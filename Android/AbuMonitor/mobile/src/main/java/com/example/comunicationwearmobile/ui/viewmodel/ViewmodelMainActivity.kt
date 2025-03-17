@@ -14,7 +14,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ViewmodelMainActivity(application: Application): AndroidViewModel(application) {
 
@@ -30,12 +34,16 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     val allPermissionGranted: LiveData<Boolean?> = _allPermissionGranted
 
     init {
-        val database = AbuMonitorDatabase.getDatabase(application.applicationContext, viewModelScope)
+        // Lanzamos una coroutine asincrónica en el viewModelScope
+        viewModelScope.launch(Dispatchers.IO) {
+            val database = AbuMonitorDatabase.getDatabase(application.applicationContext,viewModelScope)
 
-        Log.d(Definition.TAG_DEBUG,"Geo:Base de datos Inicializada")
-
-        tempAreaGeof=EntityAreaGeofence()
-
+            // Después de obtener la base de datos en IO, podemos cambiar al hilo principal para actualizar el estado
+            withContext(Dispatchers.Main) {
+                Log.d(Definition.TAG_DEBUG, "Geo: Base de datos Inicializada")
+                tempAreaGeof = EntityAreaGeofence()
+            }
+        }
     }
 
 

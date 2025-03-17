@@ -36,20 +36,10 @@ object Definition {
     //Nombre de los serializables de los intent
     const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
 
-    //constantes de errores
-
-    const val ERROR_NULL:Long                = -1
-    const val ERROR_INSERT_BD_GEOF:Long      = -2
-    const val ERROR_ACTIVATE_GEOF:Long       = -3
-    const val ERROR_DELETE_BD_GEOF:Long      = -4
-    const val ERROR_DESACTIVATE_GEOF:Long    = -5
-
-
     @SuppressLint("InlinedApi")
     val permissonNecesary = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
         Manifest.permission.BLUETOOTH,
 
         Manifest.permission.BLUETOOTH_ADMIN,

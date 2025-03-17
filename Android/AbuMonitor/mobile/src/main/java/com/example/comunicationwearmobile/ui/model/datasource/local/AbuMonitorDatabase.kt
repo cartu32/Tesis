@@ -49,7 +49,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
         private var INSTANCE: AbuMonitorDatabase? = null
 
 
-        fun getDatabase(context: Context, scope: CoroutineScope): AbuMonitorDatabase {
+        suspend fun getDatabase(context: Context, scope: CoroutineScope): AbuMonitorDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,

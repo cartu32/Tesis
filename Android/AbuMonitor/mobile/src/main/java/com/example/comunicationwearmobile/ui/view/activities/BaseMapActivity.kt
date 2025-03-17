@@ -1,10 +1,14 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Debug
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
@@ -24,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 //De esta clase heredan las demas.Por ejemplo:
 //-MapDefineAreasActvity
 //-MapsElderlyTrackActivity
+
 abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMapLongClickListener,
     OnMapClickListener, GoogleMap.OnCircleClickListener {
 
@@ -36,14 +41,17 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_base_map)
+      try{
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_base_map)
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment.getMapAsync(this)
 
-        initializeViewModel()
-
+            initializeViewModel()
+        }catch(e:Exception){
+            Log.e(Definition.TAG_DEBUG,"\"Error al inicializar Google Maps: ${e.message}\"")
+        }
     }
 
 
@@ -67,6 +75,8 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
                 GoogleApiAvailability.getInstance().getErrorDialog(this, it, RC_HANDLE_GMS)
             }
             dlg?.show()
+            Log.e("MAP_DEBUG", "Google Play Services no está disponible. Código: $resultCode")
+
         }
 
         mMap?.setOnCircleClickListener(this)
@@ -76,9 +86,25 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    @SuppressLint("MissingPermission")
     private fun enableFeatureMaps() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(this,"No hay permisos de ACCESS_FINE_LOCATION oACCESS_COARSE_LOCATION ",Toast.LENGTH_LONG).show()
+            return
+        }
         mMap?.isMyLocationEnabled = true
+
+
+
+
         mMap?.uiSettings?.setAllGesturesEnabled(true)
         mMap?.uiSettings?.isMyLocationButtonEnabled = true
         mMap?.uiSettings?.isZoomControlsEnabled = true

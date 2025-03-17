@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         configureInsets()
         configCallbackBackPressed()
         configLocatioManager()
+        initComponent()
 
         Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
     }
@@ -61,15 +63,26 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        initComponent()
         Log.d(Definition.TAG_DEBUG,"Onstart MainActivity")
     }
     private fun initComponent(){
+        initStrictMode()
         initializeViewModel()
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
         locationManagerHelper?.checkLocationSettings(this)
+    }
+
+    private fun initStrictMode() {
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork()
+                .penaltyLog()
+                .build()
+        )
     }
 
     private fun startGeofenceService() {
@@ -97,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         val factory = GenericViewModelFactory {
             ViewmodelMainActivity(application)
         }
-
+        Log.d(Definition.TAG_DEBUG,"Inicializa ViewModel")
         viewmodelMainActivity = ViewModelProvider(this, factory)[ViewmodelMainActivity::class.java]
     }
 
@@ -116,6 +129,8 @@ class MainActivity : AppCompatActivity() {
         buttons.forEach { (id , action) ->
             findViewById<Button>(id).setOnClickListener { action() }
         }
+
+        Log.d(Definition.TAG_DEBUG,"Inicializa Componentes View")
     }
 
     private fun observeLiveData() {
@@ -133,10 +148,13 @@ class MainActivity : AppCompatActivity() {
             //Si se otorgaron todos los permisos, entonces se inicia el service
             startGeofenceService()
         }
+        Log.d(Definition.TAG_DEBUG,"Inicializa Obersever")
     }
 
     private fun checkPermissions() {
         viewmodelMainActivity?.checkPermissions()
+        Log.d(Definition.TAG_DEBUG,"Inicializa checkPermissions")
+
     }
 
     private val requestPermissionsLauncher = registerForActivityResult(
@@ -221,13 +239,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        freeComponent()
         Log.d(Definition.TAG_DEBUG,"onStop MainActivity")
 
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        freeComponent()
         //remuevo el callback del boton back de Android
         if (::backPressedCallback.isInitialized) {
             backPressedCallback.remove() // Libera el callback

@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class ViewmodelMapsActivity(application: Application): AndroidViewModel(application) {
@@ -45,22 +46,26 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     var tempIdSelected:Long?=null
 
     init {
-        val database = AbuMonitorDatabase.getDatabase(application, viewModelScope)
-        val daoAreaGeofence = database.entityAreaGeofenceDao()
-        val daoJoinAreaGeofence = database.joinAreaGeofence()
+        viewModelScope.launch(Dispatchers.IO) {
+            val database = AbuMonitorDatabase.getDatabase(application, viewModelScope)
 
-        repositoryAreaDB = RepositoryAreaDB(daoAreaGeofence, daoJoinAreaGeofence)
-        repositoryGeofActivate = RepositoryGeofActivate()
+            withContext(Dispatchers.Main) {
+                val daoAreaGeofence = database.entityAreaGeofenceDao()
+                val daoJoinAreaGeofence = database.joinAreaGeofence()
 
-        getListAreasGefence()
+                repositoryAreaDB = RepositoryAreaDB(daoAreaGeofence, daoJoinAreaGeofence)
+                repositoryGeofActivate = RepositoryGeofActivate()
 
-        Log.d(Definition.TAG_DEBUG,"Base de datos abierta en ViewmodelMapsActivity")
+                getListAreasGefence()
 
+                Log.d(Definition.TAG_DEBUG, "Base de datos abierta en ViewmodelMapsActivity")
+            }
+        }
     }
 
 
     private fun getListAreasGefence() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             //obtengfo el listado de la base de datos
             val rawGeofenceList = repositoryAreaDB?.getListAllAreas()
 
@@ -73,27 +78,22 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun insertAreaGeof(context: Context, areaGeofence: EntityAreaGeofence) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val newId = repositoryAreaDB?.insertAreaGeofence(areaGeofence) ?: Definition.ERROR_INSERT_BD_GEOF
-            var finalId: Long = newId
+    fun insertAreaGeof(context: Context,areaGeofence: EntityAreaGeofence){
 
-            if (newId > 0) {  // Si la inserción fue exitosa
+        viewModelScope.launch {
+            val error=-1L
+            val newId:Long?=repositoryAreaDB?.insertAreaGeofence(areaGeofence)
+
+            if((newId!=error)&&(newId!=null)) {
                 areaGeofence.id_area = newId
-
-                val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, areaGeofence) == true
-
-                if (!stateActivateGeof) {
-                    repositoryAreaDB?.deleteAreaWithId(newId)  // Si falla, eliminamos el registro
-                    finalId = Definition.ERROR_ACTIVATE_GEOF
-                }
+                repositoryGeofActivate?.activateGeofence(context, areaGeofence)
             }
 
-            // Publicamos el resultado
-            _idNewAreaGeof?.postValue(finalId)
-        }
-    }
+            //si newId es null postvalue envia error, si no envia el newid
+            _idNewAreaGeof?.postValue(newId?:error)
 
+       }
+    }
 
 
 
@@ -112,7 +112,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     }
 
     fun deleteAreaGeof(context: Context,idArea: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             var circleToDeleteinGraphic:Circle?=null
             val error=-1
 
