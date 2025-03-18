@@ -37,7 +37,7 @@ class GeofencesServices: Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
+ 
         val locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             Definition.INTERVAL_MILLIS_ACTUALIZATION_POS_GPS)
