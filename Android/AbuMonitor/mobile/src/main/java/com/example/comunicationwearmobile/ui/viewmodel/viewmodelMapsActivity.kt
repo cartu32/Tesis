@@ -78,23 +78,26 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun insertAreaGeof(context: Context,areaGeofence: EntityAreaGeofence){
+    fun insertAreaGeof(context: Context, areaGeofence: EntityAreaGeofence) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val newId = repositoryAreaDB?.insertAreaGeofence(areaGeofence) ?: Definition.ERROR_INSERT_BD_GEOF
+            var finalId: Long = newId
 
-        viewModelScope.launch {
-            val error=-1L
-            val newId:Long?=repositoryAreaDB?.insertAreaGeofence(areaGeofence)
-
-            if((newId!=error)&&(newId!=null)) {
+            if (newId > 0) {  // Si la inserción fue exitosa
                 areaGeofence.id_area = newId
-                repositoryGeofActivate?.activateGeofence(context, areaGeofence)
+
+                val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, areaGeofence) == true
+
+                if (!stateActivateGeof) {
+                    repositoryAreaDB?.deleteAreaWithId(newId)  // Si falla, eliminamos el registro
+                    finalId = Definition.ERROR_ACTIVATE_GEOF
+                }
             }
 
-            //si newId es null postvalue envia error, si no envia el newid
-            _idNewAreaGeof?.postValue(newId?:error)
-
-       }
+            // Publicamos el resultado
+            _idNewAreaGeof?.postValue(finalId)
+        }
     }
-
 
 
 

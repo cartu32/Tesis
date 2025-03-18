@@ -36,6 +36,15 @@ object Definition {
     //Nombre de los serializables de los intent
     const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
 
+    //constantes de errores
+
+    const val ERROR_NULL:Long                = -1
+    const val ERROR_INSERT_BD_GEOF:Long      = -2
+    const val ERROR_ACTIVATE_GEOF:Long       = -3
+    const val ERROR_DELETE_BD_GEOF:Long      = -4
+    const val ERROR_DESACTIVATE_GEOF:Long    = -5
+
+
     @SuppressLint("InlinedApi")
     val permissonNecesary = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -55,7 +64,13 @@ object Definition {
         Manifest.permission.FOREGROUND_SERVICE,
         Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.WAKE_LOCK,
-    )
+
+        //backoground location se pide en el viewmodel despues
+        //de comprobar de que los permisos generales fueron otorgados
+        //sobre todo access_fine_location, ya que es necesario para funcionar
+        //Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+
+        )
 
 
 

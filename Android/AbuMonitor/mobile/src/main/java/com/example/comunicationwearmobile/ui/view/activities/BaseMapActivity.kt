@@ -10,9 +10,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -23,6 +25,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 //Esta es la clase padre que se usa para crear los mapas con las areas de geofencing
 //De esta clase heredan las demas.Por ejemplo:
@@ -39,21 +44,46 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
     var viewmodelMapsActivity: ViewmodelMapsActivity?=null
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
-      try{
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_base_map)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_base_map)
 
-            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-            mapFragment.getMapAsync(this)
+        Tools.desactiveStrictMode()
 
-            initializeViewModel()
-        }catch(e:Exception){
-            Log.e(Definition.TAG_DEBUG,"\"Error al inicializar Google Maps: ${e.message}\"")
-        }
+        initGooglePlayServices()
+        initMap()
+
     }
 
+     private fun initGooglePlayServices(){
+         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+
+         if (resultCode != ConnectionResult.SUCCESS) {
+             val dlg = resultCode.let {
+                 GoogleApiAvailability.getInstance().getErrorDialog(this, it, RC_HANDLE_GMS)
+             }
+             dlg?.show()
+             Log.e("MAP_DEBUG", "Google Play Services no está disponible. Código: $resultCode")
+
+         }
+
+     }
+     private fun initMap(){
+        try{
+
+            lifecycleScope.launch(Dispatchers.IO) {
+
+                val mapFragment =
+                    supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+                withContext(Dispatchers.Main) {
+                    mapFragment.getMapAsync(this@BaseMapActivity)
+                }
+                initializeViewModel()
+            }
+        } catch (e: Exception) {
+            Log.e(Definition.TAG_DEBUG, "\"Error al inicializar Google Maps: ${e.message}\"")
+        }
+    }
 
     open fun initializeViewModel() {
         // Obtén una instancia del ViewModel usando el GenericViewModelFactory
@@ -68,16 +98,6 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
-
-        if (resultCode != ConnectionResult.SUCCESS) {
-            val dlg = resultCode.let {
-                GoogleApiAvailability.getInstance().getErrorDialog(this, it, RC_HANDLE_GMS)
-            }
-            dlg?.show()
-            Log.e("MAP_DEBUG", "Google Play Services no está disponible. Código: $resultCode")
-
-        }
 
         mMap?.setOnCircleClickListener(this)
 

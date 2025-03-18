@@ -61,13 +61,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.datastore.core.android)
-    implementation ("androidx.datastore:datastore-preferences:1.1.1")
-    implementation ("com.google.android.gms:play-services-maps:19.0.0")
-    implementation ("com.google.android.gms:play-services-location:21.3.0")
-    implementation ("com.google.maps.android:android-maps-utils:2.2.3")
+    implementation (libs.androidx.datastore.preferences)
+    implementation (libs.play.services.maps)
+    implementation (libs.gms.play.services.location)
+    implementation (libs.android.maps.utils)
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation (libs.gms.play.services.location)
 
     // Room
 

@@ -19,6 +19,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
@@ -40,6 +41,8 @@ class MainActivity : AppCompatActivity() {
         configCallbackBackPressed()
         configLocatioManager()
         initComponent()
+
+
 
         Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
     }
