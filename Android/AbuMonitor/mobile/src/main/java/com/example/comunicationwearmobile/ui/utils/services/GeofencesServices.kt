@@ -1,12 +1,27 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
+import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,92 +31,70 @@ import kotlinx.coroutines.launch
 
 class GeofencesServices: Service() {
 
-    // Canal que se utiliza para encolar las peticiones realizadas cada vez que
-    // se ejecuta stratservice
-    private var requestChannel: Channel<Intent>? = null
-    private var serviceScope:CoroutineScope? = null
-    private var notificationManagerHelper:NotificationManagerHelper?= null
-
-    private var locationManagerHelper: LocationManagerHelper?=null
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
     override fun onCreate() {
         super.onCreate()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        requestChannel=Channel<Intent>(Channel.UNLIMITED)
-        serviceScope=CoroutineScope(Dispatchers.IO + Job())
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            Definition.INTERVAL_MILLIS_ACTUALIZATION_POS_GPS)
+            .setMinUpdateIntervalMillis(Definition.SETUP_UPDATE_INTERVAL_MILLIS)
+            .build()
 
-        notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
-        notificationManagerHelper?.createChannelForegroundServices()
-        locationManagerHelper=LocationManagerHelper(this)
-        val notification = notificationManagerHelper?.createNotificationForegroundService()
-
-        locationManagerHelper?.configCheckStatusGps()
-        startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
-        // Lector del Channel: consume las solicitudes encoladas
-
-        serviceScope?.launch {
-            requestChannel?.let { channel ->
-                for (intent in channel) {
-                    try {
-                        handleIntent(intent) // Procesa cada intent
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    Log.d("LocationService", "Nueva ubicación: ${location.latitude}, ${location.longitude}")
                 }
             }
         }
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
-
-        // Cancela la corutina cuando el servicio se destruye
-        serviceScope?.cancel()
-        serviceScope=null
-
-        //libero los recursos
-        requestChannel=null
-        locationManagerHelper=null
-        notificationManagerHelper=null
-
-        Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
-    }
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        intent?.let {
-            // Comprobar el estado del GPS
-            locationManagerHelper?.checkLocationSettings(this)
-
-            // Encola la solicitud en el Channel
-            requestChannel?.trySend(it)
-        }
-
+        startForeground(1, createNotification())
         return START_STICKY
     }
 
-
-    private suspend fun handleIntent(intent: Intent?)  {
-        var operation = 0
-        if (intent != null) {
-            operation = intent.getIntExtra("Operation" , -1)
-        }
-
-        when (operation) {
-            //Tools.GEOFENCE_TRANSITION -> operationTransition(intent)
-            //Tools.GEOFENCE_ROUTE -> operationRoute()
-            else ->
-                Log.e(Definition.TAG_DEBUG , "Error en on HandleIntent")
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
+    override fun onBind(intent: Intent?): IBinder? = null
 
+    private fun createNotification(): Notification {
+        val channelId = "location_channel"
+        val channel = NotificationChannel(channelId, "Ubicación en segundo plano", NotificationManager.IMPORTANCE_LOW)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
 
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Seguimiento de ubicación")
+            .setContentText("El servicio está en ejecución...")
+            .setSmallIcon(R.drawable.ic_old_person)
+            .build()
+    }
 }
+

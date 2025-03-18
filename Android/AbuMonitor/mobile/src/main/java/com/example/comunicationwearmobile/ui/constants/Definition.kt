@@ -27,8 +27,8 @@ object Definition {
 
     //constantes que indican cada cuanto tiempo se lee del gps para mover el
     //mapa
-    const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=50000
-    const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 15000
+    const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=5000
+    const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 2000
 
     //ID del Request permisson
     lateinit var application:Application
