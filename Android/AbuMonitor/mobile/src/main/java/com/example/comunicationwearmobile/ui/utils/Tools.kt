@@ -2,11 +2,9 @@ package com.example.comunicationwearmobile.ui.utils
 
 import android.location.Location
 import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.BuildConfig
 
 
 object Tools {

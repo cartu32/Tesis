@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         val buttons = mapOf(
             R.id.cmdDefineAreas to ::openMapsActivity ,
             R.id.cmdDefineRoutes to ::openMapsElderlyTrackActivity ,
-            R.id.cmdDefineReminder to ::showUnderConstruction ,
+            R.id.cmdDefineReminder to ::openMapExtra ,
             R.id.cmdDefineContacts to ::showUnderConstruction
         )
 
@@ -202,6 +202,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun openMapsElderlyTrackActivity() {
         startActivity(Intent(this , MapsElderlyTrackActivity::class.java))
+    }
+
+    private fun openMapExtra(){
+        startActivity(Intent(this , MapExtra::class.java))
     }
     private fun showUnderConstruction() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
