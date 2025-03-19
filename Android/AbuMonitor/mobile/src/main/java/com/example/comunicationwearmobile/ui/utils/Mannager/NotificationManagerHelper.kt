@@ -80,7 +80,7 @@ class NotificationManagerHelper(base: Context?) : ContextWrapper(base) {
         const val CHANNEL_ID_ALERTS = "Channel_ID_Alerts"
         const val ALERT_NOTIFICATION_ID = 1001 // ID para diferenciar esta notificación
 
-        private var instance: NotificationManagerHelper? = null
+        var instance: NotificationManagerHelper? = null
 
         fun getInstance(base: Context): NotificationManagerHelper? {
             if (instance == null) {

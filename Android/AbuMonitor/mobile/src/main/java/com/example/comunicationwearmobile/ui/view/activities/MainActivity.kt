@@ -18,8 +18,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
-import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
@@ -28,8 +26,8 @@ class MainActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
+
     private lateinit var backPressedCallback: OnBackPressedCallback
-    private var locationManagerHelper: LocationManagerHelper?=null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         configureInsets()
         configCallbackBackPressed()
-        configLocatioManager()
         initComponent()
 
 
@@ -47,11 +44,6 @@ class MainActivity : AppCompatActivity() {
         Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
     }
 
-    private fun configLocatioManager() {
-        locationManagerHelper=LocationManagerHelper(this)
-        locationManagerHelper?.configCheckStatusGps()
-
-    }
 
     private fun configCallbackBackPressed() {
         backPressedCallback = object : OnBackPressedCallback(true) {
@@ -74,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
-        locationManagerHelper?.checkLocationSettings(this)
     }
 
     private fun initStrictMode() {
@@ -107,17 +98,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
-
     private fun initializeViewModel() {
-        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
-        val factory = GenericViewModelFactory {
+        Log.d(Definition.TAG_DEBUG, "Inicializa ViewModels")
+
+        // Crea el factory para ViewModelMainActivity
+        val factoryMainActivity = GenericViewModelFactory {
             ViewmodelMainActivity(application)
         }
-        Log.d(Definition.TAG_DEBUG,"Inicializa ViewModel")
-        viewmodelMainActivity = ViewModelProvider(this, factory)[ViewmodelMainActivity::class.java]
+        viewmodelMainActivity = ViewModelProvider(this, factoryMainActivity)[ViewmodelMainActivity::class.java]
+
     }
-
-
 
     private fun initializeComponentsView() {
         //Esta es otra forma de asociar los listeners de los botones,
@@ -241,7 +231,6 @@ class MainActivity : AppCompatActivity() {
         //se libera los listeners de los botones
         freeListeners()
         freeViewmodel()
-        locationManagerHelper=null
     }
 
     override fun onStop() {

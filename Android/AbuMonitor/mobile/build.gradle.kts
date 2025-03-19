@@ -98,3 +98,8 @@ dependencies {
     //dependencias de librerias compartidas entre wear y mobile
     implementation(project(":shared_library"))
 }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}

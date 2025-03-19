@@ -20,35 +20,45 @@ class ViewmodelLocation(application: Application) : AndroidViewModel(application
     private var locationObserver: ((Location?) -> Unit)? = null // Guardamos el observer
 
     init {
-        repositoryLocation = RepositoryLocation(application)
+        repositoryLocation = RepositoryLocation.getInstance(application)
     }
 
     fun startTracking() {
+        //definicion de la funcion lambda locationobserver
         locationObserver = { location ->
-            _locationLiveData.value = location
+            _locationLiveData.postValue(location)
         }
 
         viewModelScope.launch {
-            repositoryLocation?.getLocationLiveData()?.observeForever(locationObserver!!)
+            //cuando dentro de la clase Repository se hace un postvalue de _locationLiveData.
+            //entonces cuando eso pasa lo detecta el observer y automaticamente invoca a la funcion
+            //lamda locatiobserver
+
+            repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)
+
             repositoryLocation?.startLocationUpdates()
         }
     }
 
     fun stopTracking() {
-        repositoryLocation?.stopLocationUpdates()
+        //  Eliminar observador
+        locationObserver?.let { observer ->
+            repositoryLocation?.locationLiveData?.removeObserver(observer)
+        }
     }
+
+    fun checkStatusGPS() {
+        repositoryLocation?.checkStatusGPS()
+    }
+
 
     override fun onCleared() {
         super.onCleared()
         stopTracking() // Detenemos las actualizaciones
 
-        //  Eliminar observador
-        locationObserver?.let { observer ->
-            repositoryLocation?.getLocationLiveData()?.removeObserver(observer)
-        }
-
         _locationLiveData = MutableLiveData() // Limpieza de LiveData
         repositoryLocation = null // Liberar memoria
+        locationObserver=null
 
         viewModelScope.cancel() // Cancelar corrutinas
     }

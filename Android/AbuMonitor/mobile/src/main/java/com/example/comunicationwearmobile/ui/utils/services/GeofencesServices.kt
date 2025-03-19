@@ -14,7 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Mannager.LocationManagerHelper
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -30,71 +30,96 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 class GeofencesServices: Service() {
+    // Canal que se utiliza para encolar las peticiones realizadas cada vez que
+    // se ejecuta stratservice
+    private var requestChannel: Channel<Intent>? = null
+    private var serviceScope:CoroutineScope? = null
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
+    private var notificationManagerHelper:NotificationManagerHelper?= null
+    private var repositoryLocation: RepositoryLocation? = null
 
     override fun onCreate() {
         super.onCreate()
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
- 
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            Definition.INTERVAL_MILLIS_ACTUALIZATION_POS_GPS)
-            .setMinUpdateIntervalMillis(Definition.SETUP_UPDATE_INTERVAL_MILLIS)
-            .build()
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    Log.d("LocationService", "Nueva ubicación: ${location.latitude}, ${location.longitude}")
-                }
-            }
-        }
+        requestChannel=Channel<Intent>(Channel.UNLIMITED)
+        serviceScope=CoroutineScope(Dispatchers.IO + Job())
 
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        repositoryLocation = RepositoryLocation.getInstance(application)
+
+        notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
+        notificationManagerHelper?.createChannelForegroundServices()
+        val notification = notificationManagerHelper?.createNotificationForegroundService()
+
+        startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
+
+        //empieza a recibir actualizaciones del gps
+        repositoryLocation?.startLocationUpdates()
+
+        channelLector()
     }
 
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(1, createNotification())
+        intent?.let {
+            // Comprobar el estado del GPS
+            repositoryLocation?.checkStatusGPS()
+
+            // Encola la solicitud en el Channel
+            requestChannel?.trySend(it)
+        }
+
         return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        repositoryLocation?.stopLocationUpdates()
+
+        // Cancela la corutina cuando el servicio se destruye
+        serviceScope?.cancel()
+        serviceScope=null
+
+        //libero los recursos
+        requestChannel=null
+        notificationManagerHelper=null
+        repositoryLocation=null
+
+        Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
+
+    }
+
+    private fun channelLector() {
+        // Lector del Channel: consume las solicitudes encoladas
+
+        serviceScope?.launch {
+            requestChannel?.let { channel ->
+                for (intent in channel) {
+                    try {
+                        handleIntent(intent) // Procesa cada intent
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+
+    }
+    private suspend fun handleIntent(intent: Intent?)  {
+        var operation = 0
+        if (intent != null) {
+            operation = intent.getIntExtra("Operation" , -1)
+        }
+
+        when (operation) {
+            //Tools.GEOFENCE_TRANSITION -> operationTransition(intent)
+            //Tools.GEOFENCE_ROUTE -> operationRoute()
+            else ->
+                Log.e(Definition.TAG_DEBUG , "Error en on HandleIntent")
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun createNotification(): Notification {
-        val channelId = "location_channel"
-        val channel = NotificationChannel(channelId, "Ubicación en segundo plano", NotificationManager.IMPORTANCE_LOW)
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-
-        return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Seguimiento de ubicación")
-            .setContentText("El servicio está en ejecución...")
-            .setSmallIcon(R.drawable.ic_old_person)
-            .build()
-    }
 }
 
