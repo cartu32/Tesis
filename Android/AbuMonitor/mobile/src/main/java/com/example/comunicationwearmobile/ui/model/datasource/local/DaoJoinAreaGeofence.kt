@@ -1,6 +1,5 @@
 package com.example.abumonitor.data.datasource.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import com.example.abumonitor.data.model.JoinAreaGeofence

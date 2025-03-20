@@ -36,7 +36,7 @@ class NotificationManagerHelper(base: Context?) : ContextWrapper(base) {
 
 
 
-    public fun createChannelForegroundServices() {
+    fun createChannelForegroundServices() {
         val notificationChannel =
             NotificationChannel(
                 CHANNEL_ID_FOREGROUND_SERVICE ,
@@ -49,7 +49,7 @@ class NotificationManagerHelper(base: Context?) : ContextWrapper(base) {
     }
 
     // Crea la notifcación del foregroundservice
-    public fun createNotificationForegroundService(): Notification {
+    fun createNotificationForegroundService(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID_FOREGROUND_SERVICE)
             .setContentTitle("AbuMonitor")
             .setContentText("Ejecutando AbuMonitor en primer plano...")
@@ -58,7 +58,7 @@ class NotificationManagerHelper(base: Context?) : ContextWrapper(base) {
             .build()
     }
 
-    public fun createAlertNotification(title: String, message: String) {
+    fun createAlertNotification(title: String, message: String) {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID_ALERTS)
             .setContentTitle(title)
             .setContentText(message)

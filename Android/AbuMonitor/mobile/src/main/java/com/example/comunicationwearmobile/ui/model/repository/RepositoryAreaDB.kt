@@ -8,8 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class RepositoryAreaDB(
-    val daoAreaGeofence: DaoAreaGeofence? ,
-    val daoJoinAreaGeofence: DaoJoinAreaGeofence? ,
+    private val daoAreaGeofence: DaoAreaGeofence?,
+    private val daoJoinAreaGeofence: DaoJoinAreaGeofence?,
 ) {
 
     suspend fun getListAllAreas(): List<EntityAreaGeofence>? {

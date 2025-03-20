@@ -4,7 +4,6 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import java.io.Serializable
-import java.lang.ref.WeakReference
 
 /*Esta clase se usa para tener en memoria un listado de las areas de geofence que se
 muestran en el mapa en el momento.Hice esta clase para ocupar menos memoria en los datos

@@ -5,8 +5,9 @@ import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -19,14 +20,19 @@ import com.google.android.gms.maps.model.LatLng
 
 class MapsElderlyTrackActivity : BaseMapActivity(){
     private var viewmodelLoaction: ViewmodelLocation?=null
+    private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         initializeViewModel()
+        configActivityResult()
     }
 
-    override fun initializeViewModel() {
+
+
+        override fun initializeViewModel() {
         super.initializeViewModel()
 
         viewmodelLoaction= ViewmodelLocation(application)
@@ -47,8 +53,8 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
      private fun configObserverLocation(){
         viewmodelLoaction?.locationLiveData?.observe(this){ location->
             updateMapLoaction(location)
+            Log.d(Definition.TAG_DEBUG,"Nueva ubicacion in MapsEld: ${location.latitude}, ${location.longitude}")
         }
-        viewmodelLoaction?.startTracking()
 
     }
 
@@ -68,30 +74,27 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
 
     private fun showPropertiesAreaGeof(idArea: Long) {
         val intent= Intent(this, PropertiesGeofenceActivity::class.java)
-        startActivity(intent)
+        //startActivity(intent)
+        activityResultLauncher?.launch(intent)
     }
 
-    private fun showConfigGeofenceFragment(latLng: LatLng) {
-        val fragmentManager = supportFragmentManager
-        val configGeofenceFragment = ConfigGeofenceFragment()
-        val ft = fragmentManager.beginTransaction()
-
-        //muestro el fragment de configuracion
-        configGeofenceFragment.show(ft,"configGeofenceFragment")
+    private fun configActivityResult() {
+        activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d(Definition.TAG_DEBUG,"Result: ${result.resultCode}")
+        }
     }
-
     override fun onDestroy() {
         super.onDestroy()
 
-        viewmodelLoaction?.stopTracking()
         viewmodelLoaction?.locationLiveData?.removeObservers(this)
+        viewmodelLoaction?.onDestroyed()
         viewmodelLoaction=null
 
         //Esto se debe realizar en la clase hija, no en la clase padre
         viewmodelMapsActivity=null
         mMap=null
 
-        Log.d(Definition.TAG_DEBUG,"Ondestroy MapsActivity")
+        Log.d(Definition.TAG_DEBUG,"Ondestroy MapsElderlyAcivity")
     }
 }
 

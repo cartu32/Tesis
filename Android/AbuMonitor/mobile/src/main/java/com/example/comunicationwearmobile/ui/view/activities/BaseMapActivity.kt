@@ -1,10 +1,8 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Debug
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -40,7 +38,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
     var mMap: GoogleMap? = null
     var circle: Circle? = null
-    val RC_HANDLE_GMS = 9001
+    private val RC_HANDLE_GMS = 9001
 
     var viewmodelMapsActivity: ViewmodelMapsActivity?=null
 

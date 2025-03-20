@@ -42,7 +42,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var repositoryAreaDB: RepositoryAreaDB ?=null
     private var repositoryGeofActivate: RepositoryGeofActivate ?=null
 
-    var circlesMap = mutableMapOf<Long?, Circle?>()
+    private var circlesMap = mutableMapOf<Long?, Circle?>()
     var tempIdSelected:Long?=null
 
     init {
@@ -108,7 +108,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
                 .center(latLng)
                 .strokeColor(colorCircle)
                 .fillColor(ColorUtils.setAlphaComponent(colorCircle, alpha))
-                .radius(radius.toDouble())
+                .radius(radius)
                 .strokeWidth(4f)
                 .clickable(true)
         return circleOptions
@@ -150,13 +150,13 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     }
 
     fun addCircleInList(circleWithId:Circle){
-        var id:Long
+        val id:Long
 
         id= circleWithId.tag as Long
         circlesMap[id]=circleWithId
     }
 
-    fun removeAllCircle(){
+    private fun removeAllCircle(){
         circlesMap.values.forEach{it?.remove()} // Elimina los círculos del mapa
         circlesMap.clear() // Limpia todas las referencias del Map
 

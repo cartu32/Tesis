@@ -1,27 +1,14 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
-import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.location.Location
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
+import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,6 +24,7 @@ class GeofencesServices: Service() {
 
     private var notificationManagerHelper:NotificationManagerHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
+    private var locationObserver :Observer<Location>?=null
 
     override fun onCreate() {
         super.onCreate()
@@ -56,6 +44,16 @@ class GeofencesServices: Service() {
         repositoryLocation?.startLocationUpdates()
 
         channelLector()
+        configOberserverLivedata()
+    }
+
+    private fun configOberserverLivedata() {
+
+        locationObserver = Observer<Location> { location ->
+            Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
+        }
+
+        repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)
     }
 
 
@@ -74,7 +72,13 @@ class GeofencesServices: Service() {
     override fun onDestroy() {
         super.onDestroy()
         stopForeground(STOP_FOREGROUND_REMOVE)
+
+        //remueve los observer de livedata del repository
         repositoryLocation?.stopLocationUpdates()
+
+        locationObserver?.let {
+            repositoryLocation?.locationLiveData?.removeObserver(it)
+        }
 
         // Cancela la corutina cuando el servicio se destruye
         serviceScope?.cancel()
@@ -105,7 +109,7 @@ class GeofencesServices: Service() {
         }
 
     }
-    private suspend fun handleIntent(intent: Intent?)  {
+    private fun handleIntent(intent: Intent?)  {
         var operation = 0
         if (intent != null) {
             operation = intent.getIntExtra("Operation" , -1)

@@ -16,8 +16,6 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper.Companion
 import com.example.comunicationwearmobile.ui.view.activities.EnableGpsDialog
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -68,7 +66,7 @@ class RepositoryLocation private constructor(appContext: Context) {
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     for (location in locationResult.locations) {
-                        Log.d("LocationService", "Nueva ubicación: ${location.latitude}, ${location.longitude}")
+                       // Log.d(Definition.TAG_DEBUG, "Nueva ubicación: ${location.latitude}, ${location.longitude}")
                         _locationLiveData.postValue(location)
                     }
                 }
@@ -77,6 +75,8 @@ class RepositoryLocation private constructor(appContext: Context) {
             fusedLocationProviderClient.requestLocationUpdates(
                 locationRequest, locationCallback!!, Looper.getMainLooper()
             )
+        }else{
+            Log.d(Definition.TAG_DEBUG,"Localizacion callback ya inicizializada")
         }
     }
 

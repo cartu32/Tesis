@@ -3,63 +3,34 @@ package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 class ViewmodelLocation(application: Application) : AndroidViewModel(application) {
 
     private var repositoryLocation: RepositoryLocation? = null
-    private var _locationLiveData: MutableLiveData<Location?> = MutableLiveData()
-    val locationLiveData: LiveData<Location?> = _locationLiveData
 
-    private var locationObserver: ((Location?) -> Unit)? = null // Guardamos el observer
+    //Esta es otra forma de hacer un observer de livedata
+    //Como no los datos de ubicacion del gps no se modifican para enviarselo a la activty
+    //se usa al viemodel como un pasamanos entre el repository y la activity.
+    //Entonces se puede definir de esta manera. Que es hace lo mismo de otra manera de como
+    //hace en ViewmodelMaps, pero más optimo.
+
+    var locationLiveData: LiveData<Location>? =null
 
     init {
         repositoryLocation = RepositoryLocation.getInstance(application)
-    }
-
-    fun startTracking() {
-        //definicion de la funcion lambda locationobserver
-        locationObserver = { location ->
-            _locationLiveData.postValue(location)
-        }
-
-        viewModelScope.launch {
-            //cuando dentro de la clase Repository se hace un postvalue de _locationLiveData.
-            //entonces cuando eso pasa lo detecta el observer y automaticamente invoca a la funcion
-            //lamda locatiobserver
-
-            repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)
-
-            repositoryLocation?.startLocationUpdates()
-        }
-    }
-
-    fun stopTracking() {
-        //  Eliminar observador
-        locationObserver?.let { observer ->
-            repositoryLocation?.locationLiveData?.removeObserver(observer)
-        }
-    }
-
-    fun checkStatusGPS() {
-        repositoryLocation?.checkStatusGPS()
+        repositoryLocation?.startLocationUpdates()
+        locationLiveData= repositoryLocation?.locationLiveData
     }
 
 
-    override fun onCleared() {
-        super.onCleared()
-        stopTracking() // Detenemos las actualizaciones
-
-        _locationLiveData = MutableLiveData() // Limpieza de LiveData
+    fun onDestroyed(){
         repositoryLocation = null // Liberar memoria
-        locationObserver=null
 
-        viewModelScope.cancel() // Cancelar corrutinas
+        Log.d(Definition.TAG_DEBUG,"OnCleared ViewmodelLocation")
     }
 }
