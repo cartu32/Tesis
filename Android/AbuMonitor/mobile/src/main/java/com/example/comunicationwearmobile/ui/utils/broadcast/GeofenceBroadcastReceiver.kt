@@ -24,7 +24,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 if (geofencingEvent.hasError()) {
                     Log.e("GeofenceReceiver", "Error en el Geofencing: ${geofencingEvent.errorCode}")
                     return
-                }
+                 }
             }
 
             if (geofencingEvent != null) {
