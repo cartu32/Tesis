@@ -35,10 +35,12 @@ class GeofencesServices: Service() {
         repositoryLocation = RepositoryLocation.getInstance(application)
 
         notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
-        notificationManagerHelper?.createChannelForegroundServices()
+
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
-        startForeground(Definition.FIRST_NOTIFICATION_ID, notification)
+        notificationManagerHelper?.let {
+            startForeground(it.ID_NOTIFICATION_FOREGROUND_SERVICE, notification)
+        }
 
         //empieza a recibir actualizaciones del gps
         repositoryLocation?.startLocationUpdates()

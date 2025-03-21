@@ -5,6 +5,9 @@ import android.os.StrictMode
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.google.android.gms.maps.model.LatLng
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 
 object Tools {
@@ -35,4 +38,20 @@ object Tools {
         )
 
     }
+
+
+    fun getDate(dateTime: LocalDate):String{
+        val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val formatterDate=dateTime.format(formatter)
+
+        return formatterDate
+    }
+
+    fun getHour(dateTime: LocalTime):String{
+        val formatter= DateTimeFormatter.ofPattern("HH:mm")
+        val formatterDate=dateTime.format(formatter)
+
+        return formatterDate
+    }
+
 }

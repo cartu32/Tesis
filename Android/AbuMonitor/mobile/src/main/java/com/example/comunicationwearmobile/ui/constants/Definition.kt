@@ -22,9 +22,6 @@ object Definition {
     //Definicion de configuracion del mapa
     const val GEOFENCE_RADIUS_DEFAULT:Double = 100.0
 
-    //ID de la primera notificacion generada
-    const val FIRST_NOTIFICATION_ID          = 1
-
     //constantes que indican cada cuanto tiempo se lee del gps para mover el
     //mapa
     const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=5000
