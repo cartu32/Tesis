@@ -4,10 +4,12 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.example.comunicationwearmobile.common.Utils
 import com.example.comunicationwearmobile.models.maps.SharedPreferencesRoutes
 import com.example.comunicationwearmobile.ui.Activities.MapsActivity
 import com.example.comunicationwearmobile.utils.maps.NotificationHelper
 import com.example.comunicationwearmobile.utils.maps.Tools
+import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
@@ -105,12 +107,17 @@ class GeofenceService : Service() {
         val notificationHelper = NotificationHelper.getInstance(applicationContext)
 
         // Send notification details as a String
-        notificationHelper?.sendHighPriorityNotification(
+/*        notificationHelper?.sendHighPriorityNotification(
             "Evento detectado" ,
             msg ,
             MapsActivity::class.java
         )
+*/
+        Utils.sendMessageToWearable(applicationContext,"Atención", msg.toString(),SharedData.TypeNotification.Alert)
+
     }
+
+
 
     private suspend fun determineRouteActive(geoFenceTransition: Int , idArea: String) {
         if (!idArea.contains(Tools.WORD_INITIAL)) return
