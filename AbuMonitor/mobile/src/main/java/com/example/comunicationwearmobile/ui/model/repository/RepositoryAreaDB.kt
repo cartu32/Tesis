@@ -19,7 +19,7 @@ class RepositoryAreaDB(
         }
     }
 
-    suspend fun getListJoinAreaGeofence(): List<JoinAreaGeofence>? {
+    fun getListJoinAreaGeofence(): List<JoinAreaGeofence>? {
         val list=daoJoinAreaGeofence?.getJoinAreaGeofence()
         return list
     }

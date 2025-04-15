@@ -25,6 +25,7 @@ class RepositoryIDNotificationSPref private constructor(context: Context) {
         }
     }
 
+
     fun saveArrayList(list: ArrayList<Int>, key: String) {
         val editor = prefs.edit()
         val json = gson.toJson(list)

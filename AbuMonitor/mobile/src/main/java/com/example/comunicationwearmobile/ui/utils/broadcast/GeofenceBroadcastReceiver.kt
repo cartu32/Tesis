@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
@@ -34,13 +35,16 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 when (transition) {
                     Geofence.GEOFENCE_TRANSITION_ENTER -> {
                         notificationHelper?.showNotificationGeneral(msg)
+                        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION,msg)
                         Log.d(Definition.TAG_DEBUG, "Entraste en un geofence")
                     }
                     Geofence.GEOFENCE_TRANSITION_EXIT -> {
                         notificationHelper?.showNotificationGeneral(msg)
+                        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION,msg)
                         Log.d(Definition.TAG_DEBUG, "Saliste de un geofence")
                     }
                     Geofence.GEOFENCE_TRANSITION_DWELL -> {
+                        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION,msg)
                         Log.d(Definition.TAG_DEBUG, "Estas dentro de un geofence")
                     }
                 }
