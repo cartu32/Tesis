@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.models
+package com.example.comunicationwearmobile.utils.services
 
 import android.content.Intent
 import android.util.Log

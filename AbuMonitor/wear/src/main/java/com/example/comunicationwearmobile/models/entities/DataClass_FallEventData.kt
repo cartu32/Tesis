@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.example.comunicationwearmobile.models
+package com.example.comunicationwearmobile.models.entities
 
-class FallEventData(eType: String , eTime: String) {
+class DataClass_FallEventData(eType: String, eTime: String) {
     var eventType: String = eType
     var eventTime: String = eTime
 }

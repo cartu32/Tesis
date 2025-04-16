@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.FloatingActionButton
@@ -39,9 +41,9 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.comunicationwearmobile.common.isScreenLock
-import com.example.comunicationwearmobile.common.isScreenOn
-import com.example.comunicationwearmobile.models.MsgAlertState
+import com.example.comunicationwearmobile.utils.isScreenLock
+import com.example.comunicationwearmobile.utils.isScreenOn
+import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 import com.example.shared_library.SharedData
@@ -70,33 +72,55 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
         Spacer(modifier = Modifier.height(2.dp))
 
         when (msgAlert.typeNotification) {
-            SharedData.TypeNotification.Reminder ->
-                CustomFloatingActionButton(Icons.Filled.DateRange, "Floating action button.", Color.Green) {
-                    alertsViewModel.removeMsgAlertList(page) }
-
-            SharedData.TypeNotification.Alert ->
-                CustomFloatingActionButton(Icons.Filled.Warning, "Floating action button.", Color.Red) {
-                    alertsViewModel.removeMsgAlertList(page) }
-
-            SharedData.TypeNotification.WithoutNotifications ->
-                CustomFloatingActionButton(Icons.Filled.ThumbUp, "Floating action button.", Color.Blue) {}
-
+            SharedData.TypeNotification.Reminder -> showButtonReminder(page,alertsViewModel)
+            SharedData.TypeNotification.Alert -> showButtonAlert(page,alertsViewModel)
+            SharedData.TypeNotification.WithoutNotifications -> showButtonDefault()
+            SharedData.TypeNotification.FallDetection ->showButtonsFallDetection()
         }
     }
+}
+
+@Composable
+fun showButtonReminder(page: Int, alertsViewModel: AlertsViewModel) {
+    CustomFloatingActionButton(Icons.Filled.DateRange, "Floating action button.", buttonBackgroundColor =  Color.Green) {
+        alertsViewModel.removeMsgAlertList(page) }
+}
+
+@Composable
+fun showButtonAlert(page: Int, alertsViewModel: AlertsViewModel) {
+    CustomFloatingActionButton(Icons.Filled.Warning, "Floating action button.",buttonBackgroundColor =  Color.Red) {
+        alertsViewModel.removeMsgAlertList(page) }
+}
+
+@Composable
+fun showButtonsFallDetection() {
+    Row( // <- Aquí usamos Row en lugar de dejarlos sueltos
+        horizontalArrangement = Arrangement.spacedBy(16.dp), // espacio entre botones
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CustomFloatingActionButton(Icons.Filled.Phone, "Floating action button.", buttonBackgroundColor = Color.Red, onClick = {})
+        CustomFloatingActionButton(Icons.Filled.Close, "Floating action button.", buttonBackgroundColor = Color.White, buttonContentColor = Color.Black, onClick = {})
+    }
+}
+
+@Composable
+fun showButtonDefault(){
+    CustomFloatingActionButton(Icons.Filled.ThumbUp, "Floating action button.", Color.Blue) {}
 }
 
 @Composable
 fun CustomFloatingActionButton(
     icon: ImageVector ,
     description: String ,
-    color: Color ,
+    buttonBackgroundColor: Color ,
+    buttonContentColor: Color = Color.White,
     onClick: () -> Unit
 ) {
     FloatingActionButton(
         onClick = onClick,
         shape = CircleShape,
-        containerColor = color,
-        contentColor = Color.White,
+        containerColor = buttonBackgroundColor,
+        contentColor = buttonContentColor,
         modifier = Modifier.size(50.dp),
         elevation = FloatingActionButtonDefaults.elevation(8.dp),
     ) {
@@ -108,7 +132,7 @@ fun CustomFloatingActionButton(
 @Composable
 fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
     val pagerState = rememberPagerState()
-    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = DataClass_MsgAlertState())
 
     LaunchedEffect(pageCount) {
         if (pageCount > 0) {
@@ -181,9 +205,8 @@ fun DefaultView(alertsViewModel: AlertsViewModel) {
                 textAlign = TextAlign.Center,
                 color = Color.White
             )
-            CustomFloatingActionButton(
-                Icons.Filled.ThumbUp, "Floating action button.", Color.Blue, onClick = {}
-            )
+            //showButtonDefault()
+            showButtonsFallDetection()
         }
     }
 
@@ -194,7 +217,7 @@ fun DefaultView(alertsViewModel: AlertsViewModel) {
 fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
     val context = LocalContext.current
     val application = context.applicationContext as Application
-    val state by alertsViewModel.stateListNotif.observeAsState(initial = MsgAlertState())
+    val state by alertsViewModel.stateListNotif.observeAsState(initial = DataClass_MsgAlertState())
     val pageCount = state.alertsList?.size ?: 0
 
     if (pageCount != 0 && !isScreenLock(application) && isScreenOn(application)) {

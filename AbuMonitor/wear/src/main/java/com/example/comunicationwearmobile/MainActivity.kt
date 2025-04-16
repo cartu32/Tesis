@@ -8,13 +8,12 @@ package com.example.comunicationwearmobile
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.example.comunicationwearmobile.common.PermissionManager
-import com.example.comunicationwearmobile.common.showToast
+import com.example.comunicationwearmobile.utils.mannager.PermissionManager
+import com.example.comunicationwearmobile.utils.showToast
 import com.example.comunicationwearmobile.ui.WearApp
 import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel

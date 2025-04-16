@@ -18,13 +18,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.MainActivity
-import com.example.comunicationwearmobile.common.PermissionManager
-import com.example.comunicationwearmobile.common.generateVibration
-import com.example.comunicationwearmobile.common.isScreenLock
-import com.example.comunicationwearmobile.common.isScreenOn
-import com.example.comunicationwearmobile.common.sendMessageMobile
-import com.example.comunicationwearmobile.models.MobileDataListenerService
-import com.example.comunicationwearmobile.models.MsgAlertState
+import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
+import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
+import com.example.comunicationwearmobile.utils.isScreenLock
+import com.example.comunicationwearmobile.utils.isScreenOn
+import com.example.comunicationwearmobile.utils.mannager.MediaMannager
+import com.example.comunicationwearmobile.utils.mannager.PermissionManager
+import com.example.comunicationwearmobile.utils.sendMessageMobile
+import com.example.comunicationwearmobile.utils.services.MobileDataListenerService
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
@@ -36,11 +37,11 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private val TAG: String = "AlertViewModel"
 
-    private val healthServicesManager = HealthServicesManager.getInstance(app)
+    private val repositoryHealthServices = RepositoryHealthServices.getInstance(app)
 
     private var lifecycleOwner: LifecycleOwner? = null
-    private val _stateListNotif = MutableLiveData<MsgAlertState>()
-    val stateListNotif: LiveData<MsgAlertState> get() = _stateListNotif
+    private val _stateListNotif = MutableLiveData<DataClass_MsgAlertState>()
+    val stateListNotif: LiveData<DataClass_MsgAlertState> get() = _stateListNotif
 
     private var previousActivityState= Lifecycle.State.DESTROYED
 
@@ -50,7 +51,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     init {
         initLocalBroadcast()
-        _stateListNotif.value = MsgAlertState()
+        _stateListNotif.value = DataClass_MsgAlertState()
     }
 
     private fun initLocalBroadcast() {
@@ -78,19 +79,19 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     }
 
     // Método suspendido para manejar la lógica de negocios
-    suspend fun checkPermissionsAndCapabilities(permissionManager:PermissionManager):Boolean{
+    suspend fun checkPermissionsAndCapabilities(permissionManager: PermissionManager):Boolean{
         // Verificar permisos
         if (!permissionManager.checkPermissionGiven()) {
             return false
         }
 
         // Verificar capacidades de eventos de salud
-        if (!healthServicesManager.hasHealthEventsCapability()) {
+        if (!repositoryHealthServices.hasHealthEventsCapability()) {
             return false
         }
 
         // Registrar para eventos de salud
-        healthServicesManager.registerFallDetectorEventsData()
+        repositoryHealthServices.registerFallDetectorEventsData()
 
         return true
 
@@ -121,7 +122,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     }
 
     private fun isActivitiyInBackground(currentActivityState: Lifecycle.State?) {
-        if(currentActivityState!=Lifecycle.State.RESUMED && !isScreenLock(app)&& isScreenOn(app)){
+        if(currentActivityState!=Lifecycle.State.RESUMED && !isScreenLock(app) && isScreenOn(app)){
             putActivityForeground()
         }
     }
@@ -131,7 +132,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         when (path) {
             SharedData.PATH_ADD_NOTIFICATION -> {
                 addMsgAlertList(msgBytes)
-                generateVibration(app)
+                MediaMannager.generateVibration(app)
             }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
             else->Log.d (TAG,"Error de path al analizar el path")
@@ -147,7 +148,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         msgBytesDestroyed?.let {
             if (msgBytesDestroyed!!.isNotEmpty()) {
                 addMsgAlertList(msgBytesDestroyed!!)
-                generateVibration(app)
+                MediaMannager.generateVibration(app)
                 msgBytesDestroyed = null
             }
         }

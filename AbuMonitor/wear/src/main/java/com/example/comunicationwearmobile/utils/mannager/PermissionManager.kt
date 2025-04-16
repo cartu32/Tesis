@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.common
+package com.example.comunicationwearmobile.utils.mannager
 
 import android.Manifest
 import android.annotation.SuppressLint

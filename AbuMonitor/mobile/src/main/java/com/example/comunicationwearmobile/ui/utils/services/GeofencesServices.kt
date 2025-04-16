@@ -52,7 +52,7 @@ class GeofencesServices: Service() {
     private fun configOberserverLivedata() {
 
         locationObserver = Observer<Location> { location ->
-            Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
+            //Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
         }
 
         repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)

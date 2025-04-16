@@ -47,7 +47,7 @@
     </activity>
 
     <service
-        android:name=".models.MobileDataListenerService"
+        android:name=".utils.services.MobileDataListenerService"
         android:enabled="true"
         android:exported="true">
         <intent-filter>
@@ -59,7 +59,7 @@
         </intent-filter>
     </service>
         <service
-            android:name=".models.PassiveHealthEventService"
+            android:name=".utils.services.PassiveHealthEventService"
             android:exported="true"
             android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING" />
 

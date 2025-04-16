@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.example.comunicationwearmobile.models
+package com.example.comunicationwearmobile.utils.services
 
 import android.util.Log
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.HealthEvent
 import com.example.comunicationwearmobile.ui.screen.main.TAG
-import com.example.comunicationwearmobile.viewModels.HealthServicesManager
+import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import kotlinx.coroutines.runBlocking
 
-//Este es el servicio que se lanza en el metodo registerForHealthEventsData de HealthServicesManager
+//Este es el servicio que se lanza en el metodo registerForHealthEventsData de RepositoryHealthServices
 class PassiveHealthEventService : PassiveListenerService() {
 
     override fun onHealthEventReceived(event: HealthEvent) {
@@ -32,7 +32,7 @@ class PassiveHealthEventService : PassiveListenerService() {
         runBlocking {
             try{
                 Log.i(TAG, "onHealthEventReceived received with type: ${event.type}")
-                HealthServicesManager.getInstance(applicationContext).recordHealthEvent(event)
+                RepositoryHealthServices.getInstance(applicationContext).recordHealthEvent(event)
                 super.onHealthEventReceived(event)
             }catch (e : Exception){
                 Log.i(TAG, "Error al detectar caida${e.message}")

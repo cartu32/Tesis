@@ -1,7 +1,7 @@
-package com.example.comunicationwearmobile.models
+package com.example.comunicationwearmobile.models.entities
 
 import com.example.shared_library.SharedData
 
-data class MsgAlertState(
+data class DataClass_MsgAlertState(
     val alertsList: List<SharedData.MsgNotification>? = emptyList()
   )

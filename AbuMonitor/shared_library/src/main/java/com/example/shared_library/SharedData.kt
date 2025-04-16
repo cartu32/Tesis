@@ -19,6 +19,7 @@ object SharedData
         alertGeofence,
         fromWearData,
         fromMobileData,
+
     }
     //Constantes que se utilizan para los intent que se envian a la clase WearableDataListner
     enum class ParamIntent{
@@ -29,6 +30,7 @@ object SharedData
     enum class TypeNotification{
         Reminder,
         Alert,
+        FallDetection,
         WithoutNotifications,
     }
 

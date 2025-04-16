@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.screen.main.TAG
+import com.example.comunicationwearmobile.utils.sendMessageMobile
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 import kotlinx.coroutines.CoroutineScope
