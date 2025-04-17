@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.theme
+package com.example.comunicationwearmobile.view.jetpackCompose.theme
 
 import androidx.compose.runtime.Composable
 import androidx.wear.compose.material.MaterialTheme

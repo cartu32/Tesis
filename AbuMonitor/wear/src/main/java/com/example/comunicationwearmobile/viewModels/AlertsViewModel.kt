@@ -17,7 +17,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.comunicationwearmobile.MainActivity
+import com.example.comunicationwearmobile.view.activities.MainActivity
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import com.example.comunicationwearmobile.utils.isScreenLock
@@ -165,7 +165,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private fun putActivityForeground() {
         try {
-            val activityIntent = Intent(app,MainActivity::class.java).apply {
+            val activityIntent = Intent(app, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
             val pendingIntent = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)

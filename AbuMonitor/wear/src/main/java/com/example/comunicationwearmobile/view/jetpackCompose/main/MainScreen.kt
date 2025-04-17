@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.screen.main
+package com.example.comunicationwearmobile.view.jetpackCompose.main
 
 
 import android.app.Application
@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.comunicationwearmobile.utils.isScreenLock
 import com.example.comunicationwearmobile.utils.isScreenOn
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
-import com.example.comunicationwearmobile.ui.component.ViewPagerDotsIndicator
+import com.example.comunicationwearmobile.view.jetpackCompose.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -75,7 +75,7 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
             SharedData.TypeNotification.Reminder -> showButtonReminder(page,alertsViewModel)
             SharedData.TypeNotification.Alert -> showButtonAlert(page,alertsViewModel)
             SharedData.TypeNotification.WithoutNotifications -> showButtonDefault()
-            SharedData.TypeNotification.FallDetection ->showButtonsFallDetection()
+            SharedData.TypeNotification.FallDetection -> showButtonsFallDetection()
         }
     }
 }

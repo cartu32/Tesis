@@ -19,7 +19,7 @@ package com.example.comunicationwearmobile.utils.services
 import android.util.Log
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.HealthEvent
-import com.example.comunicationwearmobile.ui.screen.main.TAG
+import com.example.comunicationwearmobile.view.jetpackCompose.main.TAG
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import kotlinx.coroutines.runBlocking
 

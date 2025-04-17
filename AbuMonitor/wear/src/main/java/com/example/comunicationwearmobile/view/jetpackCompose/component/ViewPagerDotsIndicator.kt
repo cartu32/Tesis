@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.component
+package com.example.comunicationwearmobile.view.jetpackCompose.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

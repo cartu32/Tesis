@@ -37,6 +37,10 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
 
 
     private fun initConfiguration() {
+        //cuando se inicia por primera vez la aplicacion se borra el contenido
+        //del shared preferences con los id de las notificaciones
+        val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
+        preferences.clearSharedPreferences()
         manager=getSystemService(NotificationManager::class.java)
     }
 

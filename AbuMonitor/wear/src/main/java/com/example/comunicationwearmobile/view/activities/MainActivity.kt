@@ -4,7 +4,7 @@
  * changes to the libraries and their usages.
  */
 
-package com.example.comunicationwearmobile
+package com.example.comunicationwearmobile.view.activities
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -14,8 +14,8 @@ import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.comunicationwearmobile.utils.mannager.PermissionManager
 import com.example.comunicationwearmobile.utils.showToast
-import com.example.comunicationwearmobile.ui.WearApp
-import com.example.comunicationwearmobile.ui.screen.main.HorizontalPagerWithDotsIndicatorScreen
+import com.example.comunicationwearmobile.view.jetpackCompose.WearApp
+import com.example.comunicationwearmobile.view.jetpackCompose.main.HorizontalPagerWithDotsIndicatorScreen
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
 import kotlinx.coroutines.launch
 

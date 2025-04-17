@@ -9,11 +9,11 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.HealthEvent
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.getCapabilities
-import com.example.comunicationwearmobile.common.showNotification
 import com.example.comunicationwearmobile.models.entities.DataClass_FallEventData
+import com.example.comunicationwearmobile.utils.mannager.NotificationMannager
 import com.example.comunicationwearmobile.utils.services.PassiveHealthEventService
 import com.example.comunicationwearmobile.utils.services.SingletonHolder
-import com.example.comunicationwearmobile.ui.screen.main.TAG
+import com.example.comunicationwearmobile.view.jetpackCompose.main.TAG
 import com.example.shared_library.SharedData
 import kotlinx.coroutines.flow.first
 import java.time.ZoneId
@@ -22,17 +22,22 @@ import java.time.format.FormatStyle
 import java.util.*
 
 
-class RepositoryHealthServices private constructor(val context: Context) {
+class RepositoryHealthServices private constructor(appContext: Context) {
 
+    val context: Context = appContext.applicationContext
     private var healthServicesClient: HealthServicesClient
     private var passiveMonitoringClient: PassiveMonitoringClient
     private val healthEventTypes = setOf(HealthEvent.Type.FALL_DETECTED)
+    private var notificationMannager:NotificationMannager?=null
+
     private var registered: Boolean = false
 
     companion object : SingletonHolder<RepositoryHealthServices, Context>(::RepositoryHealthServices)
 
     init {
         healthServicesClient = HealthServices.getClient(context)
+        notificationMannager= NotificationMannager()
+
         passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
     }
 
@@ -64,7 +69,7 @@ class RepositoryHealthServices private constructor(val context: Context) {
 
     }
     //este metodo inicia un servicio para detectar los eventos de la caida en segundo plano.
-    suspend fun registerForHealthEventsData() {
+    private suspend fun registerForHealthEventsData() {
         Log.d(TAG, "Registering listener")
         val passiveListenerConfig = PassiveListenerConfig.builder()
             .setHealthEventTypes(healthEventTypes)
@@ -90,7 +95,7 @@ class RepositoryHealthServices private constructor(val context: Context) {
 
 
     fun recordHealthEvent(healthEvent: HealthEvent) {
-        var msgFallDetection: SharedData.MsgFallDetection?
+        val msgFallDetection: SharedData.MsgFallDetection?
 
         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.ENGLISH)
@@ -103,7 +108,7 @@ class RepositoryHealthServices private constructor(val context: Context) {
             fechaHora = eventData.eventTime
         )
 
-        showNotification(context, msgFallDetection)
+        notificationMannager?.showNotification(context, msgFallDetection)
         Log.d(TAG, "Caida Detectada")
     }
 

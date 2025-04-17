@@ -42,4 +42,10 @@ class RepositoryIDNotificationSPref private constructor(context: Context) {
             ArrayList()
         }
     }
+
+    fun clearSharedPreferences() {
+        val editor = prefs.edit()
+        editor.clear()
+        editor.apply()
+    }
 }
