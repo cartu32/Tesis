@@ -3,9 +3,16 @@ package com.example.comunicationwearmobile.ui.utils.broadcast
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.shared_library.SharedData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 // BroadcastReceiver para manejar la cancelación de notificaciones
 // Esto se hace aca dentro porque sino no puedo decrementar el contador de notificaciones en
@@ -18,7 +25,12 @@ class NotificationCancelReceiver : BroadcastReceiver() {
         val notificationManagerHelper = NotificationManagerHelper.getInstance(context)
         val posNotificationId = notificationManagerHelper?.deleteNewNotificationById(notificationId)
 
+        //genero un pendingintent con goasync para que se ejecute en un hilo separado
+        //y que este no se cancele cuando termina el broadcast receiver
+        var pendingIntent=goAsync()
+
         // Decrementar el contador de notificaciones activas
-        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_VIEWED_NOTIFICATION,posNotificationId)
+        RepositoryDispatcherWearable.sendDataToWearable(context,pendingIntent,SharedData.PATH_VIEWED_NOTIFICATION,posNotificationId)
     }
+
 }

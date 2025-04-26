@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import kotlinx.coroutines.CoroutineScope
@@ -82,6 +83,8 @@ class GeofencesServices: Service() {
             repositoryLocation?.locationLiveData?.removeObserver(it)
         }
 
+        //cancelo las corutinas del dispatcher
+        RepositoryDispatcherWearable.onCancel()
         // Cancela la corutina cuando el servicio se destruye
         serviceScope?.cancel()
         serviceScope=null

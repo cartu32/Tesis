@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
+    private var notificationManagerHelper:NotificationManagerHelper?= null
 
     private lateinit var backPressedCallback: OnBackPressedCallback
 
@@ -38,8 +40,6 @@ class MainActivity : AppCompatActivity() {
         configureInsets()
         configCallbackBackPressed()
         initComponent()
-
-
 
         Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
     }
@@ -62,10 +62,18 @@ class MainActivity : AppCompatActivity() {
     }
     private fun initComponent(){
         initStrictMode()
+        initNotificationManager()
         initializeViewModel()
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
+
+    }
+
+    private fun initNotificationManager() {
+        //se inicializa el notification manager helper
+        notificationManagerHelper= NotificationManagerHelper.getInstance(this)
+        notificationManagerHelper?.initConfiguration()
     }
 
     private fun initStrictMode() {
@@ -231,6 +239,8 @@ class MainActivity : AppCompatActivity() {
         //se libera los listeners de los botones
         freeListeners()
         freeViewmodel()
+
+        notificationManagerHelper=null
     }
 
     override fun onStop() {
@@ -246,6 +256,7 @@ class MainActivity : AppCompatActivity() {
         if (::backPressedCallback.isInitialized) {
             backPressedCallback.remove() // Libera el callback
         }
+        notificationManagerHelper?.cancelCorutineInit()
         Log.d(Definition.TAG_DEBUG, "onDestroy MainActivity")
         //System.exit(0)
     }

@@ -8,13 +8,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /* clase que se encarga de recibir los mensajes del wearable.
@@ -30,13 +24,8 @@ class WearableDataListenerService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val context=applicationContext
 
-        //por cada mensaje recibido creo una corutina para que lo maneje.
-        //Esta corutina la hice independiente del service por que se desturuye el service
-        //siga estando la corutina sino termino de enviar el mensaje o hacer algo.
-        CoroutineScope(Dispatchers.IO).launch {
-            Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
-            RepositoryDispatcherWearable.dispatcherMsgFromWearable(context, messageEvent)
-        }
+        Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
+        RepositoryDispatcherWearable.dispatcherMsgFromWearable(context, messageEvent)
     }
 
     override fun onDestroy() {
@@ -49,30 +38,20 @@ class WearableDataListenerService : WearableListenerService() {
  */
 object SenderWearable {
 
-    private val mutex = Mutex()
-
     suspend fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
-        try {
-            withContext(Dispatchers.IO) {
-                mutex.withLock {
-                    val applicationContext = context.applicationContext
-                    val nodes = getNodes(applicationContext)
-                    val nodeId = nodes.firstOrNull()
+        val applicationContext = context.applicationContext
+        val nodes = getNodes(applicationContext)
+        val nodeId = nodes.firstOrNull()
 
-                    nodeId?.let {
-                        Wearable.getMessageClient(applicationContext)
-                            .sendMessage(it, path, msg)
-                            .addOnSuccessListener {
-                                Log.d(Definition.TAG_DEBUG, "OnSuccess")
-                            }
-                            .addOnFailureListener {
-                                Log.d(Definition.TAG_DEBUG, "OnFailure")
-                            }
-                    }
+        nodeId?.let {
+            Wearable.getMessageClient(applicationContext)
+                .sendMessage(it, path, msg)
+                .addOnSuccessListener {
+                    Log.d(Definition.TAG_DEBUG, "OnSuccess")
                 }
-            }
-        } catch (e: Exception) {
-            Log.e(Definition.TAG_DEBUG, "Error sending message", e)
+                .addOnFailureListener {
+                    Log.d(Definition.TAG_DEBUG, "OnFailure")
+                }
         }
     }
 

@@ -84,6 +84,7 @@ dependencies {
     implementation (libs.play.services.wearable)
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.x")
     implementation (libs.androidx.lifecycle.extensions)
     implementation (libs.androidx.lifecycle.runtime.ktx)
     implementation (libs.androidx.appcompat)

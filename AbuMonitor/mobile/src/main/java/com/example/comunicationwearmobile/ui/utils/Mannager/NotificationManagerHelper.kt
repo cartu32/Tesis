@@ -16,12 +16,21 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryIDNotifi
 import com.example.comunicationwearmobile.ui.utils.broadcast.NotificationCancelReceiver
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.locks.ReentrantLock
 
 class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
 
-    private val lock=ReentrantLock()
+    private val supervisor= SupervisorJob()
+    private val scope= CoroutineScope(Dispatchers.IO+supervisor)
+    private var jobInit:Job?=null
 
+    private val lock=ReentrantLock()
     private var manager:NotificationManager?=null
     private val appContext: Context = context.applicationContext
 
@@ -30,20 +39,19 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
     val ID_NOTIFICATION_FOREGROUND_SERVICE          = 1001
 
 
-    init {
-        //creo un canal de notificaciones exclusivo para el foregroundservices
-        initConfiguration()
+    fun initConfiguration() {
+        jobInit=scope.launch {
+            //cuando se inicia por primera vez la aplicacion se borra el contenido
+            //del shared preferences con los id de las notificaciones
+            val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
+            preferences.clearSharedPreferences()
+            manager = getSystemService(NotificationManager::class.java)
+        }
     }
 
-
-    private fun initConfiguration() {
-        //cuando se inicia por primera vez la aplicacion se borra el contenido
-        //del shared preferences con los id de las notificaciones
-        val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
-        preferences.clearSharedPreferences()
-        manager=getSystemService(NotificationManager::class.java)
+    fun cancelCorutineInit(){
+        jobInit?.cancel()
     }
-
 
 
     fun notificationViewedOnWearable(msgBytes: ByteArray) {
@@ -92,6 +100,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
             lock.unlock()
         }
     }
+
 
     //esta funcion elimina el notification id del shared preference. Atencion la eliminacion de la
     //bandeja de entrada se hace automaticamente con el pending intent, ya esta implicito
@@ -260,13 +269,11 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
         manager?.notify(GROUP_ID, groupNotificationBuilder.build())
 
         //se obtiene el numero de notificacion existente del shared preference
-        val notificationId=getNewIdNotification()
+        val notificationId = getNewIdNotification()
 
         // Crear y muestra la notificación del msg recibido. ESta se agrupa en el grupo de notificaciones
-        createAlertNotification(notificationBuilder,msg,notificationId)
+        createAlertNotification(notificationBuilder, msg, notificationId)
         manager?.notify(notificationId, notificationBuilder.build())
-
-
     }
 
 

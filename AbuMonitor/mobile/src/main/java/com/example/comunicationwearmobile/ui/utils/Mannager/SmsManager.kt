@@ -6,27 +6,32 @@ import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class SmsManager {
     private val telephoneNumber = "1134926279"
+    private val mutex = Mutex()
 
-    fun sendSMS(context: Context, message: ByteArray) {
+    suspend fun sendSMS(context: Context, message: ByteArray) {
         try {
-            val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
-            val phoneNumber = telephoneNumber
+            mutex.withLock {
+                val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
+                val phoneNumber = telephoneNumber
 
-            if (phoneNumber.isNotBlank()) {
-                val smsManager = context.getSystemService(SmsManager::class.java)
-                smsManager.sendTextMessage(
-                    phoneNumber,
-                    null,
-                    msgFallDetection.message + msgFallDetection.fechaHora,
-                    null,
-                    null
-                )
-                Log.d(Definition.TAG_DEBUG, "SMS enviado exitosamente.")
-            } else {
-                Log.w(Definition.TAG_DEBUG, "Número de teléfono no disponible o vacío.")
+                if (phoneNumber.isNotBlank()) {
+                    val smsManager = context.getSystemService(SmsManager::class.java)
+                    smsManager.sendTextMessage(
+                        phoneNumber,
+                        null,
+                        msgFallDetection.message + msgFallDetection.fechaHora,
+                        null,
+                        null
+                    )
+                    Log.d(Definition.TAG_DEBUG, "SMS enviado exitosamente.")
+                } else {
+                    Log.w(Definition.TAG_DEBUG, "Número de teléfono no disponible o vacío.")
+                }
             }
         } catch (e: Exception) {
           Log.e(Definition.TAG_DEBUG, "Error al enviar el SMS: ${e.message}", e)

@@ -27,6 +27,8 @@ object Definition {
     const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=5000
     const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 2000
 
+    //tiempo que se indica para cancelar las cortuinas que estan el dispatcher
+    const val TIMEOUT_COURTINE_DISPATCH:Long = 10000
     //ID del Request permisson
     lateinit var application:Application
 
