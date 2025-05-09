@@ -22,15 +22,11 @@ class NotificationCancelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
         val notificationId= intent.getIntExtra(SharedData.PARAM_PENDING_INTENT_NOTIFICATION_ID,0    )
-        val notificationManagerHelper = NotificationManagerHelper.getInstance(context)
+        val notificationManagerHelper = NotificationManagerHelper.getInstance(context.applicationContext)
         val posNotificationId = notificationManagerHelper?.deleteNewNotificationById(notificationId)
 
-        //genero un pendingintent con goasync para que se ejecute en un hilo separado
-        //y que este no se cancele cuando termina el broadcast receiver
-        var pendingIntent=goAsync()
-
         // Decrementar el contador de notificaciones activas
-        RepositoryDispatcherWearable.sendDataToWearable(context,pendingIntent,SharedData.PATH_VIEWED_NOTIFICATION,posNotificationId)
+        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_VIEWED_NOTIFICATION,posNotificationId)
     }
 
 }

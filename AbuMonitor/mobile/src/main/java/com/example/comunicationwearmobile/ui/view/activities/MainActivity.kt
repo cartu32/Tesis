@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initNotificationManager() {
         //se inicializa el notification manager helper
-        notificationManagerHelper= NotificationManagerHelper.getInstance(this)
+        notificationManagerHelper= NotificationManagerHelper.getInstance(this.applicationContext)
         notificationManagerHelper?.initConfiguration()
     }
 

@@ -31,11 +31,11 @@ class RepositoryGeofActivate() {
                 .build()
 
             val geofencingRequest = GeofencingRequest.Builder()
-                //.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .addGeofence(geofence)
                 .build()
 
-            val pendingIntent = getGeofencePendingIntent(context)
+            val pendingIntent = getGeofencePendingIntent(context,areaGeof.id_area.hashCode())
 
             //como esta es una acción asincriconica,y esta funcion es llamada dentro
             //de una corutina, se suspende la ejecucion de la funcion(en realidad la corutina)
@@ -58,14 +58,14 @@ class RepositoryGeofActivate() {
 
     }
 
-    private fun getGeofencePendingIntent(context: Context): PendingIntent {
+    private fun getGeofencePendingIntent(context: Context, hashCode: Int): PendingIntent {
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
             action = "com.example.app.ACTION_GEOFENCE_EVENT"
         }
 
         return PendingIntent.getBroadcast(
             context,
-            0,
+            hashCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )

@@ -89,7 +89,10 @@
                     android:scheme="wear" />
             </intent-filter>
         </service>
-
+        <service
+            android:name=".ui.utils.services.SenderToWearableService"
+            android:exported="false">
+        </service>
         <receiver
             android:name=".ui.utils.broadcast.GeofenceBroadcastReceiver"
             android:exported="false"

@@ -10,7 +10,9 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryIDNotificationSPref
 import com.example.comunicationwearmobile.ui.utils.broadcast.NotificationCancelReceiver
@@ -20,19 +22,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.locks.ReentrantLock
 
-class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
+class NotificationManagerHelper(context: Context) : ContextWrapper(context.applicationContext) {
 
-    private val supervisor= SupervisorJob()
-    private val scope= CoroutineScope(Dispatchers.IO+supervisor)
-    private var jobInit:Job?=null
+    private val scope= CoroutineScope(Dispatchers.IO+ SupervisorJob())
 
     private val lock=ReentrantLock()
     private var manager:NotificationManager?=null
-    private val appContext: Context = context.applicationContext
+    private val appContext: Context = context
 
 
     //ID de la primera notificacion generada
@@ -40,7 +41,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
 
 
     fun initConfiguration() {
-        jobInit=scope.launch {
+        scope.launch {
             //cuando se inicia por primera vez la aplicacion se borra el contenido
             //del shared preferences con los id de las notificaciones
             val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
@@ -50,7 +51,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
     }
 
     fun cancelCorutineInit(){
-        jobInit?.cancel()
+        scope.cancel()
     }
 
 
@@ -78,6 +79,8 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
         if(allNotificationsCanceled){
             manager?.cancel(GROUP_ID)
         }
+        Log.d(Definition.TAG_DEBUG,"notificacion cancelada")
+
 
     }
 
@@ -141,7 +144,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
             val isListEmpty: Boolean = listNotification.isEmpty()
 
             preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
-
+            Log.d(Definition.TAG_DEBUG,"notificacion eliminada deleteNewNotificationByPositionId")
             return Pair(notificationId, isListEmpty)
         }finally {
             lock.unlock()
@@ -294,8 +297,9 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context) {
 
         @Synchronized
         fun getInstance(base: Context): NotificationManagerHelper? {
+            val appContext = base.applicationContext
             if (instance == null) {
-                instance = NotificationManagerHelper(base)
+                instance = NotificationManagerHelper(appContext)
             }
             return instance
         }

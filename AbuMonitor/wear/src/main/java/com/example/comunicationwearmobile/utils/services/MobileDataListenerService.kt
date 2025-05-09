@@ -1,5 +1,6 @@
 package com.example.comunicationwearmobile.utils.services
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -43,7 +44,7 @@ import kotlinx.coroutines.launch
                 if ((message == null)||(path==null)) {
                     return START_STICKY
                 }
-                sendDataToMobile(path, message)
+                sendDataToWearable(applicationContext,path, message)
             }
             return START_STICKY
         }
@@ -61,26 +62,28 @@ import kotlinx.coroutines.launch
         }
 
 
-        private fun getNodes(): Collection<String> {
-            return Tasks.await(Wearable.getNodeClient(applicationContext).connectedNodes).map { it.id }
+
+
+        private fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
+            Wearable.getNodeClient(context).connectedNodes
+                .addOnSuccessListener { nodes ->
+                    val nodeId = nodes.firstOrNull()?.id
+                    nodeId?.let {
+                        Wearable.getMessageClient(context)
+                            .sendMessage(it, path, msg)
+                            .addOnSuccessListener {
+                                Log.d("SendToWearableService", "OnSuccess")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.d("SendToWearableService", "OnFailure", e)
+                            }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("SendToWearableService", "Error al obtener los nodos disponibles", e)
+                }
         }
 
-        private fun sendDataToMobile(path: String, msg: ByteArray) {
-            scope.launch {
-                try {
-                    transcriptionNodeId = getNodes().firstOrNull()
-                    transcriptionNodeId?.let { nodeId ->
-                        val sendMessageTask = Wearable.getMessageClient(applicationContext).sendMessage(nodeId, path, msg)
-                        Tasks.await(sendMessageTask) // Espera sincrónica para asegurar que el mensaje se envíe
-                        Log.d(TAG, "Message sent successfully to node: $nodeId")
-                    } ?: run {
-                        Log.e(TAG, "No connected nodes found")
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error sending message", e)
-                }
-            }
-        }
 
         override fun onDestroy() {
             super.onDestroy()

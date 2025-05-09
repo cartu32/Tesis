@@ -43,6 +43,8 @@ object Definition {
     const val ERROR_DELETE_BD_GEOF:Long      = -4
     const val ERROR_DESACTIVATE_GEOF:Long    = -5
 
+    const val PATH_SEND_DATA_TO_WEARABLE:String = "PATH_SEND_DATA_TO_WEARABLE"
+    const val MSG_TO_WEARABLE:String="MSG_TO_WEARABLE"
 
     @SuppressLint("InlinedApi")
     val permissonNecesary = arrayOf(

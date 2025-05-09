@@ -11,11 +11,6 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -27,7 +22,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
             if (geofencingEvent != null) {
                 if (geofencingEvent.hasError()) {
-                    Log.e("GeofenceReceiver", "Error en el Geofencing: ${geofencingEvent.errorCode}")
+                    Log.e(Definition.TAG_DEBUG, "Error en el Geofencing: ${geofencingEvent.errorCode}")
                     return
                  }
             }
@@ -37,18 +32,17 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 val msg=createMsg(transition)
 
                 //envia la notificaciones al usuario
-                notifyUser(transition,context,msg)
+                notifyUser(context.applicationContext,msg)
 
             }
         }
     }
 
-    private  fun notifyUser(transition: Int, context: Context, msg: SharedData.MsgNotification) {
+    private  fun notifyUser( context: Context, msg: SharedData.MsgNotification) {
         val notificationHelper = NotificationManagerHelper.getInstance(context)
-        val pendingIntent=goAsync()
 
         notificationHelper?.showNotificationGeneral(msg)
-        RepositoryDispatcherWearable.sendDataToWearable(context,pendingIntent,SharedData.PATH_ADD_NOTIFICATION,msg)
+        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION,msg)
     }
 
     private fun createMsg(transition: Int): SharedData.MsgNotification {

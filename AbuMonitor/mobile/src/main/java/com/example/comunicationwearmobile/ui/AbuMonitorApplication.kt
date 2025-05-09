@@ -2,17 +2,17 @@ package com.example.abumonitor
 
 
 import android.app.Application
+import leakcanary.AppWatcher
 import leakcanary.LeakCanary
+import leakcanary.ReachabilityWatcher
 
 
-class AbuMonitorApplication: Application() {
-    private val ACTIVATE_LEAK_CANARY:Boolean= false
-
+class AbuMonitorApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Modifica la configuración de LeakCanary para evitar heap dumps automáticos
-        LeakCanary.config = LeakCanary.config.copy(dumpHeap = ACTIVATE_LEAK_CANARY)
+        // Configuración adicional si es necesario
+        LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
     }
-
 }
+

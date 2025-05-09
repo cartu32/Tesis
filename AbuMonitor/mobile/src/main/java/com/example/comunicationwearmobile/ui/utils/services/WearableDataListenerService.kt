@@ -1,15 +1,21 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
+import android.app.Service
 import android.content.Context
+import android.content.Intent
+import android.os.IBinder
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
-import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /* clase que se encarga de recibir los mensajes del wearable.
  Es un servicio que se inicia automaticamente en el manifest.xml
@@ -22,10 +28,10 @@ class WearableDataListenerService : WearableListenerService() {
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        val context=applicationContext
+       // val context=applicationContext
+       // RepositoryDispatcherWearable.dispatcherMsgFromWearable(context,messageEvent)
 
         Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
-        RepositoryDispatcherWearable.dispatcherMsgFromWearable(context, messageEvent)
     }
 
     override fun onDestroy() {
@@ -33,30 +39,53 @@ class WearableDataListenerService : WearableListenerService() {
         Log.d(Definition.TAG_DEBUG, "WearableDataListenerService destruido")
     }
 }
+class SenderToWearableService : Service() {
 
-/* clase que se encarga de enviar los mensajes al wearable.
- */
-object SenderWearable {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    suspend fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
-        val applicationContext = context.applicationContext
-        val nodes = getNodes(applicationContext)
-        val nodeId = nodes.firstOrNull()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val path = intent?.getStringExtra(Definition.PATH_SEND_DATA_TO_WEARABLE) ?: return START_NOT_STICKY
+        val msg = intent.getByteArrayExtra(Definition.MSG_TO_WEARABLE) ?: return START_NOT_STICKY
 
-        nodeId?.let {
-            Wearable.getMessageClient(applicationContext)
-                .sendMessage(it, path, msg)
-                .addOnSuccessListener {
-                    Log.d(Definition.TAG_DEBUG, "OnSuccess")
-                }
-                .addOnFailureListener {
-                    Log.d(Definition.TAG_DEBUG, "OnFailure")
-                }
+        Log.d("SendToWearableService", "Service iniciado")
+
+        scope.launch {
+            try {
+                sendDataToWearable(applicationContext, path, msg)
+                Log.d("SendToWearableService", "Mensaje enviado correctamente")
+            } catch (e: Exception) {
+                Log.e("SendToWearableService", "Error al enviar mensaje", e)
+            } finally {
+                stopSelf()
+            }
         }
+
+        return START_STICKY
     }
 
-    private suspend fun getNodes(context: Context): List<String> = withContext(Dispatchers.IO) {
-        val task = Wearable.getNodeClient(context).connectedNodes
-        Tasks.await(task).map { it.id }
+    override fun onBind(intent: Intent?): IBinder? = null
+
+
+    private suspend fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
+        // Obtener la lista de nodos conectados
+        val nodes = Wearable.getNodeClient(context).connectedNodes.await()
+
+        // Verificar si hay al menos un nodo conectado
+        val node = nodes.firstOrNull()
+        if (node == null) {
+            throw Exception("No hay dispositivos Wear OS conectados.")
+        }
+
+        val nodeId = node.id
+
+        // Enviar el mensaje al nodo encontrado
+        Wearable.getMessageClient(context).sendMessage(nodeId, path, msg).await()
+    }
+
+
+    override fun onDestroy() {
+        scope.cancel()
+        Log.d("SendToWearableService", "Service destruido")
+        super.onDestroy()
     }
 }

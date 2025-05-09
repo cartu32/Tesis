@@ -53,7 +53,7 @@ class GeofencesServices: Service() {
     private fun configOberserverLivedata() {
 
         locationObserver = Observer<Location> { location ->
-            //Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
+           // Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
         }
 
         repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)
@@ -83,8 +83,6 @@ class GeofencesServices: Service() {
             repositoryLocation?.locationLiveData?.removeObserver(it)
         }
 
-        //cancelo las corutinas del dispatcher
-        RepositoryDispatcherWearable.onCancel()
         // Cancela la corutina cuando el servicio se destruye
         serviceScope?.cancel()
         serviceScope=null
