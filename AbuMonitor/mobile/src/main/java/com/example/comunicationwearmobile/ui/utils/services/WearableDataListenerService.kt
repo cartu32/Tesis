@@ -28,8 +28,8 @@ class WearableDataListenerService : WearableListenerService() {
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-       // val context=applicationContext
-       // RepositoryDispatcherWearable.dispatcherMsgFromWearable(context,messageEvent)
+        val context=applicationContext
+        RepositoryDispatcherWearable.dispatcherMsgFromWearable(context,messageEvent)
 
         Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
     }
