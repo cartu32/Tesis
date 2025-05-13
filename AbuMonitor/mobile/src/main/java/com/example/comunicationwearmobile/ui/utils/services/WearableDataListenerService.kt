@@ -22,20 +22,25 @@ import kotlinx.coroutines.tasks.await
  */
 class WearableDataListenerService : WearableListenerService() {
 
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     override fun onCreate() {
         super.onCreate()
         Log.d(Definition.TAG_DEBUG, "WearableDataListenerService iniciado")
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        val context=applicationContext
-        RepositoryDispatcherWearable.dispatcherMsgFromWearable(context,messageEvent)
+        val context = applicationContext
+        serviceScope.launch {
+            RepositoryDispatcherWearable.dispatcherMsgFromWearable(context, messageEvent)
 
-        Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
+            Log.d(Definition.TAG_DEBUG, "onMessageReceived dato: $messageEvent")
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceScope.cancel()
         Log.d(Definition.TAG_DEBUG, "WearableDataListenerService destruido")
     }
 }

@@ -12,6 +12,9 @@ object SharedData
     const val PATH_VIEWED_NOTIFICATION:String   = "/viewed_notification"
     const val PATH_FALL_DETECTION:String        = "/fall_detection"
 
+    //indica el grupo de las notificaciones que se muestran en la bandeja de notificaciones
+    const val GROUP_ID_NOTIFICATION = 9999
+
     const val PARAM_PENDING_INTENT_NOTIFICATION_ID:String = "PARAM_NOTIFICATION_ID"
     //constante que se utilizan para que el wearabledatalistener le avise ala view de los datos
     //recibidios

@@ -14,7 +14,7 @@ import com.google.android.gms.wearable.MessageEvent
 object RepositoryDispatcherWearable {
     private val smsManager = SmsManager()
 
-     fun dispatcherMsgFromWearable(context: Context, messageEvent: MessageEvent) {
+     suspend fun dispatcherMsgFromWearable(context: Context, messageEvent: MessageEvent) {
         val notificationManager = NotificationManagerHelper.getInstance(context.applicationContext)
 
         notificationManager.let {

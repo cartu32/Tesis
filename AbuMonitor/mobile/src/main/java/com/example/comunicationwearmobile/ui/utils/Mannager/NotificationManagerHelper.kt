@@ -67,7 +67,8 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         val (notificationId,allNotificationsCanceled)=deleteNewNotificationByPositionId(indexList)
 
         //borro la nostificacion de la bandeja de la notificaciones del S.O
-        cancelNotification(notificationId,allNotificationsCanceled)
+        if (notificationId!=Definition.ERROR_INDEX_OUT_OF_BOUNDS)
+            cancelNotification(notificationId,allNotificationsCanceled)
     }
 
     private fun cancelNotification(notificationId: Int, allNotificationsCanceled: Boolean){
@@ -77,7 +78,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
 
         //si todas las notificaciones del smrtphone fueron canceladas, entonces se cancela la notificacion del grupo
         if(allNotificationsCanceled){
-            manager?.cancel(GROUP_ID)
+            manager?.cancel(SharedData.GROUP_ID_NOTIFICATION)
         }
         Log.d(Definition.TAG_DEBUG,"notificacion cancelada")
 
@@ -114,6 +115,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
             val listNotification = preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
 
             val posList = listNotification.indexOf(idNotification)
+
             //compruebo que el indice este en la lista
             if (posList == -1)
             //si no esta retorno -1
@@ -144,8 +146,11 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
             val isListEmpty: Boolean = listNotification.isEmpty()
 
             preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
-            Log.d(Definition.TAG_DEBUG,"notificacion eliminada deleteNewNotificationByPositionId")
+            Log.d(Definition.TAG_DEBUG, "notificacion eliminada deleteNewNotificationByPositionId")
             return Pair(notificationId, isListEmpty)
+        }catch (e: IndexOutOfBoundsException){
+            Log.d(Definition.TAG_DEBUG, "IndexOutOfBoundsException deleteNewNotificationByPositionId")
+            return Pair(Definition.ERROR_INDEX_OUT_OF_BOUNDS,false)
         }finally {
             lock.unlock()
         }
@@ -203,7 +208,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
                 .setGroup(GROUP_KEY_NOTIFICATION)
                 .setGroupSummary(true)
                 .setAutoCancel(true)
-                //.setDeleteIntent(getCancelIntent(GROUP_ID)) // Agregar esta línea
+                .setDeleteIntent(getCancelIntent(SharedData.GROUP_ID_NOTIFICATION)) // Agregar esta línea
 
         }
         return noti
@@ -269,7 +274,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         //En este caso al crear grupo se configuro para que no se muestra una notificacion
         //sobre el grupo sino que se muestra solamente la  notificacion del msg al final
         val groupNotificationBuilder = createGroupNotification()
-        manager?.notify(GROUP_ID, groupNotificationBuilder.build())
+        manager?.notify(SharedData.GROUP_ID_NOTIFICATION, groupNotificationBuilder.build())
 
         //se obtiene el numero de notificacion existente del shared preference
         val notificationId = getNewIdNotification()
@@ -285,7 +290,6 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         const val CHANNEL_FOREGROUND_SERVICE = "Foregroundservice"
         const val CHANNEL_ID_FOREGROUND_SERVICE = "Channel_ID_ForegroundService"
 
-        const val GROUP_ID: Int = 1000
         const val GROUP_KEY_NOTIFICATION = "GROUP_NOTIFICATION"
 
         const val CHANNEL_ALERTS = "Alertas"

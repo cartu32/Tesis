@@ -83,13 +83,13 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
 @Composable
 fun showButtonReminder(page: Int, alertsViewModel: AlertsViewModel) {
     CustomFloatingActionButton(Icons.Filled.DateRange, "Floating action button.", buttonBackgroundColor =  Color.Green) {
-        alertsViewModel.removeMsgAlertList(page) }
+        alertsViewModel.removeMsgAlertInAllDevices(page) }
 }
 
 @Composable
 fun showButtonAlert(page: Int, alertsViewModel: AlertsViewModel) {
     CustomFloatingActionButton(Icons.Filled.Warning, "Floating action button.",buttonBackgroundColor =  Color.Red) {
-        alertsViewModel.removeMsgAlertList(page) }
+        alertsViewModel.removeMsgAlertInAllDevices(page) }
 }
 
 @Composable

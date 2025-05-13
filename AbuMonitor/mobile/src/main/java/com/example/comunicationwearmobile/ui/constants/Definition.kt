@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 
 object Definition {
+    val ERROR_INDEX_OUT_OF_BOUNDS: Int =-1
     const val ZOOM_MAP: Float = 15f
 
     //nombre del archivo de la  base de datos Room

@@ -176,11 +176,13 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun removeAllMsg() {
-        _stateListNotif.value?.alertsList?.forEach { msgAlert ->
+    fun removeAllMsgInAllDevices() {
+        val currentList = _stateListNotif.value?.alertsList?.toList() ?: emptyList()
+
+        currentList.forEach { msgAlert ->
             val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
             if (indexList != -1) {
-                removeMsgAlertList(indexList)
+                removeMsgAlertInAllDevices(indexList)
             }
         }
     }
@@ -188,13 +190,30 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private fun removeMsgAlert(msgBytes: ByteArray) {
         val indexList: Int = fromByteArray(msgBytes)
-        updateRemoveMsg(indexList)
+        if (indexList==SharedData.GROUP_ID_NOTIFICATION){
+            removeAllMsgInThisDevices()
+        }else
+        {
+            updateRemoveMsg(indexList)
+        }
+    }
+
+    private fun removeAllMsgInThisDevices() {
+        _stateListNotif.value?.alertsList?.forEach { msgAlert ->
+            val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
+            if (indexList != -1) {
+                updateRemoveMsg(indexList)
+            }
+        }
     }
 
 
-
-    fun removeMsgAlertList(indexList: Int) {
+    fun removeMsgAlertInAllDevices(indexList: Int) {
         updateRemoveMsg(indexList)
+        notifySmartphone(indexList)
+    }
+
+    fun notifySmartphone(indexList: Int){
         viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
             try {
                 sendMessageMobile(app, SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
@@ -204,6 +223,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
                 println("Limpieza al finalizar la corutina")
             }
         }
+
     }
     private fun updateRemoveMsg(indexList: Int) {
         _stateListNotif.value?.let {

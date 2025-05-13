@@ -13,21 +13,18 @@ import com.example.shared_library.SharedData
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-val mutex = Mutex()
-
 fun showToast(mcontext: Context, msg: String){
     Toast.makeText(mcontext,msg, Toast.LENGTH_SHORT).show()
 }
 
-suspend fun sendMessageMobile(context: Context , path:String , body: ByteArray?){
-    mutex.withLock {
-        val serviceIntent = Intent(context , MobileDataListenerService::class.java).apply {
-            putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , path)
-            putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , body)
-        }
-        context.startService(serviceIntent)
+fun sendMessageMobile(context: Context , path:String , body: ByteArray?){
+    val serviceIntent = Intent(context , MobileDataListenerService::class.java).apply {
+        putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , path)
+        putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , body)
     }
+    context.startService(serviceIntent)
 }
+
 
 
 
