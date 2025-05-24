@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.utils.services
 
 import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.shared_library.SharedData
@@ -51,17 +52,26 @@ import kotlinx.coroutines.launch
 
         override fun onMessageReceived(messageEvent: MessageEvent) {
             try {
+                wakeLock()
                 val intent = Intent(SharedData.Broadcast.fromMobileData.name)
                 intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name, messageEvent.data)
                 intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name, messageEvent.path)
 
                 LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling incoming message", e)
             }
         }
 
-
+        private fun wakeLock() {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wakeLock = powerManager.newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "MyApp:MyWakelockTag"
+            )
+            wakeLock.acquire(3000) // Mantiene la pantalla encendida por 3 segundos
+        }
 
 
         private fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
