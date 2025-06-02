@@ -17,6 +17,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.comunicationwearmobile.models.entities.DataClass_FallEventData
 import com.example.comunicationwearmobile.view.activities.MainActivity
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
@@ -31,9 +32,13 @@ import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 
-class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
+open class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     private val TAG: String = "AlertViewModel"
 
@@ -44,6 +49,7 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     val stateListNotif: LiveData<DataClass_MsgAlertState> get() = _stateListNotif
 
     private var previousActivityState= Lifecycle.State.DESTROYED
+    private var indexFallListNotif=-1
 
     companion object {
         private var msgBytesDestroyed: ByteArray? = null
@@ -57,9 +63,14 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     private fun initLocalBroadcast() {
         val receiver = createBroadcastReceiver()
 
+        //se usa el mismo handler reciever del bordcast para recepcionar tanto los datos
+        //del mobile como cuando se detecta las caidas.
         LocalBroadcastManager.getInstance(app).registerReceiver(
-            receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name)
-        )
+            receiver , IntentFilter(SharedData.Broadcast.fromMobileData.name))
+
+        LocalBroadcastManager.getInstance(app).registerReceiver(
+            receiver , IntentFilter(SharedData.Broadcast.alertFallDetect.name))
+
         app.startService( Intent(app , MobileDataListenerService::class.java))
     }
 
@@ -130,11 +141,17 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     @RequiresApi(Build.VERSION_CODES.S)
     private fun analizepath(path: String , msgBytes: ByteArray) {
         when (path) {
-            SharedData.PATH_ADD_NOTIFICATION -> {
+            SharedData.PATH_ADD_NOTIFICATION_GENERAL -> {
                 addMsgAlertList(msgBytes)
                 MediaMannager.generateVibration(app)
             }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
+
+            SharedData.PATH_ADD_NOTIFICATION_FALL -> {
+                indexFallListNotif=addMsgAlertList(msgBytes)
+                MediaMannager.generateVibration(app)
+            }
+
             else->Log.d (TAG,"Error de path al analizar el path")
         }
     }
@@ -210,21 +227,9 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
     fun removeMsgAlertInAllDevices(indexList: Int) {
         updateRemoveMsg(indexList)
-        notifySmartphone(indexList)
+        notifySmartphone(SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
     }
 
-    fun notifySmartphone(indexList: Int){
-        viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
-            try {
-                sendMessageMobile(app, SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
-            } catch (e: Exception) {
-                Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
-            } finally {
-                println("Limpieza al finalizar la corutina")
-            }
-        }
-
-    }
     private fun updateRemoveMsg(indexList: Int) {
         _stateListNotif.value?.let {
             val currentAlertsList = it.alertsList?.toMutableList()
@@ -238,12 +243,41 @@ class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
     }
 
 
-    private fun addMsgAlertList(msgBytes: ByteArray) {
+    private fun addMsgAlertList(msgBytes: ByteArray): Int {
         val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
-        _stateListNotif.value?.let {
-            val currentAlertsList = it.alertsList?.toMutableList()
-            currentAlertsList?.add(msgAlert)
+        return _stateListNotif.value?.let {
+            val currentAlertsList = it.alertsList?.toMutableList() ?: mutableListOf()
+            currentAlertsList.add(msgAlert)
             _stateListNotif.value = it.copy(alertsList = currentAlertsList)
+            currentAlertsList.lastIndex // Retorna el índice del elemento recién agregado
+        } ?: -1 // Retorna -1 si _stateListNotif.value es null
+    }
+
+
+    fun notifyFallBySmartPhone(){
+
+        var msgFallDetection = SharedData.MsgFallDetection(
+            title = "¡¡ALERTA!! ",
+            message = "Abumonitor ha detectado una caida.",
+            fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+        )
+
+        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
+    }
+    fun notifySmartphone(path:String, msgBytes: ByteArray){
+        viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
+            try {
+                sendMessageMobile(app, path, msgBytes)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
+            } finally {
+                println("Limpieza al finalizar la corutina")
+            }
         }
+
+    }
+
+    fun cancelNotifyFallBySmartPhone() {
+        TODO("Not yet implemented")
     }
 }

@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.models.repository
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServices
@@ -9,17 +10,14 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.HealthEvent
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.getCapabilities
-import com.example.comunicationwearmobile.models.entities.DataClass_FallEventData
-import com.example.comunicationwearmobile.utils.mannager.NotificationMannager
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.utils.services.PassiveHealthEventService
 import com.example.comunicationwearmobile.utils.services.SingletonHolder
 import com.example.comunicationwearmobile.view.jetpackCompose.main.TAG
 import com.example.shared_library.SharedData
+import com.example.shared_library.toByteArray
+import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.flow.first
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.util.*
 
 
 class RepositoryHealthServices private constructor(appContext: Context) {
@@ -28,15 +26,14 @@ class RepositoryHealthServices private constructor(appContext: Context) {
     private var healthServicesClient: HealthServicesClient
     private var passiveMonitoringClient: PassiveMonitoringClient
     private val healthEventTypes = setOf(HealthEvent.Type.FALL_DETECTED)
-    private var notificationMannager:NotificationMannager?=null
 
     private var registered: Boolean = false
 
-    companion object : SingletonHolder<RepositoryHealthServices, Context>(::RepositoryHealthServices)
+    companion object :
+        SingletonHolder<RepositoryHealthServices, Context>(::RepositoryHealthServices)
 
     init {
         healthServicesClient = HealthServices.getClient(context)
-        notificationMannager= NotificationMannager()
 
         passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
     }
@@ -50,24 +47,25 @@ class RepositoryHealthServices private constructor(appContext: Context) {
                 return false
             }
         }
-                passiveMonitoringClient.getCapabilities()
+        passiveMonitoringClient.getCapabilities()
         return true
     }
 
-    suspend fun registerFallDetectorEventsData(){
-        val stateDetector:Boolean= RepositoryFallDetectorDS.getDetectorActivateState(context).first()
+    suspend fun registerFallDetectorEventsData() {
+        val stateDetector: Boolean =
+            RepositoryFallDetectorDS.getDetectorActivateState(context).first()
 
         if (!stateDetector) {
-            Log.d(TAG,"El detector de caidas no estaba registrado")
+            Log.d(TAG, "El detector de caidas no estaba registrado")
             registerForHealthEventsData()
-            RepositoryFallDetectorDS.saveDetectorActivateState(context,true)
-            Log.d(TAG,"Detecto de caidas registrado")
-        }
-        else{
-            Log.d(TAG,"El detector de caidas ya estaba registrado")
+            RepositoryFallDetectorDS.saveDetectorActivateState(context, true)
+            Log.d(TAG, "Detecto de caidas registrado")
+        } else {
+            Log.d(TAG, "El detector de caidas ya estaba registrado")
         }
 
     }
+
     //este metodo inicia un servicio para detectar los eventos de la caida en segundo plano.
     private suspend fun registerForHealthEventsData() {
         Log.d(TAG, "Registering listener")
@@ -93,16 +91,17 @@ class RepositoryHealthServices private constructor(appContext: Context) {
         return registered
     }
 
-
-    fun recordHealthEvent(healthEvent: HealthEvent) {
+/*
+    fun showNoitifyPush(healthEvent: HealthEvent) {
         val msgFallDetection: SharedData.MsgFallDetection?
 
         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
             .withLocale(Locale.ENGLISH)
             .withZone(ZoneId.systemDefault())
-        val eventData = DataClass_FallEventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
+        val eventData =
+            DataClass_FallEventData(healthEvent.type.name, formatter.format(healthEvent.eventTime))
 
-        msgFallDetection =SharedData.MsgFallDetection(
+        msgFallDetection = SharedData.MsgFallDetection(
             title = "AbuMonitor",
             message = "Abumonitor ha detectado una caida",
             fechaHora = eventData.eventTime
@@ -110,10 +109,54 @@ class RepositoryHealthServices private constructor(appContext: Context) {
 
         notificationMannager?.showNotification(context, msgFallDetection)
         Log.d(TAG, "Caida Detectada")
-    }
-
-    fun showNotificationAlert(msgAlert: SharedData.MsgNotification) {
 
     }
+
+    fun notifyFallDetectionInWatch(healthEvent: HealthEvent) {
+        val intent = Intent(SharedData.Broadcast.alertFallDetect.name)
+        var msgFallDetection=SharedData.MsgNotification(
+            "¡Alerta Caida Detectada!",
+            "¿Necesita ayuda?",
+             SharedData.TypeNotification.FallDetection)
+
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_PATH.name, SharedData.PATH_ADD_NOTIFICATION_FALL)
+        intent.putExtra(SharedData.ParamIntent.MESSAGE_BODY.name,toByteArray(msgFallDetection))
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        Log.d("ABUMONITOR", "Caida Detectada "+healthEvent.type.name)
+
+    }
+*/
+    fun notifyFallDetectionInWatch() {
+        //como el unico que puede abrir activity con startactivity estando la app en segundo plano es la clase wearablelistener.
+        //lo que hago el autoenviar el mensaje de deteccion de caidas al mismo reloj enviandoselo a wearablelistener. Para
+        //qu desde ahi pueda abrirse la activty que muestra el alerta de deteccion de caida.
+
+    var msgFallDetection=SharedData.MsgNotification(
+        "¡Alerta Caida Detectada!",
+        "¿Necesita ayuda?",
+        SharedData.TypeNotification.FallDetection)
+
+    Wearable.getNodeClient(context).localNode
+            .addOnSuccessListener { node ->
+                val nodeId = node.id
+                Wearable.getMessageClient(context)
+                    .sendMessage(nodeId,SharedData.PATH_ADD_NOTIFICATION_FALL, toByteArray(msgFallDetection))
+                    .addOnSuccessListener {
+                        Log.d("WearOS", "Mensaje enviado con éxito")
+                    }
+                    .addOnFailureListener {
+                        Log.e("WearOS", "Error al enviar mensaje", it)
+                    }
+            }
+            .addOnFailureListener {
+                Log.e("WearOS", "Error al obtener nodo local", it)
+            }
+
+
+    }
+
+
 
 }
+

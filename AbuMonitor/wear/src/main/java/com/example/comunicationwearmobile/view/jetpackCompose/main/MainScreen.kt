@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +47,7 @@ import com.example.comunicationwearmobile.utils.isScreenOn
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.view.jetpackCompose.component.ViewPagerDotsIndicator
 import com.example.comunicationwearmobile.viewModels.AlertsViewModel
+import com.example.comunicationwearmobile.viewModels.FakeMainScreenViewModel
 import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -75,7 +77,7 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
             SharedData.TypeNotification.Reminder -> showButtonReminder(page,alertsViewModel)
             SharedData.TypeNotification.Alert -> showButtonAlert(page,alertsViewModel)
             SharedData.TypeNotification.WithoutNotifications -> showButtonDefault()
-            SharedData.TypeNotification.FallDetection -> showButtonsFallDetection()
+            SharedData.TypeNotification.FallDetection -> showButtonsFallDetection(alertsViewModel)
         }
     }
 }
@@ -93,13 +95,24 @@ fun showButtonAlert(page: Int, alertsViewModel: AlertsViewModel) {
 }
 
 @Composable
-fun showButtonsFallDetection() {
+fun showButtonsFallDetection(alertsViewModel: AlertsViewModel) {
     Row( // <- Aquí usamos Row en lugar de dejarlos sueltos
         horizontalArrangement = Arrangement.spacedBy(16.dp), // espacio entre botones
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CustomFloatingActionButton(Icons.Filled.Phone, "Floating action button.", buttonBackgroundColor = Color.Red, onClick = {})
-        CustomFloatingActionButton(Icons.Filled.Close, "Floating action button.", buttonBackgroundColor = Color.White, buttonContentColor = Color.Black, onClick = {})
+        CustomFloatingActionButton(
+            Icons.Filled.Phone,
+            "Floating action button.",
+            buttonBackgroundColor = Color.Red,
+            onClick = {alertsViewModel.notifyFallBySmartPhone()}
+        )
+        CustomFloatingActionButton(
+            Icons.Filled.Close,
+            "Floating action button.",
+            buttonBackgroundColor = Color.White,
+            buttonContentColor = Color.Black,
+            onClick = {alertsViewModel.cancelNotifyFallBySmartPhone()}
+        )
     }
 }
 
@@ -205,8 +218,8 @@ fun DefaultView(alertsViewModel: AlertsViewModel) {
                 textAlign = TextAlign.Center,
                 color = Color.White
             )
-            //showButtonDefault()
-            showButtonsFallDetection()
+            showButtonDefault()
+            //showButtonsFallDetection()
         }
     }
 
@@ -236,6 +249,6 @@ fun HorizontalPagerWithDotsIndicatorScreen(alertsViewModel: AlertsViewModel) {
 @Composable
 fun PreviewUsuarioScreenLV() {
 // Simulación de ViewModel para la vista previa
-   // val model = remember { AlertsViewModel() }
-   // HorizontalPagerWithDotsIndicatorScreen(model)
+    val fakeViewModel = remember { FakeMainScreenViewModel() }
+    DefaultView(alertsViewModel = fakeViewModel)
 }

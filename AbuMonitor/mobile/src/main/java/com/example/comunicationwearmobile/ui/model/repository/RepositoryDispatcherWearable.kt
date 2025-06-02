@@ -20,7 +20,7 @@ object RepositoryDispatcherWearable {
         notificationManager.let {
             when (messageEvent.path) {
                 SharedData.PATH_VIEWED_NOTIFICATION ->notificationManager?.notificationViewedOnWearable(messageEvent.data)
-                SharedData.PATH_FALL_DETECTION ->smsManager.sendSMS(context, messageEvent.data)
+                SharedData.PATH_FALL_DETECTION_SMS ->smsManager.sendSMS(context, messageEvent.data)
                 else -> Log.d(Definition.TAG_DEBUG, "Unknown path received: ${messageEvent.path}")
             }
         }?: run {

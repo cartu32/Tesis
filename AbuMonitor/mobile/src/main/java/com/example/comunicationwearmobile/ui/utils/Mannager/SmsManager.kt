@@ -17,12 +17,18 @@ class SmsManager {
             val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
             val phoneNumber = telephoneNumber
 
+            val message = """
+                ${msgFallDetection.title}
+                ${msgFallDetection.message}
+                ${msgFallDetection.fechaHora}
+                """.trimIndent()
+
             if (phoneNumber.isNotBlank()) {
                 val smsManager = context.getSystemService(SmsManager::class.java)
                 smsManager.sendTextMessage(
                     phoneNumber,
                     null,
-                    msgFallDetection.message + msgFallDetection.fechaHora,
+                    message,
                     null,
                     null
                 )

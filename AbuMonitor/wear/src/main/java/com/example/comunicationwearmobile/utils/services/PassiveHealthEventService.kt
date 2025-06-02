@@ -31,11 +31,11 @@ class PassiveHealthEventService : PassiveListenerService() {
         // ninugna corutina
         runBlocking {
             try{
-                Log.i(TAG, "onHealthEventReceived received with type: ${event.type}")
-                RepositoryHealthServices.getInstance(applicationContext).recordHealthEvent(event)
                 super.onHealthEventReceived(event)
+                Log.i("ABUMONITOR", "onHealthEventReceived received with type: ${event.type}")
+                RepositoryHealthServices.getInstance(applicationContext).notifyFallDetectionInWatch()
             }catch (e : Exception){
-                Log.i(TAG, "Error al detectar caida${e.message}")
+                Log.i("ABUMONITOR", "Error al detectar caida${e.message}")
             }
 
         }

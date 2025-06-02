@@ -42,7 +42,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val notificationHelper = NotificationManagerHelper.getInstance(context)
 
         notificationHelper?.showNotificationGeneral(msg)
-        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION,msg)
+        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION_GENERAL,msg)
     }
 
     private fun createMsg(transition: Int): SharedData.MsgNotification {
