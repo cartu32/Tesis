@@ -42,12 +42,22 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
 
     fun initConfiguration() {
         scope.launch {
-            //cuando se inicia por primera vez la aplicacion se borra el contenido
-            //del shared preferences con los id de las notificaciones
-            val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
-            preferences.clearSharedPreferences()
+
+            initListSharedPreference()
+
             manager = getSystemService(NotificationManager::class.java)
         }
+    }
+
+    private fun initListSharedPreference() {
+        //cuando se inicia por primera vez la aplicacion se borra el contenido
+        //del shared preferences con los id de las notificaciones
+        val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
+        //siempre dejo 1elemento en la lista para que coincida el id con los indices
+        var listNotification= arrayListOf(FIRST_ITEM_LIST_NOTIF)
+
+        preferences.clearSharedPreferences()
+        preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
     }
 
     fun cancelCorutineInit(){
@@ -56,19 +66,17 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
 
 
     fun notificationViewedOnWearable(msgBytes: ByteArray) {
-        val indexList:Int = fromByteArray(msgBytes)
+        val idMsgMobile:Int = fromByteArray(msgBytes)
 
-        cancelNotificationID(indexList)
+        cancelNotificationID(idMsgMobile)
     }
 
-    private fun cancelNotificationID(indexList: Int){
-        // Obtener el NotificationManager del sistema
+    private fun cancelNotificationID(idMsgMobile: Int){
+        //me fijo si la notificacion existe en el shared preference
+        if(deleteNewNotificationById(idMsgMobile)==false){
+            return
+        }
 
-        val (notificationId,allNotificationsCanceled)=deleteNewNotificationByPositionId(indexList)
-
-        //borro la nostificacion de la bandeja de la notificaciones del S.O
-        if (notificationId!=Definition.ERROR_INDEX_OUT_OF_BOUNDS)
-            cancelNotification(notificationId,allNotificationsCanceled)
     }
 
     private fun cancelNotification(notificationId: Int, allNotificationsCanceled: Boolean){
@@ -82,7 +90,6 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         }
         Log.d(Definition.TAG_DEBUG,"notificacion cancelada")
 
-
     }
 
 
@@ -93,10 +100,11 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
             val listNotification = preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
             var newId = 1
 
-            if (listNotification.isNotEmpty()) {
+            if (listNotification.size!=1) {
                 newId = listNotification.last()
                 newId++
             }
+
             listNotification.add(newId)
             preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
             return newId
@@ -108,55 +116,38 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
 
     //esta funcion elimina el notification id del shared preference. Atencion la eliminacion de la
     //bandeja de entrada se hace automaticamente con el pending intent, ya esta implicito
-    fun deleteNewNotificationById(idNotification:Int):Int{
+    fun deleteNewNotificationById(idNotification:Int):Boolean{
         lock.lock()
         try {
+            var listIsEmpty =false
+
             val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
             val listNotification = preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
 
             val posList = listNotification.indexOf(idNotification)
 
             //compruebo que el indice este en la lista
-            if (posList == -1)
-            //si no esta retorno -1
-                return posList
+            //y que tengan el primer elemnto dummy
+            if ((posList == -1)||(listNotification.size==1))
+                return false
 
             listNotification.removeAt(posList)
 
+            //si solo le queda el elemento dummy en la lista entonces se considera
+            //que esta vacia la lista
+            if(listNotification.size==1)
+                listIsEmpty=true
+
             //borro la notificacion de la bandeja de notificaciones del S.O
-            cancelNotification(idNotification, listNotification.isEmpty())
+            cancelNotification(idNotification,listIsEmpty)
 
             preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
 
-            return posList
+            return true
         }finally {
             lock.unlock()
         }
     }
-
-    private fun deleteNewNotificationByPositionId(indexList:Int):Pair<Int,Boolean> {
-        lock.lock()
-        try {
-            val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
-            val listNotification = preferences.getArrayList(KEY_LIST_NOTIFICATION_SP)
-
-            val notificationId = listNotification[indexList]
-            listNotification.removeAt(indexList)
-
-            val isListEmpty: Boolean = listNotification.isEmpty()
-
-            preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
-            Log.d(Definition.TAG_DEBUG, "notificacion eliminada deleteNewNotificationByPositionId")
-            return Pair(notificationId, isListEmpty)
-        }catch (e: IndexOutOfBoundsException){
-            Log.d(Definition.TAG_DEBUG, "IndexOutOfBoundsException deleteNewNotificationByPositionId")
-            return Pair(Definition.ERROR_INDEX_OUT_OF_BOUNDS,false)
-        }finally {
-            lock.unlock()
-        }
-    }
-
-
 
     private fun createChannelForegroundServices() {
         val notificationChannel =
@@ -266,7 +257,7 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         return notification
     }
 
-    fun showNotificationGeneral(msg:SharedData.MsgNotification){
+    fun showNotificationGeneral(msg:SharedData.MsgNotification):Int{
         // Crear el canal de notificaciones
         val notificationBuilder = createChannelAlerts()
 
@@ -282,6 +273,8 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         // Crear y muestra la notificación del msg recibido. ESta se agrupa en el grupo de notificaciones
         createAlertNotification(notificationBuilder, msg, notificationId)
         manager?.notify(notificationId, notificationBuilder.build())
+
+        return notificationId
     }
 
 
@@ -296,6 +289,8 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
         const val CHANNEL_ID_ALERTS = "Channel_ID_Alerts"
 
         const val KEY_LIST_NOTIFICATION_SP = "KEY_LIST_NOTIFICATION_SP"
+
+        const val FIRST_ITEM_LIST_NOTIF = 255
 
         var instance: NotificationManagerHelper? = null
 

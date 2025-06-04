@@ -1,7 +1,6 @@
 package com.example.comunicationwearmobile.models.repository
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServices
@@ -10,7 +9,6 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.HealthEvent
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.health.services.client.getCapabilities
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.utils.services.PassiveHealthEventService
 import com.example.comunicationwearmobile.utils.services.SingletonHolder
 import com.example.comunicationwearmobile.view.jetpackCompose.main.TAG
@@ -135,7 +133,9 @@ class RepositoryHealthServices private constructor(appContext: Context) {
     var msgFallDetection=SharedData.MsgNotification(
         "¡Alerta Caida Detectada!",
         "¿Necesita ayuda?",
-        SharedData.TypeNotification.FallDetection)
+         typeNotification = SharedData.TypeNotification.FallDetection,
+         idMsgMobile = SharedData.ID_MSG_FALL_DETECTED
+    )
 
     Wearable.getNodeClient(context).localNode
             .addOnSuccessListener { node ->

@@ -17,8 +17,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.comunicationwearmobile.models.entities.DataClass_FallEventData
-import com.example.comunicationwearmobile.view.activities.MainActivity
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import com.example.comunicationwearmobile.utils.isScreenLock
@@ -27,6 +25,7 @@ import com.example.comunicationwearmobile.utils.mannager.MediaMannager
 import com.example.comunicationwearmobile.utils.mannager.PermissionManager
 import com.example.comunicationwearmobile.utils.sendMessageMobile
 import com.example.comunicationwearmobile.utils.services.MobileDataListenerService
+import com.example.comunicationwearmobile.view.activities.MainActivity
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import com.example.shared_library.toByteArray
@@ -35,12 +34,11 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 
 
 open class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
-    private val TAG: String = "AlertViewModel"
+     private val TAG: String = "AlertViewModel"
 
     private val repositoryHealthServices = RepositoryHealthServices.getInstance(app)
 
@@ -49,7 +47,9 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     val stateListNotif: LiveData<DataClass_MsgAlertState> get() = _stateListNotif
 
     private var previousActivityState= Lifecycle.State.DESTROYED
-    private var indexFallListNotif=-1
+
+    private var isFallMsgShowing=false
+
 
     companion object {
         private var msgBytesDestroyed: ByteArray? = null
@@ -148,7 +148,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
 
             SharedData.PATH_ADD_NOTIFICATION_FALL -> {
-                indexFallListNotif=addMsgAlertList(msgBytes)
+                addMsgAlertList(msgBytes)
                 MediaMannager.generateVibration(app)
             }
 
@@ -158,20 +158,21 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
     //@RequiresApi(Build.VERSION_CODES.S)
     @SuppressLint("NewApi")
-    fun setCompleteRecomposition(){
-        if(previousActivityState!=Lifecycle.State.DESTROYED)
-            return
+    fun setCompleteRecomposition() {
+        if (previousActivityState == Lifecycle.State.DESTROYED) {
+            msgBytesDestroyed?.let { msgBytes ->
+                if (msgBytes.isNotEmpty()) {
+                    addMsgAlertList(msgBytes)
+                    MediaMannager.generateVibration(app)
 
-        msgBytesDestroyed?.let {
-            if (msgBytesDestroyed!!.isNotEmpty()) {
-                addMsgAlertList(msgBytesDestroyed!!)
-                MediaMannager.generateVibration(app)
-                msgBytesDestroyed = null
+                    msgBytesDestroyed = null
+                }
             }
-        }
 
-        Log.d(TAG,"Se completo recomposition")
+            Log.d(TAG, "Se completó recomposition")
+        }
     }
+
 
 
     fun setLifecycleOwner(owner: LifecycleOwner) {
@@ -192,78 +193,89 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             e.printStackTrace()
         }
     }
-
     fun removeAllMsgInAllDevices() {
-        val currentList = _stateListNotif.value?.alertsList?.toList() ?: emptyList()
+        val alerts = _stateListNotif.value?.alertsList ?: emptyList()
 
-        currentList.forEach { msgAlert ->
-            val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
-            if (indexList != -1) {
-                removeMsgAlertInAllDevices(indexList)
+        alerts.forEach { msgAlert ->
+            if (msgAlert.idMsgMobile != SharedData.ID_MSG_FALL_DETECTED) {
+                removeMsgAlertInAllDevices(msgAlert.idMsgMobile)
             }
         }
     }
 
 
+
     private fun removeMsgAlert(msgBytes: ByteArray) {
-        val indexList: Int = fromByteArray(msgBytes)
-        if (indexList==SharedData.GROUP_ID_NOTIFICATION){
+        val msgAlert:SharedData.MsgNotification = fromByteArray(msgBytes)
+        val idMsgMobile=msgAlert.idMsgMobile
+
+        if (idMsgMobile==SharedData.GROUP_ID_NOTIFICATION){
             removeAllMsgInThisDevices()
         }else
         {
-            updateRemoveMsg(indexList)
+            updateRemoveMsg(idMsgMobile)
         }
     }
 
     private fun removeAllMsgInThisDevices() {
-        _stateListNotif.value?.alertsList?.forEach { msgAlert ->
-            val indexList = _stateListNotif.value?.alertsList?.indexOf(msgAlert) ?: -1
-            if (indexList != -1) {
-                updateRemoveMsg(indexList)
+        val alerts = _stateListNotif.value?.alertsList ?: emptyList()
+
+        alerts.forEach { msgAlert ->
+            if (msgAlert.idMsgMobile != SharedData.ID_MSG_FALL_DETECTED) {
+                updateRemoveMsg(msgAlert.idMsgMobile)
             }
         }
     }
 
 
-    fun removeMsgAlertInAllDevices(indexList: Int) {
-        updateRemoveMsg(indexList)
-        notifySmartphone(SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(indexList))
+    fun removeMsgAlertInAllDevices(idMsgMobile: Int) {
+
+        //elimino el msg de la pantalla del wear
+        updateRemoveMsg(idMsgMobile)
+
+        //le aviso al smartphone que quite la notificacion de su bandeja de notifcaciones
+        notifySmartphone(SharedData.PATH_VIEWED_NOTIFICATION, toByteArray(idMsgMobile))
+
     }
 
-    private fun updateRemoveMsg(indexList: Int) {
+    private fun updateRemoveMsg(idMsgMobile: Int) {
+        var resp=false
+
         _stateListNotif.value?.let {
             val currentAlertsList = it.alertsList?.toMutableList()
             if (currentAlertsList != null) {
-                if (indexList in currentAlertsList.indices) {
-                    currentAlertsList.removeAt(indexList)
-                    _stateListNotif.value = it.copy(alertsList = currentAlertsList)
-                }
-            }
+                //borra el msg de la lista de notificaciones que tiene el idMsgMobile
+                resp=currentAlertsList.removeIf { it.idMsgMobile == idMsgMobile } }
+
+            if (resp==true)
+                _stateListNotif.value = it.copy(alertsList = currentAlertsList)
+
         }
     }
 
 
-    private fun addMsgAlertList(msgBytes: ByteArray): Int {
-        val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
-        return _stateListNotif.value?.let {
+    private fun addMsgAlertList(msgBytes: ByteArray) {
+        // Si ya hay una alerta de caída en pantalla, ignoro nuevos mensajes
+        //hasta que el usuario cancele la notificacion de caida
+        if (isFallMsgShowing) {
+            return
+        }
+
+        _stateListNotif.value?.let {
+            val msgAlert: SharedData.MsgNotification = fromByteArray(msgBytes)
             val currentAlertsList = it.alertsList?.toMutableList() ?: mutableListOf()
+
+            //si es un mensaje de alerta de caida marco la bandera que se esta mostrando.
+            if (msgAlert.idMsgMobile==SharedData.ID_MSG_FALL_DETECTED)
+                isFallMsgShowing=true
+
             currentAlertsList.add(msgAlert)
+
             _stateListNotif.value = it.copy(alertsList = currentAlertsList)
             currentAlertsList.lastIndex // Retorna el índice del elemento recién agregado
-        } ?: -1 // Retorna -1 si _stateListNotif.value es null
+        }
     }
 
-
-    fun notifyFallBySmartPhone(){
-
-        var msgFallDetection = SharedData.MsgFallDetection(
-            title = "¡¡ALERTA!! ",
-            message = "Abumonitor ha detectado una caida.",
-            fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
-        )
-
-        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
-    }
     fun notifySmartphone(path:String, msgBytes: ByteArray){
         viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
             try {
@@ -277,7 +289,33 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
     }
 
+
+    fun notifyFallBySmartPhone(){
+
+        var msgFallDetection = SharedData.MsgFallDetection(
+            title = "¡¡ALERTA!! ",
+            message = "Abumonitor ha detectado una caida.",
+            fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+        )
+
+        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
+    }
+
+
     fun cancelNotifyFallBySmartPhone() {
-        TODO("Not yet implemented")
+        //borro el msg de caida de la pantalla
+        updateRemoveMsg(SharedData.ID_MSG_FALL_DETECTED)
+
+        //habilito a que vuelva a mostrar notificaciones normals en pantalla
+        isFallMsgShowing=false
+
+        //se envia un mensaje al familiar que se recupero de la caida
+        var msgFallDetection = SharedData.MsgFallDetection(
+            title = "Se recupero de la caida",
+            message = "La persona se recupero de la caida",
+            fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+        )
+
+        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
     }
 }

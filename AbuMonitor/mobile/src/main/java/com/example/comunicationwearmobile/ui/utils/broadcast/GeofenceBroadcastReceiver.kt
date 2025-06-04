@@ -41,7 +41,15 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     private  fun notifyUser( context: Context, msg: SharedData.MsgNotification) {
         val notificationHelper = NotificationManagerHelper.getInstance(context)
 
-        notificationHelper?.showNotificationGeneral(msg)
+        //muestro la notificacion al usuario en la bandeja de notificacion del telefono
+        //y obtengo su id para poder enviarselo al samrtwatch
+        val idMsgMobile=notificationHelper?.showNotificationGeneral(msg)
+
+        //el id de la notificacion se la agrego al mesnaje que lo envio al smartwatch
+        if (idMsgMobile != null) {
+            msg.idMsgMobile=idMsgMobile
+        }
+
         RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION_GENERAL,msg)
     }
 

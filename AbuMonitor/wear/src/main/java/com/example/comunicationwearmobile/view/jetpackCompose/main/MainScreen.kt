@@ -60,7 +60,7 @@ const val TAG: String="MainScreen"
  **************************************************************************************
  */
 @Composable
-fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel: AlertsViewModel) {
+fun PageContent( msgAlert: SharedData.MsgNotification, alertsViewModel: AlertsViewModel) {
     CustomColumn {
         Text(text = msgAlert.title, color = Color.Red, fontSize = 15.sp)
         Spacer(modifier = Modifier.height(10.dp))
@@ -74,8 +74,8 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
         Spacer(modifier = Modifier.height(2.dp))
 
         when (msgAlert.typeNotification) {
-            SharedData.TypeNotification.Reminder -> showButtonReminder(page,alertsViewModel)
-            SharedData.TypeNotification.Alert -> showButtonAlert(page,alertsViewModel)
+            SharedData.TypeNotification.Reminder -> showButtonReminder(msgAlert.idMsgMobile,alertsViewModel)
+            SharedData.TypeNotification.Alert -> showButtonAlert(msgAlert.idMsgMobile,alertsViewModel)
             SharedData.TypeNotification.WithoutNotifications -> showButtonDefault()
             SharedData.TypeNotification.FallDetection -> showButtonsFallDetection(alertsViewModel)
         }
@@ -83,15 +83,15 @@ fun PageContent(page: Int, msgAlert: SharedData.MsgNotification, alertsViewModel
 }
 
 @Composable
-fun showButtonReminder(page: Int, alertsViewModel: AlertsViewModel) {
+fun showButtonReminder(idMsgMobile: Int, alertsViewModel: AlertsViewModel) {
     CustomFloatingActionButton(Icons.Filled.DateRange, "Floating action button.", buttonBackgroundColor =  Color.Green) {
-        alertsViewModel.removeMsgAlertInAllDevices(page) }
+        alertsViewModel.removeMsgAlertInAllDevices(idMsgMobile) }
 }
 
 @Composable
-fun showButtonAlert(page: Int, alertsViewModel: AlertsViewModel) {
+fun showButtonAlert(idMsgMobile: Int, alertsViewModel: AlertsViewModel) {
     CustomFloatingActionButton(Icons.Filled.Warning, "Floating action button.",buttonBackgroundColor =  Color.Red) {
-        alertsViewModel.removeMsgAlertInAllDevices(page) }
+        alertsViewModel.removeMsgAlertInAllDevices(idMsgMobile) }
 }
 
 @Composable
@@ -162,7 +162,7 @@ fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
                 .background(Color.White)
         ) { page ->
             val msgAlert = state.alertsList?.get(page)
-            msgAlert?.let { PageContent(page = page, msgAlert = it, alertsViewModel = alertsViewModel) }
+            msgAlert?.let { PageContent( msgAlert = it, alertsViewModel = alertsViewModel) }
         }
 
         ViewPagerDotsIndicator(

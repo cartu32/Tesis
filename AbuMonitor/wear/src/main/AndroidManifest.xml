@@ -61,14 +61,11 @@
         <service
             android:name=".utils.services.PassiveHealthEventService"
             android:exported="true"
-            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING" />
-
-    <receiver android:name=".utils.mannager.BroadcastAcceptNotification"
-            android:exported="true">
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING">
         <intent-filter>
-            <action android:name="com.example.ACTION_NAME" />
+            <action android:name="com.google.android.wearable.action.PASSIVE_LISTENER" />
         </intent-filter>
-    </receiver>
+    </service>
 
 </application>
 
