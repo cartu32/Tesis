@@ -20,7 +20,7 @@ class PermissionManager(activity: ComponentActivity) {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     val PERMISSON = arrayOf(
         Manifest.permission.ACTIVITY_RECOGNITION,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.POST_NOTIFICATIONS,
     )
 
     @SuppressLint("NewApi")

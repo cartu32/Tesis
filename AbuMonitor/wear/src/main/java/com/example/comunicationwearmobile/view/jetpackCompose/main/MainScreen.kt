@@ -104,7 +104,7 @@ fun showButtonsFallDetection(alertsViewModel: AlertsViewModel) {
             Icons.Filled.Phone,
             "Floating action button.",
             buttonBackgroundColor = Color.Red,
-            onClick = {alertsViewModel.notifyFallBySmartPhone()}
+            onClick = {alertsViewModel.notifyFallBySmartPhone("¡¡EMERGENCIA!!!","La persona caida necesita ayuda")}
         )
         CustomFloatingActionButton(
             Icons.Filled.Close,

@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.viewModels
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -19,6 +20,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
+import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallBroadcast
+import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallEventManager
 import com.example.comunicationwearmobile.utils.isScreenLock
 import com.example.comunicationwearmobile.utils.isScreenOn
 import com.example.comunicationwearmobile.utils.mannager.MediaMannager
@@ -38,11 +41,20 @@ import java.time.format.FormatStyle
 
 open class AlertsViewModel(private var app: Application) : AndroidViewModel(app) {
 
-     private val TAG: String = "AlertViewModel"
+    private val context = app.applicationContext
+
+    private val TAG: String = "AlertViewModel"
+
+    private var alarmManager:AlarmManager
+    private lateinit var pendingIntentAlarmFall:PendingIntent
+    private val intervalTimeFallDetect = 1 * 20 * 1000L // 5 minutos en milisegundos
+    private var numberTimesAlarmRepeats=0
+    private val MAX_TIME_REPEATS=3
 
     private val repositoryHealthServices = RepositoryHealthServices.getInstance(app)
 
     private var lifecycleOwner: LifecycleOwner? = null
+
     private val _stateListNotif = MutableLiveData<DataClass_MsgAlertState>()
     val stateListNotif: LiveData<DataClass_MsgAlertState> get() = _stateListNotif
 
@@ -56,8 +68,29 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     }
 
     init {
+        alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         initLocalBroadcast()
+        configObserverAlarm()
         _stateListNotif.value = DataClass_MsgAlertState()
+
+    }
+
+    private fun configObserverAlarm() {
+
+        AlarmTimeFallEventManager.eventAlarm.observeForever{actionAlarm->
+            //cancelo el contador de tiempo para enviar el sms de caida
+            cancelAlarmTimeFall()
+            numberTimesAlarmRepeats++
+
+            when(actionAlarm){
+                AlarmTimeFallEventManager.NOTIFYING_ALARM_FALL->
+                    notifyFallBySmartPhone("¡¡Alerta!!","La persona continua caida")
+            }
+            //reiniciao el contador de tiempo para volver a enviar el sms de caida
+            if(numberTimesAlarmRepeats!=MAX_TIME_REPEATS)
+                startAlarmTimeFall()
+        }
     }
 
     private fun initLocalBroadcast() {
@@ -108,6 +141,26 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
     }
 
+    fun startAlarmTimeFall() {
+
+        val intent = Intent(context, AlarmTimeFallBroadcast::class.java)
+        pendingIntentAlarmFall = PendingIntent.getBroadcast(
+            context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val initialTime = System.currentTimeMillis() + intervalTimeFallDetect
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            initialTime,
+            pendingIntentAlarmFall
+        )
+
+    }
+
+    fun cancelAlarmTimeFall(){
+        alarmManager.cancel(pendingIntentAlarmFall)
+    }
+
     @RequiresApi(Build.VERSION_CODES.S)
     private fun analizeStateActvity(path: String? , msgBytes: ByteArray?)
     {
@@ -149,7 +202,9 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
             SharedData.PATH_ADD_NOTIFICATION_FALL -> {
                 addMsgAlertList(msgBytes)
+                notifyFallBySmartPhone("¡¡Alerta!!","Se ha detectado una caida")
                 MediaMannager.generateVibration(app)
+                startAlarmTimeFall()
             }
 
             else->Log.d (TAG,"Error de path al analizar el path")
@@ -186,9 +241,9 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             val activityIntent = Intent(app, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
-            val pendingIntent = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pendingIntentActForeground = PendingIntent.getActivity(app, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             // Iniciar la Activity
-            pendingIntent.send()
+            pendingIntentActForeground.send()
         } catch (e: PendingIntent.CanceledException) {
             e.printStackTrace()
         }
@@ -290,11 +345,11 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     }
 
 
-    fun notifyFallBySmartPhone(){
+    fun notifyFallBySmartPhone(title:String,msg:String){
 
         var msgFallDetection = SharedData.MsgFallDetection(
-            title = "¡¡ALERTA!! ",
-            message = "Abumonitor ha detectado una caida.",
+            title = title,
+            message = msg,
             fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
         )
 
@@ -303,6 +358,10 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
 
     fun cancelNotifyFallBySmartPhone() {
+
+        //cancelo la alarma de tiempo de caida
+        cancelAlarmTimeFall()
+
         //borro el msg de caida de la pantalla
         updateRemoveMsg(SharedData.ID_MSG_FALL_DETECTED)
 
