@@ -68,6 +68,10 @@
             <action android:name="com.google.android.wearable.action.PASSIVE_LISTENER" />
         </intent-filter>
     </service>
+    <service
+        android:name=".utils.services.SenderToMobileService"
+        android:exported="false">
+    </service>
     <receiver android:name=".utils.broadcast.AlarmTimeFallBroadcast" android:exported="true">
     </receiver>
 </application>

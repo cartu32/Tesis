@@ -17,16 +17,6 @@ fun showToast(mcontext: Context, msg: String){
     Toast.makeText(mcontext,msg, Toast.LENGTH_SHORT).show()
 }
 
-fun sendMessageMobile(context: Context , path:String , body: ByteArray?){
-    val serviceIntent = Intent(context , MobileDataListenerService::class.java).apply {
-        putExtra(SharedData.ParamIntent.MESSAGE_PATH.name , path)
-        putExtra(SharedData.ParamIntent.MESSAGE_BODY.name , body)
-    }
-    context.startService(serviceIntent)
-}
-
-
-
 
 fun isScreenOn(application: Application): Boolean {
     val powerManager = application.getSystemService(Context.POWER_SERVICE) as PowerManager

@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -20,15 +21,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
+import com.example.comunicationwearmobile.models.repository.RepositoryDispatcherMobile
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallBroadcast
 import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallEventManager
 import com.example.comunicationwearmobile.utils.isScreenLock
 import com.example.comunicationwearmobile.utils.isScreenOn
-import com.example.comunicationwearmobile.utils.mannager.VibrateMannager
 import com.example.comunicationwearmobile.utils.mannager.MediaPlayerManager
 import com.example.comunicationwearmobile.utils.mannager.PermissionManager
-import com.example.comunicationwearmobile.utils.sendMessageMobile
+import com.example.comunicationwearmobile.utils.mannager.VibrateMannager
 import com.example.comunicationwearmobile.utils.services.MobileDataListenerService
 import com.example.comunicationwearmobile.view.activities.MainActivity
 import com.example.shared_library.SharedData
@@ -208,6 +209,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             SharedData.PATH_ADD_NOTIFICATION_GENERAL -> {
                 addMsgAlertList(msgBytes)
                 VibrateMannager.generateVibration(app,500)
+                MediaPlayerManager.playSoundSystem(app, RingtoneManager.TYPE_NOTIFICATION)
             }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
 
@@ -346,7 +348,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     fun notifySmartphone(path:String, msgBytes: ByteArray){
         viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
             try {
-                sendMessageMobile(app, path, msgBytes)
+                RepositoryDispatcherMobile.sendMessageMobile(app, path, msgBytes)
             } catch (e: Exception) {
                 Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
             } finally {

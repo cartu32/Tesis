@@ -6,6 +6,9 @@ import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.VibratorManager
@@ -86,5 +89,11 @@ object MediaPlayerManager {
         } finally {
             mediaPlayer = null
         }
+    }
+
+    fun playSoundSystem(context: Context, soundId: Int) {
+        val notification: Uri = RingtoneManager.getDefaultUri(soundId)
+        val ringtone: Ringtone = RingtoneManager.getRingtone(context, notification)
+        ringtone.play()
     }
 }
