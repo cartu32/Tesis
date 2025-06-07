@@ -57,8 +57,7 @@ class MainActivity : ComponentActivity() {
     public override fun onDestroy() {
         super.onDestroy()
         Log.d("ABU_MONITOR", "Main onDestroy")
-        model.removeAllMsgInAllDevices()
-        model.cancelAlarmTimeFall()
+       // model.removeAllMsgInAllDevices()
     }
 }
 

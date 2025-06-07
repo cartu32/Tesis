@@ -18,13 +18,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryHealthServices
 import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallBroadcast
 import com.example.comunicationwearmobile.utils.broadcast.AlarmTimeFallEventManager
 import com.example.comunicationwearmobile.utils.isScreenLock
 import com.example.comunicationwearmobile.utils.isScreenOn
-import com.example.comunicationwearmobile.utils.mannager.MediaMannager
+import com.example.comunicationwearmobile.utils.mannager.VibrateMannager
+import com.example.comunicationwearmobile.utils.mannager.MediaPlayerManager
 import com.example.comunicationwearmobile.utils.mannager.PermissionManager
 import com.example.comunicationwearmobile.utils.sendMessageMobile
 import com.example.comunicationwearmobile.utils.services.MobileDataListenerService
@@ -46,7 +48,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     private val TAG: String = "AlertViewModel"
 
     private var alarmManager:AlarmManager
-    private lateinit var pendingIntentAlarmFall:PendingIntent
+    private var pendingIntentAlarmFall:PendingIntent?=null
     private val intervalTimeFallDetect = 1 * 20 * 1000L // 5 minutos en milisegundos
     private var numberTimesAlarmRepeats=0
     private val MAX_TIME_REPEATS=3
@@ -87,9 +89,16 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
                 AlarmTimeFallEventManager.NOTIFYING_ALARM_FALL->
                     notifyFallBySmartPhone("¡¡Alerta!!","La persona continua caida")
             }
+
+            Log.d("ABUMONITOR","numero de repeticiones"+numberTimesAlarmRepeats)
             //reiniciao el contador de tiempo para volver a enviar el sms de caida
-            if(numberTimesAlarmRepeats!=MAX_TIME_REPEATS)
+            if(numberTimesAlarmRepeats!=MAX_TIME_REPEATS) {
+                Log.d("ABUMONITOR", "Reiniciando contador de tiempo")
                 startAlarmTimeFall()
+            }
+
+
+
         }
     }
 
@@ -149,16 +158,18 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
         val initialTime = System.currentTimeMillis() + intervalTimeFallDetect
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            initialTime,
-            pendingIntentAlarmFall
-        )
+        pendingIntentAlarmFall?.let {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                initialTime,
+                it
+            )
+        }
 
     }
 
     fun cancelAlarmTimeFall(){
-        alarmManager.cancel(pendingIntentAlarmFall)
+        pendingIntentAlarmFall?.let { alarmManager.cancel(it) }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -196,15 +207,16 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
         when (path) {
             SharedData.PATH_ADD_NOTIFICATION_GENERAL -> {
                 addMsgAlertList(msgBytes)
-                MediaMannager.generateVibration(app)
+                VibrateMannager.generateVibration(app,500)
             }
             SharedData.PATH_VIEWED_NOTIFICATION -> removeMsgAlert(msgBytes)
 
             SharedData.PATH_ADD_NOTIFICATION_FALL -> {
                 addMsgAlertList(msgBytes)
                 notifyFallBySmartPhone("¡¡Alerta!!","Se ha detectado una caida")
-                MediaMannager.generateVibration(app)
+                VibrateMannager.generateVibration(app,500)
                 startAlarmTimeFall()
+                MediaPlayerManager.playAlarmSound(context, R.raw.siren)
             }
 
             else->Log.d (TAG,"Error de path al analizar el path")
@@ -218,7 +230,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             msgBytesDestroyed?.let { msgBytes ->
                 if (msgBytes.isNotEmpty()) {
                     addMsgAlertList(msgBytes)
-                    MediaMannager.generateVibration(app)
+                    VibrateMannager.generateVibration(app,500)
 
                     msgBytesDestroyed = null
                 }
@@ -361,6 +373,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
         //cancelo la alarma de tiempo de caida
         cancelAlarmTimeFall()
+        MediaPlayerManager.stopAlarmSound()
 
         //borro el msg de caida de la pantalla
         updateRemoveMsg(SharedData.ID_MSG_FALL_DETECTED)
