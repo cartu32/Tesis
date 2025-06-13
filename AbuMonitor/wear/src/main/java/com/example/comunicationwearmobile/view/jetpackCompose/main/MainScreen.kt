@@ -148,7 +148,7 @@ fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
     val state by alertsViewModel.stateListNotif.observeAsState(initial = DataClass_MsgAlertState())
 
     LaunchedEffect(pageCount) {
-        if (pageCount > 0) {
+        if (pageCount > 0 ) {
             pagerState.scrollToPage(pageCount - 1)
         }
     }

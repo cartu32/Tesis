@@ -346,16 +346,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     }
 
     fun notifySmartphone(path:String, msgBytes: ByteArray){
-        viewModelScope.launch(Dispatchers.IO) { // Lanzar la corutina en Dispatchers.IO para operaciones de I/O
-            try {
-                RepositoryDispatcherMobile.sendMessageMobile(app, path, msgBytes)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error al enviar el mensaje al móvil: ${e.message}")
-            } finally {
-                println("Limpieza al finalizar la corutina")
-            }
-        }
-
+        RepositoryDispatcherMobile.sendMessageMobile(app, path, msgBytes)
     }
 
 
