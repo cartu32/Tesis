@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.coroutines.cancellation.CancellationException
 
 
 class MobileDataListenerService : WearableListenerService() {
@@ -79,20 +80,29 @@ class SenderToMobileService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
 
+
     private suspend fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
-        // Obtener la lista de nodos conectados
-        val nodes = Wearable.getNodeClient(context).connectedNodes.await()
+        try {
+            val nodes = Wearable.getNodeClient(context).connectedNodes.await()
 
-        if (nodes.isEmpty()) {
-            throw Exception("No hay dispositivos Wear OS conectados.")
-        }
+            if (nodes.isEmpty()) {
+                Log.e("ABUMONITOR", "No hay dispositivos Wear OS conectados.")
+                return
+            }
 
-        for (node in nodes) {
-            try {
+            for (node in nodes) {
+                Log.d("Wearable", "Nodo ID: ${node.id}, Nombre: ${node.displayName}, Cerca: ${node.isNearby}")
+
+                if (!node.isNearby) continue
+
                 Wearable.getMessageClient(context).sendMessage(node.id, path, msg).await()
-                Log.d("ABUMONITOR", "Mensaje enviado al nodo: ${node.id} (${node.displayName})")
-            } catch (e: Exception) {
-                Log.e("ABUMONITOR", "Error al enviar al nodo: ${node.id}", e)
+                Log.d("ABUMONITOR", "Mensaje enviado correctamente a ${node.displayName}")
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                Log.w("ABUMONITOR", "Cancelación después del envío (ignorable)", e)
+            } else {
+                Log.e("ABUMONITOR", "Error al enviar mensaje", e)
             }
         }
     }
