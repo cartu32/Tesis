@@ -69,7 +69,7 @@ class SenderToMobileService : Service() {
             } catch (e: Exception) {
                 Log.e("SendToWearableService", "Error al enviar mensaje", e)
             } finally {
-  //              stopSelf()
+                 stopSelf()
             }
         }
 
