@@ -59,16 +59,8 @@ class SenderToWearableService : Service() {
         scope.launch {
             try {
                 withContext(Dispatchers.IO){
-                sendDataToWearable(applicationContext, path, msg)
-                    }
-                Log.d("SendToWearableService", "Mensaje enviado correctamente")
-            } catch (e: Exception) {
-                if (e is CancellationException) {
-                    Log.w("SendToWearableService", "Cancelación después del envío (ignorable)", e)
-                } else {
-                    Log.e("SendToWearableService", "Error al enviar mensaje", e)
+                    sendDataToWearable(applicationContext, path, msg)
                 }
-
             } finally {
                 stopSelf()
             }
@@ -79,22 +71,36 @@ class SenderToWearableService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-
     private suspend fun sendDataToWearable(context: Context, path: String, msg: ByteArray) {
-        // Obtener la lista de nodos conectados
-        val nodes = Wearable.getNodeClient(context).connectedNodes.await()
+        try {
+            val nodes = Wearable.getNodeClient(context).connectedNodes.await()
 
-        // Verificar si hay al menos un nodo conectado
-        val node = nodes.firstOrNull()
-        if (node == null) {
-            throw Exception("No hay dispositivos Wear OS conectados.")
+            if (nodes.isEmpty()) {
+                Log.e(Definition.TAG_DEBUG, "No hay dispositivos Wear OS conectados.")
+                return
+            }
+
+            for (node in nodes) {
+                Log.d("Wearable", "Nodo ID: ${node.id}, Nombre: ${node.displayName}, Cerca: ${node.isNearby}")
+
+                if (!node.isNearby) continue
+
+                if (node.displayName.contains("Watch", ignoreCase = true) ||
+                    node.displayName.contains("Wear", ignoreCase = true)) {
+
+                    Wearable.getMessageClient(context).sendMessage(node.id, path, msg).await()
+                    Log.d(Definition.TAG_DEBUG, "Mensaje enviado correctamente a ${node.displayName}")
+                }
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                Log.w(Definition.TAG_DEBUG, "Cancelación después del envío (ignorable)", e)
+            } else {
+                Log.e(Definition.TAG_DEBUG, "Error al enviar mensaje", e)
+            }
         }
-
-        val nodeId = node.id
-
-        // Enviar el mensaje al nodo encontrado
-        Wearable.getMessageClient(context).sendMessage(nodeId, path, msg).await()
     }
+
 
 
     override fun onDestroy() {
