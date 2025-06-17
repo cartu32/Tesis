@@ -32,6 +32,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +53,8 @@ import com.example.shared_library.SharedData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 
 const val TAG: String="MainScreen"
 
@@ -148,9 +151,12 @@ fun NotificationPagerView(pageCount: Int, alertsViewModel: AlertsViewModel) {
     val state by alertsViewModel.stateListNotif.observeAsState(initial = DataClass_MsgAlertState())
 
     LaunchedEffect(pageCount) {
-        if (pageCount > 0 ) {
-            pagerState.scrollToPage(pageCount - 1)
-        }
+        snapshotFlow { pagerState.pageCount }
+            .filter { it > 0 }
+            .firstOrNull { pageCount - 1 < it }
+            ?.let {
+                pagerState.scrollToPage(pageCount - 1)
+            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

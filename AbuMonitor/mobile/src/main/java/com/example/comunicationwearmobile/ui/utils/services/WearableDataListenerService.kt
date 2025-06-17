@@ -16,6 +16,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 
 /* clase que se encarga de recibir los mensajes del wearable.
  Es un servicio que se inicia automaticamente en el manifest.xml
@@ -56,10 +58,17 @@ class SenderToWearableService : Service() {
 
         scope.launch {
             try {
+                withContext(Dispatchers.IO){
                 sendDataToWearable(applicationContext, path, msg)
+                    }
                 Log.d("SendToWearableService", "Mensaje enviado correctamente")
             } catch (e: Exception) {
-                Log.e("SendToWearableService", "Error al enviar mensaje", e)
+                if (e is CancellationException) {
+                    Log.w("SendToWearableService", "Cancelación después del envío (ignorable)", e)
+                } else {
+                    Log.e("SendToWearableService", "Error al enviar mensaje", e)
+                }
+
             } finally {
                 stopSelf()
             }

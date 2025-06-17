@@ -69,7 +69,7 @@ class SenderToMobileService : Service() {
             } catch (e: Exception) {
                 Log.e("SendToWearableService", "Error al enviar mensaje", e)
             } finally {
-                stopSelf()
+  //              stopSelf()
             }
         }
 
@@ -83,18 +83,19 @@ class SenderToMobileService : Service() {
         // Obtener la lista de nodos conectados
         val nodes = Wearable.getNodeClient(context).connectedNodes.await()
 
-        // Verificar si hay al menos un nodo conectado
-        val node = nodes.firstOrNull()
-        if (node == null) {
+        if (nodes.isEmpty()) {
             throw Exception("No hay dispositivos Wear OS conectados.")
         }
 
-        val nodeId = node.id
-
-        // Enviar el mensaje al nodo encontrado
-        Wearable.getMessageClient(context).sendMessage(nodeId, path, msg).await()
+        for (node in nodes) {
+            try {
+                Wearable.getMessageClient(context).sendMessage(node.id, path, msg).await()
+                Log.d("ABUMONITOR", "Mensaje enviado al nodo: ${node.id} (${node.displayName})")
+            } catch (e: Exception) {
+                Log.e("ABUMONITOR", "Error al enviar al nodo: ${node.id}", e)
+            }
+        }
     }
-
 
     override fun onDestroy() {
         scope.cancel()

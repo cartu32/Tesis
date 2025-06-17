@@ -2,12 +2,10 @@ package com.example.abumonitor
 
 
 import android.app.Application
-import leakcanary.AppWatcher
 import leakcanary.LeakCanary
-import leakcanary.ReachabilityWatcher
 
 
-class AbuMonitorApplication : Application() {
+class AbuMonitorApplicationMobile : Application() {
     override fun onCreate() {
         super.onCreate()
 

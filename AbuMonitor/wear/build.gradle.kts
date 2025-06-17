@@ -51,6 +51,8 @@ android {
 dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.wear.ongoing)
     val lifecycle_version = "2.8.0"
 
 
@@ -75,6 +77,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation (libs.gson)
 
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")

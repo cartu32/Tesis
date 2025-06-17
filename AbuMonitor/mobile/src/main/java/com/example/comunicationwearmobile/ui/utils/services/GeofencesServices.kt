@@ -122,7 +122,7 @@ class GeofencesServices: Service() {
             //Tools.GEOFENCE_TRANSITION -> operationTransition(intent)
             //Tools.GEOFENCE_ROUTE -> operationRoute()
             else ->
-                Log.e(Definition.TAG_DEBUG , "Error en on HandleIntent")
+                Log.e(Definition.TAG_DEBUG , "Operation desconocido en HandleIntent")
         }
     }
 

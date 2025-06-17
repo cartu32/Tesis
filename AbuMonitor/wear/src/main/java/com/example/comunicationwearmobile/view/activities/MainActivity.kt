@@ -7,13 +7,17 @@
 package com.example.comunicationwearmobile.view.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.comunicationwearmobile.utils.mannager.PermissionManager
+import com.example.comunicationwearmobile.utils.services.ForegroundService
 import com.example.comunicationwearmobile.utils.showToast
 import com.example.comunicationwearmobile.view.jetpackCompose.WearApp
 import com.example.comunicationwearmobile.view.jetpackCompose.main.HorizontalPagerWithDotsIndicatorScreen
@@ -36,13 +40,19 @@ class MainActivity : ComponentActivity() {
         val context = this
         permissionManager= PermissionManager(context)
         model.setLifecycleOwner(context)
-
+        configBackPressdispatcher()
         lifecycleScope.launch{
             val hasPermissionsAndCapabilities = model.checkPermissionsAndCapabilities(permissionManager!!)
 
             if(!hasPermissionsAndCapabilities ){
                 showToast(context, "Permisos no otorgados o el reloj no puede detectar caídas")
             }
+        }
+
+        //si el foregroundservice no esta corriendo se inicia
+        if (!ForegroundService.isForegroundRunning) {
+            val intent = Intent(this, ForegroundService::class.java)
+            ContextCompat.startForegroundService(this, intent)
         }
 
         setContent {
@@ -54,9 +64,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun configBackPressdispatcher() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Log.d("ABUMONITOR", "Cerrando MainActivty")
+                moveTaskToBack(true)
+            }
+        })
+    }
+
     public override fun onDestroy() {
         super.onDestroy()
-        Log.d("ABU_MONITOR", "Main onDestroy")
+        Log.d("ABUMONITOR", "Main onDestroy")
        // model.removeAllMsgInAllDevices()
     }
 }

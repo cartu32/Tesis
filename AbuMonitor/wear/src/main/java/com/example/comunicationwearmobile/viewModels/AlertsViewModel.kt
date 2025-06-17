@@ -19,6 +19,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.abumonitor.AbuMonitorApplicationWearable
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.models.entities.DataClass_MsgAlertState
 import com.example.comunicationwearmobile.models.repository.RepositoryDispatcherMobile
@@ -75,7 +76,9 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
         initLocalBroadcast()
         configObserverAlarm()
-        _stateListNotif.value = DataClass_MsgAlertState()
+
+        val listSave = (app as AbuMonitorApplicationWearable).persistentMessage
+        _stateListNotif.value = DataClass_MsgAlertState(alertsList = listSave.toList())
 
     }
 
@@ -314,7 +317,9 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             val currentAlertsList = it.alertsList?.toMutableList()
             if (currentAlertsList != null) {
                 //borra el msg de la lista de notificaciones que tiene el idMsgMobile
-                resp=currentAlertsList.removeIf { it.idMsgMobile == idMsgMobile } }
+                resp=currentAlertsList.removeIf { it.idMsgMobile == idMsgMobile}
+                (app as AbuMonitorApplicationWearable).persistentMessage.removeIf { it.idMsgMobile == idMsgMobile }
+            }
 
             if (resp==true)
                 _stateListNotif.value = it.copy(alertsList = currentAlertsList)
@@ -339,6 +344,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
                 isFallMsgShowing=true
 
             currentAlertsList.add(msgAlert)
+            (app as AbuMonitorApplicationWearable).persistentMessage.add(msgAlert)
 
             _stateListNotif.value = it.copy(alertsList = currentAlertsList)
             currentAlertsList.lastIndex // Retorna el índice del elemento recién agregado
