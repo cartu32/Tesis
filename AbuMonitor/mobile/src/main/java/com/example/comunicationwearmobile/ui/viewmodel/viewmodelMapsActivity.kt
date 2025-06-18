@@ -39,11 +39,13 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
     val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
 
+    private val _areaGeofenceForId = MutableLiveData<EntityAreaGeofence?>()
+    val areaGeofenceForId: LiveData<EntityAreaGeofence?> = _areaGeofenceForId
+
     private var repositoryAreaDB: RepositoryAreaDB ?=null
     private var repositoryGeofActivate: RepositoryGeofActivate ?=null
 
     private var circlesMap = mutableMapOf<Long?, Circle?>()
-    var tempIdSelected:Long?=null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -96,6 +98,26 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
             // Publicamos el resultado
             _idNewAreaGeof?.postValue(finalId)
+        }
+    }
+
+    fun getAreaGeofWithId(idArea: Long){
+        var areaGeofence:EntityAreaGeofence?
+        try{
+            viewModelScope.launch {
+                areaGeofence= repositoryAreaDB?.getAreaWithId(idArea)
+
+                if (areaGeofence!=null)
+                {
+                    _areaGeofenceForId.postValue(areaGeofence)
+                    Log.d(Definition.TAG_DEBUG,"Lat:${areaGeofence?.latitude} Long:${areaGeofence?.latitude}")
+                }else
+                    showMessage("No se encontro el Id del Area")
+            }
+
+        }catch (e:Exception){
+            showMessage("Error:No se pudo buscar el area")
+            Log.e(Definition.TAG_DEBUG,"Error: No se pudo buscar el area.${e.message}")
         }
     }
 

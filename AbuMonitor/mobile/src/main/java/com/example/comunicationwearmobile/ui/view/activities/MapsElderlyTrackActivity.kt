@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -67,14 +68,18 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
     override fun onCircleClick(circle: Circle) {
         super.onCircleClick(circle)
 
-        showPropertiesAreaGeof(circle.tag.toString().toLong())
-        Log.d(Definition.TAG_DEBUG,"Circulo id:${circle.tag}")
-        Toast.makeText(this,"Id Circulo${circle.tag}",Toast.LENGTH_SHORT).show()
+        viewmodelMapsActivity?.getAreaGeofWithId(circle.tag.toString().toLong())
+
+        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { areaGeofence ->
+
+            showPropertiesAreaGeof(areaGeofence)
+            Log.d(Definition.TAG_DEBUG, "Circulo id:${circle.tag}")
+            Toast.makeText(this, "Lat, Long: ${circle.center.latitude}, ${circle.center.longitude}", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private fun showPropertiesAreaGeof(idArea: Long) {
+    private fun showPropertiesAreaGeof(areaGeofence: EntityAreaGeofence?) {
         val intent= Intent(this, PropertiesGeofenceActivity::class.java)
-        //startActivity(intent)
         activityResultLauncher?.launch(intent)
     }
 
