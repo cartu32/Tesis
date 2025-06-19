@@ -105,6 +105,7 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
         viewmodelLoaction=null
 
         //Esto se debe realizar en la clase hija, no en la clase padre
+        viewmodelMapsActivity?.areaGeofenceForId?.removeObservers(this)
         viewmodelMapsActivity=null
         mMap=null
 
