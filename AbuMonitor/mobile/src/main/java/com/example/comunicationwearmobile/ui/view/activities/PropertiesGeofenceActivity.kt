@@ -3,6 +3,7 @@ package com.example.comunicationwearmobile.ui.view.activities
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
@@ -17,12 +18,14 @@ import android.widget.Scroller
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 
@@ -35,6 +38,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private var cmdSavGeofence:Button ?=null
     private var cmdCancelGeofence:Button ?=null
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -44,6 +48,50 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         //inicializo los elementos de la view
         configureInsets()
         initializeComponentsView()
+
+        val param=intent.extras
+
+        //me fijo si vienen parametros en el intent.
+        if(param!=null) {
+            //se Posterga la carga de datos para después de que se inicialicen los spinners
+
+            spEvents?.post {
+                spPriority?.post {
+                    //si vienen quiere decir que debo mostrar los datos del area recibida
+                    //por paremetro en pantalla
+                    loadPropertiesInScreen(param)
+
+                    disabledComponents()
+                }
+            }
+
+        }
+    }
+
+    private fun disabledComponents() {
+        txtDescription?.isEnabled = false
+        txtDwellTime?.isEnabled = false
+        spEvents?.isEnabled = false
+        spPriority?.isEnabled = false
+        chkSecurityZone?.isClickable = false
+        cmdSavGeofence?.setVisibility(View.INVISIBLE)
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun loadPropertiesInScreen(param: Bundle) {
+        val area: JoinAreaGeofence? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Definition.INTENT_DATA_NEW_AREA_GEOF, JoinAreaGeofence::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Definition.INTENT_DATA_NEW_AREA_GEOF)
+        }
+
+        txtDescription?.setText(area?.description_area)
+        txtDwellTime?.setText("Tiempo de permanencia " + area?.dwell_time.toString() + " (min)")
+        chkSecurityZone?.isChecked=area?.security_zone==true
+        spEvents?.setSelection((area?.id_event?.toInt() ?: 1) - 1)
+        spPriority?.setSelection((area?.id_priority?.toInt() ?: 1) - 1)
     }
 
     private fun configureInsets() {

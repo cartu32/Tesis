@@ -55,7 +55,11 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
         // Observamos una sola vez
         viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { areaGeofence ->
             areaGeofence?.let {
-                showPropertiesAreaGeof(it)
+
+                val intent=Intent(applicationContext, PropertiesGeofenceActivity::class.java)
+                intent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,areaGeofence)
+                startActivity(intent)
+
                 Log.d(Definition.TAG_DEBUG, "Area recibida: ${it.latitude}, ${it.longitude}")
             }
         }
