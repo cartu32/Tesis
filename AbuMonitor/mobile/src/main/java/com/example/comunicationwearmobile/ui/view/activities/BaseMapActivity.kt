@@ -100,7 +100,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
         mMap?.setOnCircleClickListener(this)
 
         enableFeatureMaps()
-        configOberserverLivedata()
+        configOberserverLivedataBase()
     }
 
 
@@ -130,7 +130,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    open fun configOberserverLivedata() {
+    open fun configOberserverLivedataBase() {
         configObserverShowMessage()
         configObserverGetAllAreasGeofence()
     }

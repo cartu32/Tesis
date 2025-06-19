@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -45,16 +46,25 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
         configOberserverLivedata()
     }
 
-    override fun configOberserverLivedata() {
-        super.configOberserverLivedata()
-
+    fun configOberserverLivedata() {
         configObserverLocation()
+        configObserverClickInMap()
     }
 
-     private fun configObserverLocation(){
+    private fun configObserverClickInMap() {
+        // Observamos una sola vez
+        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { areaGeofence ->
+            areaGeofence?.let {
+                showPropertiesAreaGeof(it)
+                Log.d(Definition.TAG_DEBUG, "Area recibida: ${it.latitude}, ${it.longitude}")
+            }
+        }
+    }
+
+    private fun configObserverLocation(){
         viewmodelLoaction?.locationLiveData?.observe(this){ location->
             updateMapLoaction(location)
-            Log.d(Definition.TAG_DEBUG,"Nueva ubicacion in MapsEld: ${location.latitude}, ${location.longitude}")
+            //Log.d(Definition.TAG_DEBUG,"Nueva ubicacion in MapsEld: ${location.latitude}, ${location.longitude}")
         }
 
     }
@@ -70,15 +80,10 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
 
         viewmodelMapsActivity?.getAreaGeofWithId(circle.tag.toString().toLong())
 
-        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { areaGeofence ->
-
-            showPropertiesAreaGeof(areaGeofence)
-            Log.d(Definition.TAG_DEBUG, "Circulo id:${circle.tag}")
-            Toast.makeText(this, "Lat, Long: ${circle.center.latitude}, ${circle.center.longitude}", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(this, "Cargando información del área...", Toast.LENGTH_SHORT).show()
     }
 
-    private fun showPropertiesAreaGeof(areaGeofence: EntityAreaGeofence?) {
+    private fun showPropertiesAreaGeof(areaGeofence: JoinAreaGeofence?) {
         val intent= Intent(this, PropertiesGeofenceActivity::class.java)
         activityResultLauncher?.launch(intent)
     }

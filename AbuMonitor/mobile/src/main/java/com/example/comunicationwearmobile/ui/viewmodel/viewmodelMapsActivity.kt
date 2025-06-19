@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.google.android.gms.maps.model.Circle
@@ -39,8 +40,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
     val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
 
-    private val _areaGeofenceForId = MutableLiveData<EntityAreaGeofence?>()
-    val areaGeofenceForId: LiveData<EntityAreaGeofence?> = _areaGeofenceForId
+    private val _areaGeofenceForId = MutableLiveData<JoinAreaGeofence?>()
+    val areaGeofenceForId: LiveData<JoinAreaGeofence?> = _areaGeofenceForId
 
     private var repositoryAreaDB: RepositoryAreaDB ?=null
     private var repositoryGeofActivate: RepositoryGeofActivate ?=null
@@ -102,13 +103,21 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     }
 
     fun getAreaGeofWithId(idArea: Long){
-        var areaGeofence:EntityAreaGeofence?
+        var areaGeofence:JoinAreaGeofence?=null
         try{
             viewModelScope.launch {
-                areaGeofence= repositoryAreaDB?.getAreaWithId(idArea)
+
+                //para que el observer del livedata detecte el cambio,
+                //se cambia de valor a null y luego se vuelve a asignar
+                //esto se hace asi por si llama a la funcion dos veces seguidas
+                //con el mismo idArea.
+                _areaGeofenceForId.postValue(null)
+
+                areaGeofence=repositoryAreaDB?.getListJoinAreaGeofence(idArea)
 
                 if (areaGeofence!=null)
                 {
+                    //aca se envia el dato verdadero al obsever del livedata
                     _areaGeofenceForId.postValue(areaGeofence)
                     Log.d(Definition.TAG_DEBUG,"Lat:${areaGeofence?.latitude} Long:${areaGeofence?.latitude}")
                 }else

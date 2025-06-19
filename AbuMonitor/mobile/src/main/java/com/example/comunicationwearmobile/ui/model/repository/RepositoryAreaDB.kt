@@ -19,9 +19,9 @@ class RepositoryAreaDB(
         }
     }
 
-    fun getListJoinAreaGeofence(): List<JoinAreaGeofence>? {
-        val list=daoJoinAreaGeofence?.getJoinAreaGeofence()
-        return list
+    suspend fun getListJoinAreaGeofence(idArea: Long): JoinAreaGeofence? {
+        val areaGeof=daoJoinAreaGeofence?.getJoinAreaGeofence(idArea = idArea)
+        return areaGeof
     }
 
     suspend fun insertAreaGeofence(area: EntityAreaGeofence?): Long? {

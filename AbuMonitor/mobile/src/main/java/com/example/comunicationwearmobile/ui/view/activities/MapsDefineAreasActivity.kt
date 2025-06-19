@@ -26,8 +26,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         configOberserverLivedata()
     }
 
-    override fun configOberserverLivedata() {
-        super.configOberserverLivedata()
+    fun configOberserverLivedata() {
 
         configObserverIdNewArea()
         configObserverResultDelete()
