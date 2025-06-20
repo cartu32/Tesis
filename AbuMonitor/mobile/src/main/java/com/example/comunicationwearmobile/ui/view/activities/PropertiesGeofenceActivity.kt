@@ -27,6 +27,8 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
+import com.example.comunicationwearmobile.ui.view.adapter.SpinnerAdapter
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
@@ -37,6 +39,9 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private var chkSecurityZone: CheckBox ?=null
     private var cmdSavGeofence:Button ?=null
     private var cmdCancelGeofence:Button ?=null
+
+    private var spEventsAdapter:SpinnerAdapter?=null
+    private var listSpEvents:ArrayList<StateSpinner> = ArrayList()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,10 +121,10 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
         cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
 
+        initilizeSpinnerSpEvents()
 
-        // Obtengo los valores del array de strings.xml
-        items = resources.getStringArray(R.array.spinner_events)
-        inititlizeSpinner(spEvents,items)
+
+        //inititlizeSpinner(spEvents,items)
 
         items = resources.getStringArray(R.array.spinner_priority)
         inititlizeSpinner(spPriority,items)
@@ -131,6 +136,21 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         txtDescription?.setScroller(Scroller(this))
         txtDescription?.isVerticalScrollBarEnabled = true
         txtDescription?.movementMethod = ScrollingMovementMethod()
+
+    }
+
+    private fun initilizeSpinnerSpEvents() {
+        var items:Array<String>
+
+        // Obtengo los valores del array de strings.xml
+        items = resources.getStringArray(R.array.spinner_events)
+
+        for (item in items) {
+            listSpEvents.add(StateSpinner(item,false))
+        }
+
+        spEventsAdapter = SpinnerAdapter(this, 0, listSpEvents)
+        spEvents?.adapter = spEventsAdapter
 
     }
 

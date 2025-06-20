@@ -15,20 +15,31 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 class RepositoryGeofActivate() {
+    val GEOFENCE_TRANSITION_ENTER = 0
+    val GEOFENCE_TRANSITION_EXIT = 1
+    val GEOFENCE_TRANSITION_DWELL = 3
 
     @SuppressLint("MissingPermission")
     suspend fun activateGeofence(context: Context, areaGeof: EntityAreaGeofence): Boolean =
         suspendCancellableCoroutine { continuation ->
 
-
+            var transitionTypes = 0
             val geofencingClient = LocationServices.getGeofencingClient(context)
+
+            if (areaGeof.id_type_area==GEOFENCE_TRANSITION_ENTER)
+                transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
+            else if (areaGeof.id_type_area==GEOFENCE_TRANSITION_EXIT)
+                transitionTypes=Geofence.GEOFENCE_TRANSITION_EXIT
+            else if (areaGeof.id_type_area==GEOFENCE_TRANSITION_DWELL)
+                transitionTypes=Geofence.GEOFENCE_TRANSITION_DWELL
 
             val geofence = Geofence.Builder()
                 .setRequestId(areaGeof.id_area.toString())
                 .setCircularRegion(areaGeof.latitude.toDouble(),areaGeof.longitude.toDouble(), areaGeof.meters.toFloat())
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)  // Transiciones
+                .setTransitionTypes(transitionTypes)  // Transiciones
                 .build()
+
 
             val geofencingRequest = GeofencingRequest.Builder()
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)

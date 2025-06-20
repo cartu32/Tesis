@@ -20,6 +20,7 @@
     <string name="propiedades">Propiedades</string>
 
     <string-array name="spinner_events">
+        <item>Seleccione los eventos</item>
         <item>Entrar</item>
         <item>Salir</item>
         <item>Permanecer</item>
