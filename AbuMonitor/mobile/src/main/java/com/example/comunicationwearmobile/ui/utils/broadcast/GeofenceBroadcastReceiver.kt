@@ -1,20 +1,28 @@
 package com.example.comunicationwearmobile.ui.utils.broadcast
 
 import android.content.BroadcastReceiver
+import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
+
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "com.example.app.ACTION_GEOFENCE_EVENT") {
@@ -27,15 +35,28 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                  }
             }
 
-            if (geofencingEvent != null) {
-                val transition = geofencingEvent.geofenceTransition
-                val msg=createMsg(transition)
-
-                //envia la notificaciones al usuario
-                notifyUser(context.applicationContext,msg)
-
+            coroutineScope.launch {
+                analizeDetectedGeofences(context, geofencingEvent,coroutineScope)
             }
         }
+    }
+
+    private suspend fun analizeDetectedGeofences(context: Context, geofencingEvent: GeofencingEvent?, scope: CoroutineScope) {
+        val repositoryAreaDB:RepositoryAreaDB= RepositoryAreaDB(context,scope)
+
+        geofencingEvent?.triggeringGeofences?.forEach { geofence ->
+            val msg:SharedData.MsgNotification
+            val transition = geofencingEvent.geofenceTransition
+            val idAreaGeofence = geofence.requestId.toLong()
+
+            val areaGeof=repositoryAreaDB.getJoinAreaGeofence(idAreaGeofence)
+
+            msg = createMsg(transition,areaGeof?.description_area)
+
+            //envia la notificaciones al usuario
+            notifyUser(context.applicationContext, msg)
+        }
+
     }
 
     private  fun notifyUser( context: Context, msg: SharedData.MsgNotification) {
@@ -53,7 +74,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION_GENERAL,msg)
     }
 
-    private fun createMsg(transition: Int): SharedData.MsgNotification {
+    private fun createMsg(transition: Int?, description: String?): SharedData.MsgNotification {
         val msg=SharedData.MsgNotification()
 
         msg.hour = Tools.getHour(LocalTime.now())
@@ -63,7 +84,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
                 msg.typeNotification = SharedData.TypeNotification.Alert
                 msg.title="¡Alerta de Geofence!"
-                msg.message="Has entrado en la zona"
+                msg.message= "Has entrado en la zona $description"
 
                 Log.d(Definition.TAG_DEBUG, "Entraste en un geofence")
 
@@ -72,7 +93,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_EXIT -> {
                 msg.typeNotification = SharedData.TypeNotification.Alert
                 msg.title="¡Alerta de Geofence!"
-                msg.message="Has salido de la zona"
+                msg.message="Has salido de la zona $description"
 
                 Log.d(Definition.TAG_DEBUG, "Saliste de un geofence")
 

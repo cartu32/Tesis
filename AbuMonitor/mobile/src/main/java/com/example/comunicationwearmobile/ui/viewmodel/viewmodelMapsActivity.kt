@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
@@ -50,13 +49,10 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val database = AbuMonitorDatabase.getDatabase(application, viewModelScope)
 
             withContext(Dispatchers.Main) {
-                val daoAreaGeofence = database.entityAreaGeofenceDao()
-                val daoJoinAreaGeofence = database.joinAreaGeofence()
 
-                repositoryAreaDB = RepositoryAreaDB(daoAreaGeofence, daoJoinAreaGeofence)
+                repositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext, viewModelScope)
                 repositoryGeofActivate = RepositoryGeofActivate()
 
                 getListAreasGefence()
@@ -113,7 +109,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
                 //con el mismo idArea.
                 _areaGeofenceForId.postValue(null)
 
-                areaGeofence=repositoryAreaDB?.getListJoinAreaGeofence(idArea)
+                areaGeofence=repositoryAreaDB?.getJoinAreaGeofence(idArea)
 
                 if (areaGeofence!=null)
                 {
