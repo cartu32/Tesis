@@ -10,8 +10,8 @@ import android.widget.TextView
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
 
-class SpinnerAdapter(private val mContext: Context, resource: Int, private val listState: ArrayList<StateSpinner>)
-    : ArrayAdapter<StateSpinner>(mContext, resource, listState) {
+class SpinnerMultipleAdapter(context: Context, resource: Int, private val listState: ArrayList<StateSpinner>) :
+    ArrayAdapter<StateSpinner>(context, resource, listState) {
 
     private var isFromView = false
 
@@ -25,23 +25,18 @@ class SpinnerAdapter(private val mContext: Context, resource: Int, private val l
 
     private fun getCustomView(position: Int, convertView: View?, parent: ViewGroup): View {
         val holder: ViewHolder
-        var rowView = convertView
-
-        if (rowView == null) {
-            val inflater = LayoutInflater.from(mContext)
-            rowView = inflater.inflate(R.layout.spinner_items, parent, false)
-            holder = ViewHolder(
-                mTextView = rowView.findViewById(R.id.text),
-                mCheckBox = rowView.findViewById(R.id.checkbox)
+        val rowView = convertView ?: LayoutInflater.from(context).inflate(R.layout.spinner_items, parent, false).also {
+            val newHolder = ViewHolder(
+                mTextView = it.findViewById(R.id.text),
+                mCheckBox = it.findViewById(R.id.checkbox)
             )
-            rowView.tag = holder
-        } else {
-            holder = rowView.tag as ViewHolder
+            it.tag = newHolder
         }
+
+        holder = rowView.tag as ViewHolder
 
         holder.mTextView.text = listState[position].title
 
-        // Para evitar que el evento checked se dispare en la creación de la vista
         isFromView = true
         holder.mCheckBox.isChecked = listState[position].selected
         isFromView = false
@@ -56,7 +51,7 @@ class SpinnerAdapter(private val mContext: Context, resource: Int, private val l
             }
         }
 
-        return rowView!!
+        return rowView
     }
 
     private data class ViewHolder(

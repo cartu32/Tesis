@@ -28,7 +28,8 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
-import com.example.comunicationwearmobile.ui.view.adapter.SpinnerAdapter
+import com.example.comunicationwearmobile.ui.view.adapter.SpinnerMultipleAdapter
+import com.example.comunicationwearmobile.ui.view.adapter.SpinnerSimpleAdapter
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 
 class PropertiesGeofenceActivity: AppCompatActivity() {
@@ -40,7 +41,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private var cmdSavGeofence:Button ?=null
     private var cmdCancelGeofence:Button ?=null
 
-    private var spEventsAdapter:SpinnerAdapter?=null
+    private var spEventsAdapter:SpinnerMultipleAdapter?=null
+    private var spPriorityAdapter:SpinnerSimpleAdapter?=null
     private var listSpEvents:ArrayList<StateSpinner> = ArrayList()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -126,8 +128,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
         //inititlizeSpinner(spEvents,items)
 
-        items = resources.getStringArray(R.array.spinner_priority)
-        inititlizeSpinner(spPriority,items)
+
+        inititlizeSpinnerSpPriority()
 
         //les asocio los listener a cada elemento
         cmdSavGeofence?.setOnClickListener{actionSave()}
@@ -149,49 +151,20 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
             listSpEvents.add(StateSpinner(item,false))
         }
 
-        spEventsAdapter = SpinnerAdapter(this, 0, listSpEvents)
+        spEventsAdapter = SpinnerMultipleAdapter(this, 0, listSpEvents)
         spEvents?.adapter = spEventsAdapter
 
     }
 
+    private fun inititlizeSpinnerSpPriority() {
+        var items:Array<String>
 
-    private fun inititlizeSpinner(spinner: Spinner?,items:Array<String>,) {
+        // Obtengo los valores del array de strings.xml
+        items = resources.getStringArray(R.array.spinner_priority)
 
-        // Crea el adaptador personalizado
-        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
-            override fun getView(position: Int , convertView: View? , parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent)
-                (view as TextView).setTextColor(Color.BLACK) // Cambia el color del texto seleccionado
-                (view as TextView).textSize = 20F
-                return view
-            }
+        spPriorityAdapter = SpinnerSimpleAdapter(this, android.R.layout.simple_spinner_item, items)
+        spPriority?.adapter = spPriorityAdapter
 
-            override fun getDropDownView(position: Int , convertView: View? , parent: ViewGroup): View {
-                val view = super.getDropDownView(position, convertView, parent)
-                (view as TextView).setTextColor(Color.WHITE) // Cambia el color del texto del desplegable
-                (view as TextView).textSize = 20F
-                (view as TextView).setPadding(15)
-                return view
-            }
-        }
-
-        // Asigna el adaptador al Spinner
-        spinner?.adapter = adapter
-
-        // Escuchar selección (opcional)
-        spEvents?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>? , view: View? , position: Int , id: Long) {
-                val selectedItem = parent?.getItemAtPosition(position).toString()
-                spEvents?.setSelection(position)
-
-                //Log.d(Definition.TAG_DEBUG,"Seleccionaste: $selectedItem")
-            }
-
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Acción cuando no se selecciona nada
-            }
-        }
     }
 
     private fun actionCancel() {
