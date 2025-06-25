@@ -1,12 +1,12 @@
 package com.example.abumonitor.data.repository
 
 import android.content.Context
-import androidx.lifecycle.viewModelScope
+import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
-import com.example.abumonitor.data.datasource.local.DaoAreaGeofence
-import com.example.abumonitor.data.datasource.local.DaoJoinAreaGeofence
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
+import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,19 +46,37 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
         }
     }
 
-    suspend fun insertAreaGeofence(area: EntityAreaGeofence?): Long? {
+    suspend fun insertAreaGeofence(area: DataAreaGeofAux?): Long {
         return withContext(Dispatchers.IO) {
             try {
-                val resultado = area?.let {
-                    daoAreaGeofence.insertAreaGeofence(it)
-                }
-                if (resultado != -1L) resultado else null
+                insertArea(area)
             } catch (e: Exception) {
                 e.printStackTrace()
-                null  // Retorna null si hay un error
+                Definition.ERROR_INSERT_BD_GEOF
             }
         }
     }
+
+    private suspend fun insertArea(data: DataAreaGeofAux?): Long {
+        if (data == null)
+            return Definition.ERROR_INSERT_BD_GEOF
+
+        val newAreaId = data.entityAreaGeofence.let {
+            daoAreaGeofence.insertAreaGeofence(it)
+        }
+
+        // Insertar relaciones N a N con eventos
+        for (eventId in data.listIdEventSelected) {
+            val crossRef = EntityAreaEventCrossRef(id_area = newAreaId, id_event = eventId)
+
+            val result = daoAreaGeofence.insertAreaEventCrossRef(crossRef)
+            if (result == -1L)
+                return Definition.ERROR_INSERT_BD_GEOF
+        }
+
+        return newAreaId
+    }
+
 
 
     suspend fun getAreaWithId(areaId:Long):EntityAreaGeofence?{
@@ -77,10 +95,10 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
         }
     }
 
-    suspend fun updateArea(area: EntityAreaGeofence): Int? {
+    suspend fun updateArea(area: EntityAreaGeofence): Int {
         return withContext(Dispatchers.IO) {
             area.let {
-                daoAreaGeofence?.updateArea(area)
+                daoAreaGeofence.updateArea(area)
             }
         }
     }

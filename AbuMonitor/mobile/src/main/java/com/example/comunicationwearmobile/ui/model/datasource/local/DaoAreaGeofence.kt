@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 
 @Dao
 
@@ -15,6 +16,10 @@ interface DaoAreaGeofence {
     // Insertar una nueva área geofence
     @Insert
     suspend fun insertAreaGeofence(area: EntityAreaGeofence):Long
+
+    //insertar en la tabla intermedia de la relacion  area-evento (relacion N a N)
+    @Insert
+    suspend fun insertAreaEventCrossRef(areaEventCrossRef: EntityAreaEventCrossRef):Long
 
     // Obtener todas las áreas con sus relaciones (relación 1 a N)
     @Transaction

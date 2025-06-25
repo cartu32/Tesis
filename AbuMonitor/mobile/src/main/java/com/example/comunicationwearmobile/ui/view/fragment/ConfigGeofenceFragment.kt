@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -106,7 +107,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             // Obtén los datos del Intent
             val data = result.data
-            var dataNewAreaGeof:EntityAreaGeofence?=null
+            var dataNewAreaGeof:DataAreaGeofAux?=null
 
             //obtengo el objeto EntityAreaGeofence con
             //los datos que se ingresaron en la activty Properties
@@ -115,7 +116,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
             }
 
             //le agrego los metros al objeto EntityAreaGeofence
-            dataNewAreaGeof?.meters=lblMetros?.text.toString().toInt()
+            dataNewAreaGeof?.entityAreaGeofence?.meters=lblMetros?.text.toString().toInt()
 
             //Envio el objeto EntityAreaGeofence y el resultado(OK o Cancel)
             //al Maps Activty
@@ -126,7 +127,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun sendDataNewAreaGeoToMapsActivty(resultCode: Int, dataNewAreaGeof: EntityAreaGeofence?=null) {
+    private fun sendDataNewAreaGeoToMapsActivty(resultCode: Int, dataNewAreaGeof: DataAreaGeofAux?=null) {
         //le retorno los datos a la mapsActivtivity(que es la actvity llamador
         val bundle=Bundle().apply {
             putParcelable(Definition.INTENT_DATA_NEW_AREA_GEOF,dataNewAreaGeof)
@@ -137,12 +138,12 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
 
     }
 
-    private fun extractDataNewAreaOfIntent(data:Intent): EntityAreaGeofence? {
+    private fun extractDataNewAreaOfIntent(data:Intent): DataAreaGeofAux? {
         //Recibo los datos desde la activty PropertiesGeofence Activty
         val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            data.getParcelableExtra<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF,EntityAreaGeofence::class.java)
+            data.getParcelableExtra<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF,DataAreaGeofAux::class.java)
         } else {
-            data.getParcelableExtra<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+            data.getParcelableExtra<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
         }
         return dataNewAreaGeof
     }

@@ -14,6 +14,4 @@ data class JoinAreaGeofence (
     var dwell_time: Int,
     var id_priority:Long=0,
     var description_priority:String="",
-    var id_event:Long=0,
-    var description_event:String=""
 ): Parcelable

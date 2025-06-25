@@ -37,12 +37,11 @@ object Definition {
     const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
 
     //constantes de errores
-
     const val ERROR_NULL:Long                = -1
     const val ERROR_INSERT_BD_GEOF:Long      = -2
     const val ERROR_ACTIVATE_GEOF:Long       = -3
-    const val ERROR_DELETE_BD_GEOF:Long      = -4
-    const val ERROR_DESACTIVATE_GEOF:Long    = -5
+
+    const val NEW_AREA_GEOFENCE_CREATED:Int  = 1
 
     const val PATH_SEND_DATA_TO_WEARABLE:String = "PATH_SEND_DATA_TO_WEARABLE"
     const val MSG_TO_WEARABLE:String="MSG_TO_WEARABLE"

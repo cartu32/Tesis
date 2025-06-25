@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.utils.broadcast.GeofenceBroadcastReceiver
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
@@ -20,19 +21,22 @@ class RepositoryGeofActivate() {
     val GEOFENCE_TRANSITION_DWELL = 3
 
     @SuppressLint("MissingPermission")
-    suspend fun activateGeofence(context: Context, areaGeof: EntityAreaGeofence): Boolean =
+    suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean =
         suspendCancellableCoroutine { continuation ->
 
             var transitionTypes = 0
             val geofencingClient = LocationServices.getGeofencingClient(context)
+            val areaGeof=dataAreaGeofAux.entityAreaGeofence
 
-            if (areaGeof.id_type_area==GEOFENCE_TRANSITION_ENTER)
-                transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
-            else if (areaGeof.id_type_area==GEOFENCE_TRANSITION_EXIT)
-                transitionTypes=Geofence.GEOFENCE_TRANSITION_EXIT
-            else if (areaGeof.id_type_area==GEOFENCE_TRANSITION_DWELL)
-                transitionTypes=Geofence.GEOFENCE_TRANSITION_DWELL
+            transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
 
+            /*            if (areaGeof.id_event==GEOFENCE_TRANSITION_ENTER)
+                            transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
+                        else if (areaGeof.id_event==GEOFENCE_TRANSITION_EXIT)
+                            transitionTypes=Geofence.GEOFENCE_TRANSITION_EXIT
+                        else if (areaGeof.id_event==GEOFENCE_TRANSITION_DWELL)
+                            transitionTypes=Geofence.GEOFENCE_TRANSITION_DWELL
+            */
             val geofence = Geofence.Builder()
                 .setRequestId(areaGeof.id_area.toString())
                 .setCircularRegion(areaGeof.latitude.toDouble(),areaGeof.longitude.toDouble(), areaGeof.meters.toFloat())

@@ -46,9 +46,12 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     override fun onCircleClick(circle: Circle) {
         super.onCircleClick(circle)
 
-        showDeleteGeofenceDialog(circle.tag.toString().toLong())
-        Log.d(Definition.TAG_DEBUG,"Circulo id:${circle.tag}")
-        Toast.makeText(this,"Id Circulo${circle.tag}",Toast.LENGTH_SHORT).show()
+        if (circle.tag != null) {
+            showDeleteGeofenceDialog(circle.tag.toString().toLong())
+            Log.d(Definition.TAG_DEBUG, "Circulo id:${circle.tag}")
+            Toast.makeText(this, "Id Circulo${circle.tag}", Toast.LENGTH_SHORT).show()
+        }else
+            Toast.makeText(this, "No se pudo obtener el id del circulo por que es null", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -153,8 +156,8 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     private fun operationResultOK(bundle: Bundle,latLng: LatLng) {
         val dataNewAreaGeofence = viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
 
-        dataNewAreaGeofence?.latitude= latLng.latitude.toString()
-        dataNewAreaGeofence?.longitude= latLng.longitude.toString()
+        dataNewAreaGeofence?.entityAreaGeofence?.latitude= latLng.latitude.toString()
+        dataNewAreaGeofence?.entityAreaGeofence?.longitude= latLng.longitude.toString()
 
         if (dataNewAreaGeofence != null) {
             viewmodelMapsActivity?.insertAreaGeof(this,dataNewAreaGeofence)

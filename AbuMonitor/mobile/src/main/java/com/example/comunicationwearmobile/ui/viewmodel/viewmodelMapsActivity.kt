@@ -15,6 +15,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
@@ -77,18 +78,20 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun insertAreaGeof(context: Context, areaGeofence: EntityAreaGeofence) {
+    fun insertAreaGeof(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
         viewModelScope.launch(Dispatchers.IO) {
-            val newId = repositoryAreaDB?.insertAreaGeofence(areaGeofence) ?: Definition.ERROR_INSERT_BD_GEOF
-            var finalId: Long = newId
+            val newAreaId = repositoryAreaDB?.insertAreaGeofence(dataAreaGeofAux)?: Definition.ERROR_INSERT_BD_GEOF
+            var finalId   = newAreaId
 
-            if (newId > 0) {  // Si la inserción fue exitosa
-                areaGeofence.id_area = newId
+            //si se pudo insertar correctamente la nueva area en la base de datos
+            if (newAreaId > 0) {
 
-                val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, areaGeofence) == true
+                //activo el area de geofence
+                val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, dataAreaGeofAux) == true
 
+                // Si falla, eliminamos el registro de la base de datos
                 if (!stateActivateGeof) {
-                    repositoryAreaDB?.deleteAreaWithId(newId)  // Si falla, eliminamos el registro
+                    repositoryAreaDB?.deleteAreaWithId(newAreaId)
                     finalId = Definition.ERROR_ACTIVATE_GEOF
                 }
             }
@@ -97,6 +100,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             _idNewAreaGeof?.postValue(finalId)
         }
     }
+
 
     fun getAreaGeofWithId(idArea: Long){
         var areaGeofence:JoinAreaGeofence?=null
@@ -189,12 +193,12 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
-    fun extractDataNewAreaOfIntent(data: Bundle): EntityAreaGeofence? {
+    fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
         //Recibo los datos desde la activty PropertiesGeofence Activty
         val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            data.getParcelable<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF,EntityAreaGeofence::class.java)
+            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF,DataAreaGeofAux::class.java)
         } else {
-            data.getParcelable<EntityAreaGeofence>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
         }
         return dataNewAreaGeof
     }

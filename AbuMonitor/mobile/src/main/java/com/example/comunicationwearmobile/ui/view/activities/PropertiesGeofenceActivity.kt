@@ -27,6 +27,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerMultipleAdapter
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerSimpleAdapter
@@ -97,7 +98,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         txtDescription?.setText(area?.description_area)
         txtDwellTime?.setText("Tiempo de permanencia " + area?.dwell_time.toString() + " (min)")
         chkSecurityZone?.isChecked=area?.security_zone==true
-        spEvents?.setSelection((area?.id_event?.toInt() ?: 1) - 1)
+       // spEvents?.setSelection((area?.id_event?.toInt() ?: 1) - 1)
         spPriority?.setSelection((area?.id_priority?.toInt() ?: 1) - 1)
     }
 
@@ -181,26 +182,35 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private fun actionSave() {
         //por el momento hardcodeo estos el color y el tipo de area
         val color_blue=1
-        val type_area_geof=1
 
-        var entityAreaAux=EntityAreaGeofence()
+        var dataAreaGeofAux=DataAreaGeofAux()
         val resultIntent= Intent(this,ConfigGeofenceFragment::class.java)
 
-        with(entityAreaAux) {
-            //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
-            id_event = spEvents?.selectedItemPosition?.plus(1) ?: 0
-            id_priority = spPriority?.selectedItemPosition?.plus(1) ?: 0
-            security_zone = chkSecurityZone?.isChecked == true
-            dwell_time = txtDwellTime?.text.toString().toIntOrNull() ?: 0
-            description = txtDescription?.text.toString()
 
-            id_color=color_blue
-            id_type_area=type_area_geof
+        with(dataAreaGeofAux) {
+            //me fijo que eventos estan seleccionados en el spinner
+            for (event in listSpEvents) {
+                if (event.selected)
+                    dataAreaGeofAux.listIdEventSelected.add(listSpEvents.indexOf(event))
+            }
+
+            //me fijo que datos estan en la pantalla
+            with(entityAreaGeofence) {
+                //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
+                id_priority = spPriority?.selectedItemPosition?.plus(1) ?: 0
+                security_zone = chkSecurityZone?.isChecked == true
+                dwell_time = txtDwellTime?.text.toString().toIntOrNull() ?: 0
+                description = txtDescription?.text.toString()
+
+                id_color = color_blue
+            }
         }
+
+        Log.d(Definition.TAG_DEBUG, "listado de eventos$listSpEvents")
 
         //retorno al fragement ConfigGeofence que se presiono el boton ok y
         //ademas le envio el objeto EntityAreaGeofence con los datos ingresados
-        resultIntent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,entityAreaAux)
+        resultIntent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,dataAreaGeofAux)
         setResult(Activity.RESULT_OK,resultIntent)
 
         //metodo que se ejecuta al presionar el boton guardar
