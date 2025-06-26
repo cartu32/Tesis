@@ -53,14 +53,16 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
 
     private fun configObserverClickInMap() {
         // Observamos una sola vez
-        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { areaGeofence ->
-            areaGeofence?.let {
+        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { dato ->
+            dato?.let {
 
-                val intent=Intent(applicationContext, PropertiesGeofenceActivity::class.java)
-                intent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,areaGeofence)
-                startActivity(intent)
+                with(dato.areaGeofence) {
+                    val intent = Intent(applicationContext, PropertiesGeofenceActivity::class.java)
+                    intent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF, it)
+                    startActivity(intent)
 
-                Log.d(Definition.TAG_DEBUG, "Area recibida: ${it.latitude}, ${it.longitude}")
+                    Log.d(Definition.TAG_DEBUG, "Area recibida: ${latitude}, ${longitude}")
+                }
             }
         }
     }

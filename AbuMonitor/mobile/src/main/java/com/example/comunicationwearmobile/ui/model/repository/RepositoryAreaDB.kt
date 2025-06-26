@@ -15,7 +15,7 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
     private val database = AbuMonitorDatabase.getDatabase(context, scope)
 
     private val daoAreaGeofence = database.entityAreaGeofenceDao()
-    private val daoJoinAreaGeofence = database.joinAreaGeofence()
+    private val daoJoinAreaGeofence = database.joinAreaGeofenceDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryAreaDB? = null

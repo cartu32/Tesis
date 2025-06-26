@@ -1,17 +1,36 @@
 package com.example.abumonitor.data.model
 
 import android.os.Parcelable
+import androidx.room.Embedded
+import androidx.room.Junction
+import androidx.room.Relation
+import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import java.sql.Time
 
 @kotlinx.parcelize.Parcelize
 data class JoinAreaGeofence (
-    var id_area:Long=0,
-    var latitude:Double=0.0,
-    var longitude:Double=0.0,
-    var description_area:String="",
-    var meters:Int=0,
-    var security_zone:Boolean=false,
-    var dwell_time: Int,
-    var id_priority:Long=0,
-    var description_priority:String="",
+    @Embedded var areaGeofence: EntityAreaGeofence,
+
+    @Relation(
+        parentColumn = "id_color",
+        entityColumn = "id_color"
+    )
+    var color: EntityColor,
+    @Relation(
+        parentColumn = "id_priority",
+        entityColumn = "id_priority"
+    )
+    var priority: EntityPriority,
+
+    @Relation(
+        parentColumn = "id_area",                 // de EntityAreaGeofence
+        entityColumn = "id_event",                // de EntityEvent
+        associateBy = Junction(
+            value = EntityAreaEventCrossRef::class,
+            parentColumn = "id_area",             // campo en EntityAreaEventCrossRef
+            entityColumn = "id_event"             // campo en EntityAreaEventCrossRef
+        )
+    )
+    val events: List<EntityEvent>
+
 ): Parcelable

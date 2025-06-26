@@ -2,29 +2,22 @@ package com.example.comunicationwearmobile.ui.view.activities
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Scroller
 import android.widget.Spinner
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.setPadding
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
@@ -79,27 +72,36 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private fun disabledComponents() {
         txtDescription?.isEnabled = false
         txtDwellTime?.isEnabled = false
-        spEvents?.isEnabled = false
+        //spEvents?.isEnabled = false
         spPriority?.isEnabled = false
         chkSecurityZone?.isClickable = false
         cmdSavGeofence?.setVisibility(View.INVISIBLE)
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun loadPropertiesInScreen(param: Bundle) {
-        val area: JoinAreaGeofence? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    private fun getJoinAreaGeofence(): JoinAreaGeofence? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(Definition.INTENT_DATA_NEW_AREA_GEOF, JoinAreaGeofence::class.java)
         } else {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra(Definition.INTENT_DATA_NEW_AREA_GEOF)
         }
+    }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun loadPropertiesInScreen(param: Bundle) {
+        val dato=getJoinAreaGeofence()
 
-        txtDescription?.setText(area?.description_area)
-        txtDwellTime?.setText("Tiempo de permanencia " + area?.dwell_time.toString() + " (min)")
-        chkSecurityZone?.isChecked=area?.security_zone==true
-       // spEvents?.setSelection((area?.id_event?.toInt() ?: 1) - 1)
-        spPriority?.setSelection((area?.id_priority?.toInt() ?: 1) - 1)
+        with(dato?.areaGeofence) {
+            txtDescription?.setText(this?.description)
+            txtDwellTime?.setText("Tiempo de permanencia " + this?.dwell_time.toString() + " (min)")
+            chkSecurityZone?.isChecked = this?.security_zone == true
+            spPriority?.setSelection((this?.id_priority?.toInt() ?: 1) - 1)
+        }
+        val listIdEventSelected=dato?.events?.map{it.id_event}
+        listIdEventSelected?.let {
+            spEventsAdapter?.setSelectedItemsByPositions(it)
+        }
+
     }
 
     private fun configureInsets() {
@@ -127,8 +129,6 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         initilizeSpinnerSpEvents()
 
 
-        //inititlizeSpinner(spEvents,items)
-
 
         inititlizeSpinnerSpPriority()
 
@@ -139,6 +139,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         txtDescription?.setScroller(Scroller(this))
         txtDescription?.isVerticalScrollBarEnabled = true
         txtDescription?.movementMethod = ScrollingMovementMethod()
+
 
     }
 

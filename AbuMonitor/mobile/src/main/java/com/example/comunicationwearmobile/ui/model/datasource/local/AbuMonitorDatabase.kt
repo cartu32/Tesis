@@ -42,7 +42,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entityPriorityDao(): DaoPriority
     abstract fun entityReminderDao(): DaoReminder
     abstract fun firstTimeStateDao(): DaoFirstTimeState
-    abstract fun joinAreaGeofence(): DaoJoinAreaGeofence
+    abstract fun joinAreaGeofenceDao(): DaoJoinAreaGeofence
 
     companion object {
         @Volatile

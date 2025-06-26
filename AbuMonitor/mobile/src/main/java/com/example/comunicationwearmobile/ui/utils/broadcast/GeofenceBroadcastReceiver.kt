@@ -51,7 +51,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
             val areaGeof=repositoryAreaDB.getJoinAreaGeofence(idAreaGeofence)
 
-            msg = createMsg(transition,areaGeof?.description_area)
+            msg = createMsg(transition,areaGeof?.areaGeofence?.description)
 
             //envia la notificaciones al usuario
             notifyUser(context.applicationContext, msg)

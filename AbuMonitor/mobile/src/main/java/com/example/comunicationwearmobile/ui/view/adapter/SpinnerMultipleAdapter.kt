@@ -54,6 +54,13 @@ class SpinnerMultipleAdapter(context: Context, resource: Int, private val listSt
         return rowView
     }
 
+    fun setSelectedItemsByPositions(indices: List<Int>) {
+        listState.forEachIndexed { index, item ->
+            item.selected = index in indices
+        }
+        notifyDataSetChanged()
+    }
+
     private data class ViewHolder(
         val mTextView: TextView,
         val mCheckBox: CheckBox

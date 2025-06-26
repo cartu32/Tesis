@@ -103,7 +103,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
 
     fun getAreaGeofWithId(idArea: Long){
-        var areaGeofence:JoinAreaGeofence?=null
+        var dato:JoinAreaGeofence?=null
         try{
             viewModelScope.launch {
 
@@ -113,13 +113,17 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
                 //con el mismo idArea.
                 _areaGeofenceForId.postValue(null)
 
-                areaGeofence=repositoryAreaDB?.getJoinAreaGeofence(idArea)
 
-                if (areaGeofence!=null)
+                dato=repositoryAreaDB?.getJoinAreaGeofence(idArea)
+
+                if (dato!=null)
                 {
                     //aca se envia el dato verdadero al obsever del livedata
-                    _areaGeofenceForId.postValue(areaGeofence)
-                    Log.d(Definition.TAG_DEBUG,"Lat:${areaGeofence?.latitude} Long:${areaGeofence?.latitude}")
+                    _areaGeofenceForId.postValue(dato)
+                    Log.d(
+                        Definition.TAG_DEBUG,
+                        "Lat:${dato?.areaGeofence?.latitude} Long:${dato?.areaGeofence?.latitude}"
+                    )
                 }else
                     showMessage("No se encontro el Id del Area")
             }
