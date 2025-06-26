@@ -20,71 +20,67 @@ class RepositoryGeofActivate() {
     val GEOFENCE_TRANSITION_EXIT = 1
     val GEOFENCE_TRANSITION_DWELL = 3
 
-    @SuppressLint("MissingPermission")
-    suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean =
-        suspendCancellableCoroutine { continuation ->
-
-            var transitionTypes = 0
-            val geofencingClient = LocationServices.getGeofencingClient(context)
-            val areaGeof=dataAreaGeofAux.entityAreaGeofence
-
-            transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
-
-            /*            if (areaGeof.id_event==GEOFENCE_TRANSITION_ENTER)
-                            transitionTypes=Geofence.GEOFENCE_TRANSITION_ENTER
-                        else if (areaGeof.id_event==GEOFENCE_TRANSITION_EXIT)
-                            transitionTypes=Geofence.GEOFENCE_TRANSITION_EXIT
-                        else if (areaGeof.id_event==GEOFENCE_TRANSITION_DWELL)
-                            transitionTypes=Geofence.GEOFENCE_TRANSITION_DWELL
-            */
-            val geofence = Geofence.Builder()
-                .setRequestId(areaGeof.id_area.toString())
-                .setCircularRegion(areaGeof.latitude.toDouble(),areaGeof.longitude.toDouble(), areaGeof.meters.toFloat())
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setTransitionTypes(transitionTypes)  // Transiciones
-                .build()
+        private var geofencePendingIntent: PendingIntent? = null
 
 
-            val geofencingRequest = GeofencingRequest.Builder()
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                .addGeofence(geofence)
-                .build()
+    private fun getGeofencePendingIntent(context: Context): PendingIntent {
+        if (geofencePendingIntent != null) return geofencePendingIntent!!
 
-            val pendingIntent = getGeofencePendingIntent(context,areaGeof.id_area.hashCode())
-
-            //como esta es una acción asincriconica,y esta funcion es llamada dentro
-            //de una corutina, se suspende la ejecucion de la funcion(en realidad la corutina)
-            // cuando se ejecuta la ejecucion de geofenclient addgeofence, hasta que nosotros
-            // ejecutemos resume
-            //De esta forma la funcion puede retornar una valor a la funcion llamadora
-            //de forma asincronica
-            geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-                .addOnSuccessListener {
-                    Log.d(Definition.TAG_DEBUG, "Geofence agregado: $geofencingRequest.")
-                    //reactivo la corutina suspendida
-                    continuation.resume(true)
-
-                }
-                .addOnFailureListener {
-                    Log.e(Definition.TAG_DEBUG, "Error al agregar geofence: ${it.message}")
-                    //reactivo la corutina suspendida
-                    continuation.resume(false)
-                }
-
-    }
-
-    private fun getGeofencePendingIntent(context: Context, hashCode: Int): PendingIntent {
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
             action = "com.example.app.ACTION_GEOFENCE_EVENT"
         }
 
-        return PendingIntent.getBroadcast(
+        geofencePendingIntent = PendingIntent.getBroadcast(
             context,
             0,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
+        return geofencePendingIntent!!
     }
+    @SuppressLint("MissingPermission")
+    suspend fun activateGeofence(
+        context: Context,
+        dataAreaGeofAux: DataAreaGeofAux
+    ): Boolean = suspendCancellableCoroutine { continuation ->
+
+        val geofencingClient = LocationServices.getGeofencingClient(context)
+        val area = dataAreaGeofAux.entityAreaGeofence
+
+        val transitionTypes = Geofence.GEOFENCE_TRANSITION_ENTER or
+                Geofence.GEOFENCE_TRANSITION_EXIT
+               // Geofence.GEOFENCE_TRANSITION_DWELL
+
+        val geofence = Geofence.Builder()
+            .setRequestId(area.id_area.toString())
+            .setCircularRegion(
+                area.latitude.toDouble(),
+                area.longitude.toDouble(),
+                area.meters.toFloat()
+            )
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(transitionTypes)
+            .build()
+
+        val geofencingRequest = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(geofence)
+            .build()
+
+        val pendingIntent = getGeofencePendingIntent(context)
+
+        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
+            .addOnSuccessListener {
+                Log.d("Geofence", "Agregada geocerca ${area.id_area}")
+                continuation.resume(true)
+            }
+            .addOnFailureListener {
+                Log.e("Geofence", "Error al agregar geocerca: ${it.message}")
+                continuation.resume(false)
+            }
+    }
+
+
 
     fun desactivateGeofence(context: Context,idArea:String) {
         val geofencingClient = LocationServices.getGeofencingClient(context)

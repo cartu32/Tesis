@@ -86,6 +86,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             //si se pudo insertar correctamente la nueva area en la base de datos
             if (newAreaId > 0) {
 
+                dataAreaGeofAux.entityAreaGeofence.id_area = newAreaId
                 //activo el area de geofence
                 val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, dataAreaGeofAux) == true
 
