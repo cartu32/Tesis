@@ -16,40 +16,29 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 class RepositoryGeofActivate() {
-    val GEOFENCE_TRANSITION_ENTER = 0
-    val GEOFENCE_TRANSITION_EXIT = 1
+    val GEOFENCE_TRANSITION_ENTER = 1
+    val GEOFENCE_TRANSITION_EXIT = 2
     val GEOFENCE_TRANSITION_DWELL = 3
 
-        private var geofencePendingIntent: PendingIntent? = null
+    private var geofencePendingIntent: PendingIntent? = null
 
 
-    private fun getGeofencePendingIntent(context: Context): PendingIntent {
-        if (geofencePendingIntent != null) return geofencePendingIntent!!
-
-        val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
-            action = "com.example.app.ACTION_GEOFENCE_EVENT"
-        }
-
-        geofencePendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-        )
-        return geofencePendingIntent!!
-    }
     @SuppressLint("MissingPermission")
-    suspend fun activateGeofence(
-        context: Context,
-        dataAreaGeofAux: DataAreaGeofAux
-    ): Boolean = suspendCancellableCoroutine { continuation ->
+    suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean =
+        suspendCancellableCoroutine { continuation ->
 
         val geofencingClient = LocationServices.getGeofencingClient(context)
         val area = dataAreaGeofAux.entityAreaGeofence
 
-        val transitionTypes = Geofence.GEOFENCE_TRANSITION_ENTER or
-                Geofence.GEOFENCE_TRANSITION_EXIT
-               // Geofence.GEOFENCE_TRANSITION_DWELL
+        var transitionTypes = 0
+
+        for (event in dataAreaGeofAux.listIdEventSelected) {
+            val type = determineTransitionTypes(event)
+            transitionTypes = transitionTypes or type
+        }
+
+        if (transitionTypes == 0)
+            continuation.resume(false)
 
         val geofence = Geofence.Builder()
             .setRequestId(area.id_area.toString())
@@ -81,7 +70,6 @@ class RepositoryGeofActivate() {
     }
 
 
-
     fun desactivateGeofence(context: Context,idArea:String) {
         val geofencingClient = LocationServices.getGeofencingClient(context)
 
@@ -99,5 +87,29 @@ class RepositoryGeofActivate() {
             }
     }
 
+    private fun getGeofencePendingIntent(context: Context): PendingIntent {
+        if (geofencePendingIntent != null) return geofencePendingIntent!!
+
+        val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
+            action = "com.example.app.ACTION_GEOFENCE_EVENT"
+        }
+
+        geofencePendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+        return geofencePendingIntent!!
+    }
+
+    private fun determineTransitionTypes(event: Int): Int {
+        when (event) {
+            GEOFENCE_TRANSITION_ENTER -> return Geofence.GEOFENCE_TRANSITION_ENTER
+            GEOFENCE_TRANSITION_EXIT -> return Geofence.GEOFENCE_TRANSITION_EXIT
+            GEOFENCE_TRANSITION_DWELL -> return Geofence.GEOFENCE_TRANSITION_DWELL
+        }
+        return 0
+    }
 
 }
