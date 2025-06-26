@@ -72,7 +72,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
     private fun disabledComponents() {
         txtDescription?.isEnabled = false
         txtDwellTime?.isEnabled = false
-        //spEvents?.isEnabled = false
+        spEventsAdapter?.modifyVisibilityCheckBox(false)
         spPriority?.isEnabled = false
         chkSecurityZone?.isClickable = false
         cmdSavGeofence?.setVisibility(View.INVISIBLE)

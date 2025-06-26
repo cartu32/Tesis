@@ -14,6 +14,7 @@ class SpinnerMultipleAdapter(context: Context, resource: Int, private val listSt
     ArrayAdapter<StateSpinner>(context, resource, listState) {
 
     private var isFromView = false
+    private var checkboxesEnabled:Boolean=true
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         return getCustomView(position, convertView, parent)
@@ -43,6 +44,7 @@ class SpinnerMultipleAdapter(context: Context, resource: Int, private val listSt
 
         holder.mCheckBox.visibility = if (position == 0) View.INVISIBLE else View.VISIBLE
         holder.mCheckBox.tag = position
+        holder.mCheckBox.isEnabled = checkboxesEnabled
 
         holder.mCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
             val pos = buttonView.tag as Int
@@ -58,6 +60,11 @@ class SpinnerMultipleAdapter(context: Context, resource: Int, private val listSt
         listState.forEachIndexed { index, item ->
             item.selected = index in indices
         }
+        notifyDataSetChanged()
+    }
+
+    fun modifyVisibilityCheckBox(state: Boolean) {
+        checkboxesEnabled=state
         notifyDataSetChanged()
     }
 
