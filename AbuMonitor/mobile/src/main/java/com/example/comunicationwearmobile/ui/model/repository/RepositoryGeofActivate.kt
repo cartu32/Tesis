@@ -40,7 +40,7 @@ class RepositoryGeofActivate() {
         if (transitionTypes == 0)
             continuation.resume(false)
 
-        val geofence = Geofence.Builder()
+        val builder = Geofence.Builder()
             .setRequestId(area.id_area.toString())
             .setCircularRegion(
                 area.latitude.toDouble(),
@@ -49,7 +49,15 @@ class RepositoryGeofActivate() {
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(transitionTypes)
-            .build()
+
+
+            if (transitionTypes and Geofence.GEOFENCE_TRANSITION_DWELL != 0) {
+                val dwellTime=(dataAreaGeofAux.entityAreaGeofence.dwell_time)*60000
+                builder.setLoiteringDelay(dwellTime)
+                Log.d(Definition.TAG_DEBUG,"se definio el tiempo de espera: $dwellTime")
+            }
+
+        val geofence=builder.build()
 
         val geofencingRequest = GeofencingRequest.Builder()
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)

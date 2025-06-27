@@ -98,6 +98,16 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 Log.d(Definition.TAG_DEBUG, "Saliste de un geofence")
 
             }
+
+            Geofence.GEOFENCE_TRANSITION_DWELL -> {
+                msg.typeNotification = SharedData.TypeNotification.Alert
+                msg.title="¡Alerta de Geofence!"
+                msg.message= "Tiempo de permanencia en la zona $description"
+
+                Log.d(Definition.TAG_DEBUG, "Tiempo de permanencia en un geofence")
+
+            }
+
         }
         return msg
     }
