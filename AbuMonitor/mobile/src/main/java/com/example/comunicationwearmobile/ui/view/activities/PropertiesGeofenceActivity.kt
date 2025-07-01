@@ -15,6 +15,7 @@ import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.abumonitor.constants.Definition
@@ -22,11 +23,12 @@ import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
+import com.example.comunicationwearmobile.ui.utils.interfaces.OnCheckboxClickListener
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerMultipleAdapter
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerSimpleAdapter
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 
-class PropertiesGeofenceActivity: AppCompatActivity() {
+class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private var spEvents:Spinner ?=null
     private var spPriority:Spinner ?=null
     private var txtDescription:EditText ?=null
@@ -143,6 +145,7 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
 
     }
 
+
     private fun initilizeSpinnerSpEvents() {
         var items:Array<String>
 
@@ -167,6 +170,34 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         spPriorityAdapter = SpinnerSimpleAdapter(this, android.R.layout.simple_spinner_item, items)
         spPriority?.adapter = spPriorityAdapter
 
+    }
+
+    override fun onCheckboxClicked(position: Int, isChecked: Boolean) {
+        val indexCheckBoxDweelTime=3
+
+        if(position==indexCheckBoxDweelTime){
+            changeVisibiblityDwellTime(isChecked)
+        }
+    }
+
+    fun enableVisiblityDwellTime() {
+        txtDwellTime?.isEnabled = false
+
+        txtDwellTime?.setTextColor(Color.BLACK)
+        txtDwellTime?.setBackgroundResource(R.drawable.editext_enabled)
+
+    }
+    private fun changeVisibiblityDwellTime(isChecked: Boolean) {
+        txtDwellTime?.isEnabled = isChecked
+
+        if (isChecked) {
+            txtDwellTime?.setTextColor(Color.BLACK)
+            txtDwellTime?.setBackgroundResource(R.drawable.editext_enabled)
+            return
+        } else {
+            txtDwellTime?.setTextColor(Color.WHITE)
+            txtDwellTime?.setBackgroundResource(R.drawable.editext_disabled)
+        }
     }
 
     private fun actionCancel() {
@@ -242,6 +273,8 @@ class PropertiesGeofenceActivity: AppCompatActivity() {
         Log.d(Definition.TAG_DEBUG,"Ondestroy PropertiesGeofenceActvity")
 
     }
+
+
 
 
 }

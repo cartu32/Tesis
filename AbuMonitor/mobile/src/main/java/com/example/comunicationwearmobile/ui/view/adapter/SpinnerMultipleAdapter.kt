@@ -9,12 +9,15 @@ import android.widget.CheckBox
 import android.widget.TextView
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
+import com.example.comunicationwearmobile.ui.utils.interfaces.OnCheckboxClickListener
 
 class SpinnerMultipleAdapter(context: Context, resource: Int, private val listState: ArrayList<StateSpinner>) :
     ArrayAdapter<StateSpinner>(context, resource, listState) {
 
     private var isFromView = false
     private var checkboxesEnabled:Boolean=true
+
+    private val onCheckboxClickListener: OnCheckboxClickListener = context as OnCheckboxClickListener
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         return getCustomView(position, convertView, parent)
@@ -50,6 +53,7 @@ class SpinnerMultipleAdapter(context: Context, resource: Int, private val listSt
             val pos = buttonView.tag as Int
             if (!isFromView) {
                 listState[pos].selected = isChecked
+                onCheckboxClickListener.onCheckboxClicked(pos, isChecked)
             }
         }
 

@@ -92,6 +92,7 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
     private fun showPropertiesAreaGeof(areaGeofence: JoinAreaGeofence?) {
         val intent= Intent(this, PropertiesGeofenceActivity::class.java)
         activityResultLauncher?.launch(intent)
+
     }
 
     private fun configActivityResult() {
