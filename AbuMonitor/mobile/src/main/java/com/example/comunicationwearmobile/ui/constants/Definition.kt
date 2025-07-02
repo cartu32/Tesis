@@ -17,6 +17,11 @@ object Definition {
     // cuando el usuario crea una nueva
     const val INTENT_DATA_NEW_AREA_GEOF = "INTENT_DATA_NEW_AREA_GEOF"
     const val INTENT_STATE_OPERATION = "INTENT_STATE_OPERATION"
+    const val INTENT_SMS_MSG = "INTENT_SMS_MSG"
+
+    //constantes que sirve para los intents que se la manda al foregroundservice
+    const val OPERATION_START_FOREGROUND_SERVICE = "OPERATION_INTENT"
+    const val OPERATION_GOEFENCE_SEND_SMS = "1"
 
     const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
 
@@ -41,7 +46,12 @@ object Definition {
     const val ERROR_INSERT_BD_GEOF:Long      = -2
     const val ERROR_ACTIVATE_GEOF:Long       = -3
 
-    const val NEW_AREA_GEOFENCE_CREATED:Int  = 1
+    //constantes que indican la prioridad de las notificaciones
+    const val PRIORITY_BAJA   = 1
+    const val PRIORTY_MEDIA   = 2
+    const val PRIORITY_ALTA   = 3
+
+
 
     const val PATH_SEND_DATA_TO_WEARABLE:String = "PATH_SEND_DATA_TO_WEARABLE"
     const val MSG_TO_WEARABLE:String="MSG_TO_WEARABLE"

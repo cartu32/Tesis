@@ -47,15 +47,16 @@ object SharedData
     data class MsgViewNotification(
         var numberNotification:Int=-1
     )
+
     @Serializable
     data class MsgNotification(
-        var title:String ="",
-        var message: String="",
+        var title: String = "",
+        var message: String = "",
         var typeNotification: TypeNotification = TypeNotification.WithoutNotifications,
-        var date:String ="",
-        var hour:String = "",
-        var idMsgMobile:Int=-1
-    )
+        var date: String = "",
+        var hour: String = "",
+        var idMsgMobile: Int = -1
+    ) : java.io.Serializable
 
     @Serializable
     data class MsgFallDetection(

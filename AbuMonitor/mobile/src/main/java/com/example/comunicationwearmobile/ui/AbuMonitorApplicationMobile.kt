@@ -12,5 +12,6 @@ class AbuMonitorApplicationMobile : Application() {
         // Configuración adicional si es necesario
         LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
     }
+
 }
 

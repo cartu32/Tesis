@@ -1,7 +1,6 @@
 package com.example.comunicationwearmobile.ui.utils.broadcast
 
 import android.content.BroadcastReceiver
-import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -10,6 +9,7 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
+import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
@@ -24,7 +24,9 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(mContext: Context, intent: Intent) {
+        val context=mContext.applicationContext
+
         if (intent.action == "com.example.app.ACTION_GEOFENCE_EVENT") {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
 
@@ -42,39 +44,81 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     }
 
     private suspend fun analizeDetectedGeofences(context: Context, geofencingEvent: GeofencingEvent?, scope: CoroutineScope) {
-        val repositoryAreaDB:RepositoryAreaDB= RepositoryAreaDB(context,scope)
+        val repositoryAreaDB= RepositoryAreaDB(context,scope)
 
         geofencingEvent?.triggeringGeofences?.forEach { geofence ->
             val msg:SharedData.MsgNotification
             val transition = geofencingEvent.geofenceTransition
             val idAreaGeofence = geofence.requestId.toLong()
 
+
             val areaGeof=repositoryAreaDB.getJoinAreaGeofence(idAreaGeofence)
 
-            msg = createMsg(transition,areaGeof?.areaGeofence?.description)
+            with(areaGeof?.areaGeofence){
+                msg = createMsg(transition, this?.description, this?.dwell_time ?: 0)
+            }
 
-            //envia la notificaciones al usuario
-            notifyUser(context.applicationContext, msg)
+            //genera la notificacion segun l prioridad del geofence
+            determineRecipientByPriority(context.applicationContext,areaGeof?.areaGeofence?.id_priority,msg)
         }
 
     }
 
-    private  fun notifyUser( context: Context, msg: SharedData.MsgNotification) {
+    private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
+
+        val intent = Intent(context, GeofencesServices::class.java).apply {
+            putExtra(Definition.OPERATION_GOEFENCE_SEND_SMS,msg)
+            putExtra(Definition.OPERATION_START_FOREGROUND_SERVICE,Definition.OPERATION_GOEFENCE_SEND_SMS)
+        }
+
+        context.startService(intent)
+    }
+
+    private fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
         val notificationHelper = NotificationManagerHelper.getInstance(context)
 
         //muestro la notificacion al usuario en la bandeja de notificacion del telefono
-        //y obtengo su id para poder enviarselo al samrtwatch
         val idMsgMobile=notificationHelper?.showNotificationGeneral(msg)
+
+        //le envio el SMS de alerta al contacto de emergencia
+        notifyUserPriorityBaja(context,msg)
+
+        return idMsgMobile
+    }
+
+    private fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
+        when(idPriority){
+            Definition.PRIORITY_BAJA-> notifyUserPriorityBaja(context,msg)
+            Definition.PRIORTY_MEDIA-> notifyUserPriorityMedia(context,msg)
+            Definition.PRIORITY_ALTA-> notifyUserPriorityAlta(context,msg)
+            else-> Log.e(Definition.TAG_DEBUG,"No se encontro el id de prioridad")
+        }
+
+    }
+
+    private fun notifyUserPriorityAlta(context: Context, msg: SharedData.MsgNotification) {
+
+        //envio el SMS al contacto de emergencia y muestro la notificacion al usuario
+        //en la bandeja de notificaciones
+        val idMsgMobile=notifyUserPriorityMedia(context, msg)
 
         //el id de la notificacion se la agrego al mesnaje que lo envio al smartwatch
         if (idMsgMobile != null) {
-            msg.idMsgMobile=idMsgMobile
+            msg.idMsgMobile = idMsgMobile
+
+            //envio el mensaje al smartwatch
+            RepositoryDispatcherWearable.sendDataToWearable(
+                context,
+                SharedData.PATH_ADD_NOTIFICATION_GENERAL,
+                msg
+            )
+        }else{
+            Log.e(Definition.TAG_DEBUG,"No se pudo enviar la notificacion al smartwatch")
         }
+   }
 
-        RepositoryDispatcherWearable.sendDataToWearable(context,SharedData.PATH_ADD_NOTIFICATION_GENERAL,msg)
-    }
 
-    private fun createMsg(transition: Int?, description: String?): SharedData.MsgNotification {
+    private fun createMsg(transition: Int?, description: String?, dwellTime: Int): SharedData.MsgNotification {
         val msg=SharedData.MsgNotification()
 
         msg.hour = Tools.getHour(LocalTime.now())
@@ -84,7 +128,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
                 msg.typeNotification = SharedData.TypeNotification.Alert
                 msg.title="¡Alerta de Geofence!"
-                msg.message= "Has entrado en la zona $description"
+                msg.message= "El abuelo ha entrado en la zona $description"
 
                 Log.d(Definition.TAG_DEBUG, "Entraste en un geofence")
 
@@ -93,7 +137,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_EXIT -> {
                 msg.typeNotification = SharedData.TypeNotification.Alert
                 msg.title="¡Alerta de Geofence!"
-                msg.message="Has salido de la zona $description"
+                msg.message="El abuelo ha salido de la zona $description"
 
                 Log.d(Definition.TAG_DEBUG, "Saliste de un geofence")
 
@@ -102,7 +146,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_DWELL -> {
                 msg.typeNotification = SharedData.TypeNotification.Alert
                 msg.title="¡Alerta de Geofence!"
-                msg.message= "Tiempo de permanencia en la zona $description"
+                msg.message= "El abuelo paso más de $dwellTime min. en la zona $description"
 
                 Log.d(Definition.TAG_DEBUG, "Tiempo de permanencia en un geofence")
 

@@ -1,15 +1,23 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
+import android.app.Activity
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.Location
+import android.os.Build
 import android.os.IBinder
+import android.telephony.SmsManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
+import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManagerCustom
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.shared_library.SharedData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,6 +56,7 @@ class GeofencesServices: Service() {
 
         channelLector()
         configOberserverLivedata()
+        registerSMSReceivers(this)
     }
 
     private fun configOberserverLivedata() {
@@ -113,20 +122,67 @@ class GeofencesServices: Service() {
 
     }
     private fun handleIntent(intent: Intent?)  {
-        var operation = 0
+        var operation=""
         if (intent != null) {
-            operation = intent.getIntExtra("Operation" , -1)
+            operation = intent.getStringExtra(Definition.OPERATION_START_FOREGROUND_SERVICE).toString()
         }
 
         when (operation) {
-            //Tools.GEOFENCE_TRANSITION -> operationTransition(intent)
-            //Tools.GEOFENCE_ROUTE -> operationRoute()
+            Definition.OPERATION_GOEFENCE_SEND_SMS->sendSMSContact(intent)
             else ->
                 Log.e(Definition.TAG_DEBUG , "Operation desconocido en HandleIntent")
         }
     }
 
+    private fun sendSMSContact(intent: Intent?) {
+        val smsManager= SmsManagerCustom()
+
+
+        if (intent == null)
+            return
+
+        val msg: SharedData.MsgNotification? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(Definition.OPERATION_GOEFENCE_SEND_SMS, SharedData.MsgNotification::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(Definition.OPERATION_GOEFENCE_SEND_SMS) as? SharedData.MsgNotification
+        }
+
+        msg?.let {
+            smsManager.sendSMSNotifyGeofence(this, it)
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
+
+    fun registerSMSReceivers(context: Context) {
+        // Receiver para el envío del SMS
+        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (resultCode) {
+                    Activity.RESULT_OK -> Log.d("SMS", " SMS enviado correctamente")
+                    SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(
+                        "SMS",
+                        " Fallo genérico al enviar SMS"
+                    )
+
+                    SmsManager.RESULT_ERROR_NO_SERVICE -> Log.e(Definition.TAG_DEBUG, " Sin servicio")
+                    SmsManager.RESULT_ERROR_NULL_PDU -> Log.e(Definition.TAG_DEBUG, " PDU nulo")
+                    SmsManager.RESULT_ERROR_RADIO_OFF -> Log.e(Definition.TAG_DEBUG, " Radio apagada")
+                }
+            }
+        }, IntentFilter("SMS_SENT"), ContextCompat.RECEIVER_NOT_EXPORTED)
+
+        // Receiver para la entrega del SMS
+        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (resultCode) {
+                    Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
+                    else -> Log.e(Definition.TAG_DEBUG, " SMS no fue entregado")
+                }
+            }
+        }, IntentFilter("SMS_DELIVERED"), ContextCompat.RECEIVER_EXPORTED)
+    }
 
 }
 

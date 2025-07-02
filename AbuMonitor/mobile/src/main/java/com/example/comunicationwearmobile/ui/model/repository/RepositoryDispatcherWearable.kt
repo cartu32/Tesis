@@ -5,14 +5,14 @@ import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManager
+import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManagerCustom
 import com.example.comunicationwearmobile.ui.utils.services.SenderToWearableService
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 import com.google.android.gms.wearable.MessageEvent
 
 object RepositoryDispatcherWearable {
-    private val smsManager = SmsManager()
+    private val smsManager = SmsManagerCustom()
 
      suspend fun dispatcherMsgFromWearable(context: Context, messageEvent: MessageEvent) {
         val notificationManager = NotificationManagerHelper.getInstance(context.applicationContext)
@@ -20,7 +20,7 @@ object RepositoryDispatcherWearable {
         notificationManager.let {
             when (messageEvent.path) {
                 SharedData.PATH_VIEWED_NOTIFICATION ->notificationManager?.notificationViewedOnWearable(messageEvent.data)
-                SharedData.PATH_FALL_DETECTION_SMS ->smsManager.sendSMS(context, messageEvent.data)
+                SharedData.PATH_FALL_DETECTION_SMS ->smsManager.sendSMSFallDetection(context, messageEvent.data)
                 else -> Log.d(Definition.TAG_DEBUG, "Unknown path received: ${messageEvent.path}")
             }
         }?: run {
