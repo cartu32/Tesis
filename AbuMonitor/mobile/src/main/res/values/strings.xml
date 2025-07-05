@@ -18,6 +18,9 @@
     <string name="prioridad">Prioridad:</string>
     <string name="evento">Evento:</string>
     <string name="propiedades">Propiedades</string>
+    <string name="Hour_min_secure_zone">Hora minima</string>
+    <string name="Hour_max_secure_zone">Hora Maxima</string>
+    <string name="HourSecurityZone">"Rango horario normal en Zona Segura "</string>
 
     <string-array name="spinner_events">
         <item>Seleccione los eventos</item>

@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.app.Activity
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +17,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import android.widget.TableLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.abumonitor.constants.Definition
@@ -23,10 +27,13 @@ import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnCheckboxClickListener
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerMultipleAdapter
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerSimpleAdapter
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private var spEvents:Spinner ?=null
@@ -40,6 +47,10 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private var spEventsAdapter:SpinnerMultipleAdapter?=null
     private var spPriorityAdapter:SpinnerSimpleAdapter?=null
     private var listSpEvents:ArrayList<StateSpinner> = ArrayList()
+
+    private var groupSecurityZone:TableLayout ?= null
+    private var txtMinHourSecureZone:TextView ?= null
+    private var txtMaxHourSecureZone:TextView ?= null
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +89,15 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         spPriority?.isEnabled = false
         chkSecurityZone?.isClickable = false
         cmdSavGeofence?.setVisibility(View.INVISIBLE)
+
+        if (chkSecurityZone?.isChecked == true){
+            groupSecurityZone?.visibility = View.VISIBLE
+            groupSecurityZone?.isEnabled=false
+            txtMinHourSecureZone?.isEnabled=false
+            txtMaxHourSecureZone?.isEnabled=false
+        }
+        else
+            groupSecurityZone?.visibility = View.INVISIBLE
 
     }
 
@@ -128,6 +148,10 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
         cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
 
+        groupSecurityZone = findViewById<TableLayout>(R.id.groupSecurityZone)
+        txtMinHourSecureZone = findViewById(R.id.txtMinHourSecureZone)
+        txtMaxHourSecureZone = findViewById(R.id.txtMaxHourSecureZone)
+
         initilizeSpinnerSpEvents()
 
 
@@ -137,12 +161,49 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         //les asocio los listener a cada elemento
         cmdSavGeofence?.setOnClickListener{actionSave()}
         cmdCancelGeofence?.setOnClickListener{actionCancel()}
-
+        chkSecurityZone?.setOnClickListener(){changevisiblityGroup()}
+        txtMinHourSecureZone?.setOnClickListener(){listenerMinHourSecurityZone()}
+        txtMaxHourSecureZone?.setOnClickListener(){listenerMaxHourSecurityZone()}
         txtDescription?.setScroller(Scroller(this))
         txtDescription?.isVerticalScrollBarEnabled = true
+        groupSecurityZone?.visibility =View.INVISIBLE
         txtDescription?.movementMethod = ScrollingMovementMethod()
 
 
+    }
+
+    private fun listenerMaxHourSecurityZone() {
+        showTimePicker { selectedTime ->
+            txtMaxHourSecureZone?.text = Tools.toEditable(selectedTime)
+        }
+    }
+
+    private fun listenerMinHourSecurityZone() {
+        showTimePicker { selectedTime ->
+            txtMinHourSecureZone?.text = Tools.toEditable(selectedTime)
+        }
+    }
+
+    private fun showTimePicker(onTimeSelected: (String) -> Unit) {
+        val cal = Calendar.getInstance()
+
+        val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+            cal.set(Calendar.HOUR_OF_DAY, hour)
+            cal.set(Calendar.MINUTE, minute)
+            val timeSelected = SimpleDateFormat("HH:mm").format(cal.time)
+            onTimeSelected(timeSelected) // devolver el valor aquí
+        }
+
+        TimePickerDialog(this, timeSetListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+    }
+
+
+    private fun changevisiblityGroup() {
+        if (chkSecurityZone?.isChecked == true) {
+            groupSecurityZone?.visibility = View.VISIBLE
+        } else {
+            groupSecurityZone?.visibility = View.INVISIBLE
+         }
     }
 
 
@@ -214,6 +275,14 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private fun actionSave() {
         //por el momento hardcodeo estos el color y el tipo de area
         val color_blue=1
+        var thereEventSelected = false
+
+        if(chkSecurityZone?.isChecked==true){
+            if(txtMinHourSecureZone?.text.toString().isEmpty() || txtMaxHourSecureZone?.text.toString().isEmpty()){
+                Toast.makeText(this,"Debe ingresar el horario normal de seguridad",Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
 
         var dataAreaGeofAux=DataAreaGeofAux()
         val resultIntent= Intent(this,ConfigGeofenceFragment::class.java)
@@ -222,8 +291,10 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         with(dataAreaGeofAux) {
             //me fijo que eventos estan seleccionados en el spinner
             for (event in listSpEvents) {
-                if (event.selected)
+                if (event.selected) {
                     dataAreaGeofAux.listIdEventSelected.add(listSpEvents.indexOf(event))
+                    thereEventSelected=true
+                }
             }
 
             //me fijo que datos estan en la pantalla
@@ -240,6 +311,10 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
 
         Log.d(Definition.TAG_DEBUG, "listado de eventos$listSpEvents")
 
+        if(!thereEventSelected){
+            Toast.makeText(this,"Debe seleccionar al menos un evento",Toast.LENGTH_SHORT).show()
+            return
+        }
         //retorno al fragement ConfigGeofence que se presiono el boton ok y
         //ademas le envio el objeto EntityAreaGeofence con los datos ingresados
         resultIntent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF,dataAreaGeofAux)

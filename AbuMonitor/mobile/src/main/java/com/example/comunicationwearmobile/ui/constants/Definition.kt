@@ -17,13 +17,15 @@ object Definition {
     // cuando el usuario crea una nueva
     const val INTENT_DATA_NEW_AREA_GEOF = "INTENT_DATA_NEW_AREA_GEOF"
     const val INTENT_STATE_OPERATION = "INTENT_STATE_OPERATION"
-    const val INTENT_SMS_MSG = "INTENT_SMS_MSG"
 
     //constantes que sirve para los intents que se la manda al foregroundservice
     const val OPERATION_START_FOREGROUND_SERVICE = "OPERATION_INTENT"
     const val OPERATION_GOEFENCE_SEND_SMS = "1"
 
     const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
+
+    //tiempo minimo de permanencia en la zona de seguridad para alertar al usuario
+    const val MIN_MINUTES_STAY_IN_SECURITY_ZONE = 2
 
     //Definicion de configuracion del mapa
     const val GEOFENCE_RADIUS_DEFAULT:Double = 100.0

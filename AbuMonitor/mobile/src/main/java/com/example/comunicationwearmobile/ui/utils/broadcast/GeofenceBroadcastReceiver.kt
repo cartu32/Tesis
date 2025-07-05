@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
@@ -19,10 +20,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Duration
+import java.time.Instant
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private var enteredInSecurityZone = false
+    private var timeThatEnteredSecurityZone: Instant? = null
 
     override fun onReceive(mContext: Context, intent: Intent) {
         val context=mContext.applicationContext
@@ -38,6 +44,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             }
 
             coroutineScope.launch {
+
                 analizeDetectedGeofences(context, geofencingEvent,coroutineScope)
             }
         }
@@ -47,21 +54,59 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val repositoryAreaDB= RepositoryAreaDB(context,scope)
 
         geofencingEvent?.triggeringGeofences?.forEach { geofence ->
-            val msg:SharedData.MsgNotification
             val transition = geofencingEvent.geofenceTransition
             val idAreaGeofence = geofence.requestId.toLong()
-
-
             val areaGeof=repositoryAreaDB.getJoinAreaGeofence(idAreaGeofence)
 
-            with(areaGeof?.areaGeofence){
-                msg = createMsg(transition, this?.description, this?.dwell_time ?: 0)
+            if(areaGeof?.areaGeofence?.security_zone==true){
+                analizeSecurityZone(context,areaGeof,transition)
+            }else{
+                analizeNormalZone(context,areaGeof,transition)
             }
-
-            //genera la notificacion segun l prioridad del geofence
-            determineRecipientByPriority(context.applicationContext,areaGeof?.areaGeofence?.id_priority,msg)
         }
 
+    }
+
+    private fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
+        var timeThatExitSecurityZone: Instant? = null
+        val msg=SharedData.MsgNotification()
+
+        if(transition==Geofence.GEOFENCE_TRANSITION_ENTER){
+            enteredInSecurityZone=true
+            timeThatEnteredSecurityZone=Instant.parse(LocalTime.now().toString())
+
+            msg.typeNotification = SharedData.TypeNotification.Alert
+            msg.title="¡Alerta de Seguridad!"
+            msg.message= "El abuelo ha entrado en la zona segura ${areaGeof.areaGeofence.description}"
+            msg.hour = Tools.getHour(LocalTime.now())
+            msg.date = Tools.getDate(LocalDate.now())
+
+        }else if(transition==Geofence.GEOFENCE_TRANSITION_EXIT){
+                if(enteredInSecurityZone) {
+                    timeThatExitSecurityZone = Instant.parse(LocalTime.now().toString())
+
+                    val duration=Duration.between(timeThatEnteredSecurityZone,timeThatExitSecurityZone)
+
+                    val days=duration.toDays()
+                    val hours=duration.minusDays(days).toHours()
+                    val minutes=duration.minusMinutes(hours).toMinutes()
+
+                   // if(minutes>=Definition)
+                }
+
+        }
+
+    }
+
+    private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
+        val msg:SharedData.MsgNotification
+
+        with(areaGeof?.areaGeofence){
+            msg = createMsg(transition, this?.description, this?.dwell_time ?: 0)
+        }
+
+        //genera la notificacion segun l prioridad del geofence
+        determineRecipientByPriority(context.applicationContext,areaGeof?.areaGeofence?.id_priority,msg)
     }
 
     private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {

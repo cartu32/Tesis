@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.ui.utils
 
 import android.location.Location
 import android.os.StrictMode
+import android.text.Editable
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.google.android.gms.maps.model.LatLng
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter
 
 
 object Tools {
+    fun toEditable(text: String): Editable = Editable.Factory.getInstance().newEditable(text)
 
     fun isPointInsideCircle(point: LatLng, center: LatLng?, radiusInMeters: Double?): Boolean {
         if (center == null || radiusInMeters == null) {

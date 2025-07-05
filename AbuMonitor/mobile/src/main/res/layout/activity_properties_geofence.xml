@@ -34,8 +34,8 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="15dp">
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp">
 
             <TextView
                 android:id="@+id/txtEvent"
@@ -63,8 +63,8 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="15dp">
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp">
 
             <TextView
                 android:id="@+id/txtPriority"
@@ -93,9 +93,9 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="5dp"
 
-            android:layout_marginTop="15dp">
+            android:layout_marginTop="5dp">
         </TableRow>
 
         <EditText
@@ -107,7 +107,7 @@
             android:inputType="number"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="5dp"
             android:enabled="false"
             android:background="@drawable/editext_disabled"
             android:textColor="@color/white"
@@ -116,7 +116,7 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:layout_marginBottom="15dp"
             android:layout_marginEnd="20dp"
             android:gravity="end">
@@ -134,41 +134,117 @@
     </TableLayout>
 
     <TableLayout
+        android:id="@+id/groupSecurityZone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/group_round_box">
+
+        <TableRow
+            android:id="@+id/tx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp">
+
+            <TextView
+                android:id="@+id/txtHourSecurityZone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:padding="4dp"
+                android:text="@string/HourSecurityZone"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp">
+
+
+            <TextView
+                android:id="@+id/txtMinHourSecureZone"
+                android:layout_width="150dp"
+                android:layout_height="53dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/editext_enabled"
+                android:gravity="center_vertical|start"
+                android:hint="@string/Hour_min_secure_zone"
+                android:overScrollMode="always"
+                android:padding="8dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/black"
+                android:textColorHint="@color/cardview_dark_background"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/txtMaxHourSecureZone"
+                android:layout_width="150dp"
+                android:layout_height="53dp"
+                android:layout_marginStart="5dp"
+
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/editext_enabled"
+                android:gravity="center_vertical|start"
+                android:hint="@string/Hour_max_secure_zone"
+                android:maxLines="1"
+                android:overScrollMode="always"
+                android:padding="8dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/black"
+                android:textColorHint="@color/cardview_dark_background"
+                android:textSize="18sp" />
+        </TableRow>
+    </TableLayout>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
         android:background="@drawable/group_round_box">
 
         <!-- Primera fila de la tabla -->
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="15dp">
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp">
 
         </TableRow>
-            <EditText
-                android:id="@+id/txtDescription"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_marginBottom="15dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
-                android:hint="@string/descripcion_de_area_geofence"
-                android:inputType="textMultiLine"
-                android:lines="4"
-                android:maxLines="4"
-                android:scrollbars="vertical"
-                android:overScrollMode="always"
-                android:scrollHorizontally="false"
-                android:gravity="top|start"
-                android:background="@drawable/editext_enabled"
-                android:textColor="@color/black"
-                android:textColorHint="@color/cardview_dark_background"
-                android:padding="8dp"
-                tools:ignore="Autofill" />
+
+        <EditText
+            android:id="@+id/txtDescription"
+            android:layout_width="match_parent"
+            android:layout_height="53dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/editext_enabled"
+            android:gravity="top|start"
+            android:hint="@string/descripcion_de_area_geofence"
+            android:inputType="textMultiLine"
+            android:lines="4"
+            android:maxLines="4"
+            android:overScrollMode="always"
+            android:padding="8dp"
+            android:scrollbars="vertical"
+            android:scrollHorizontally="false"
+            android:textColor="@color/black"
+            android:textColorHint="@color/cardview_dark_background"
+            tools:ignore="Autofill" />
 
     </TableLayout>
 
@@ -177,13 +253,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="10dp">
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:layout_marginTop="15dp">
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp">
 
             <Button
                 android:id="@+id/cmdSaveGeofences"

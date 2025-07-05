@@ -22,5 +22,7 @@ class Converters {
     fun toDate(date: java.sql.Date?): Long? {
         return date?.time
     }
+
+
 }
 
