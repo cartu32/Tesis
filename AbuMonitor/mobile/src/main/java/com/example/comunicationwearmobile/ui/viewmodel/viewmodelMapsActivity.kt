@@ -34,6 +34,9 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _idNewAreaGeof:MutableLiveData<Long>? = MutableLiveData<Long>()
     val idNewAreaGeof: LiveData<Long>? = _idNewAreaGeof
 
+    private var _isSecurityZone:MutableLiveData<Boolean>? = MutableLiveData<Boolean>()
+    val securityZone: LiveData<Boolean>? = _isSecurityZone
+
     private var _resultDeleteArea: MutableLiveData<Circle?>? = MutableLiveData<Circle?>()
     val resultDeleteArea: LiveData<Circle?>? = _resultDeleteArea
 
@@ -79,6 +82,14 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     }
 
     fun insertAreaGeof(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
+        if(dataAreaGeofAux.entityAreaGeofence.security_zone){
+            _isSecurityZone?.postValue(true)
+        }
+
+        insertAreaGeofComplete(context,dataAreaGeofAux)
+    }
+
+    private fun insertAreaGeofComplete(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
         viewModelScope.launch(Dispatchers.IO) {
             val newAreaId = repositoryAreaDB?.insertAreaGeofence(dataAreaGeofAux)?: Definition.ERROR_INSERT_BD_GEOF
             var finalId   = newAreaId
@@ -137,13 +148,21 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
 
 
-    fun createCircle(latLng: LatLng, radius: Double): CircleOptions {
-        val alpha = 64
-        val colorCircle = Color.BLUE
+    fun createCircle(latLng: LatLng, radius: Double, securityZone: Boolean): CircleOptions {
+        val alpha = 100
+        val circleBackground: Int
+        val circleBorder=Color.BLACK
+
+        circleBackground = if (!securityZone) {
+            Color.BLUE
+        } else {
+            Color.GREEN
+        }
+
         val circleOptions = CircleOptions()
                 .center(latLng)
-                .strokeColor(colorCircle)
-                .fillColor(ColorUtils.setAlphaComponent(colorCircle, alpha))
+                .strokeColor(circleBorder)
+                .fillColor(ColorUtils.setAlphaComponent(circleBackground, alpha))
                 .radius(radius)
                 .strokeWidth(4f)
                 .clickable(true)

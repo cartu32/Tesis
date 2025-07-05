@@ -352,6 +352,12 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         spPriority?.onItemSelectedListener=null
         spEvents?.onItemSelectedListener=null
 
+        cmdSavGeofence?.setOnClickListener(null)
+        cmdCancelGeofence?.setOnClickListener(null)
+        chkSecurityZone?.setOnClickListener(null)
+        txtMinHourSecureZone?.setOnClickListener(null)
+        txtMaxHourSecureZone?.setOnClickListener(null)
+
         spEvents=null
         spPriority=null
 
@@ -361,6 +367,8 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         cmdSavGeofence=null
         cmdSavGeofence=null
         cmdCancelGeofence=null
+        txtMinHourSecureZone=null
+        txtMaxHourSecureZone=null
 
         Log.d(Definition.TAG_DEBUG,"Ondestroy PropertiesGeofenceActvity")
 

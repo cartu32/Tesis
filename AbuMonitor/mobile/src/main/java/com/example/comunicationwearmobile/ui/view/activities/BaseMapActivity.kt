@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
@@ -23,9 +22,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 //Esta es la clase padre que se usa para crear los mapas con las areas de geofencing
 //De esta clase heredan las demas.Por ejemplo:
@@ -140,7 +136,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
             cleanMap()
             listAllAreas.forEach{
                 Log.d(Definition.TAG_DEBUG,"Id:{${it.id_area} Description{${it.description}}")
-                circle=drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble())
+                circle=drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble(),it.security_zone)
                 setIdDrawnArea(it.id_area)
             }
         }
@@ -166,11 +162,16 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    open fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double=Definition.GEOFENCE_RADIUS_DEFAULT): Circle? {
+    open fun drawGeofenceArea(
+        latitude: Double,
+        longitude: Double,
+        meters: Double = Definition.GEOFENCE_RADIUS_DEFAULT,
+        securityZone: Boolean = false
+    ): Circle? {
         val latLng=LatLng(latitude,longitude)
         var newCicle:Circle?=null
 
-        val circleOptions=viewmodelMapsActivity?.createCircle(latLng,meters)
+        val circleOptions=viewmodelMapsActivity?.createCircle(latLng,meters,securityZone)
 
         circleOptions?.let {
             newCicle=mMap?.addCircle(it)

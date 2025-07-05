@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.os.Bundle
+import com.example.abumonitor.constants.Definition
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 
@@ -18,6 +19,6 @@ class MapExtra:BaseMapActivity() {
     override fun onMapClick(latLng: LatLng) {
         super.onMapClick(latLng)
 
-        drawGeofenceArea(latLng.latitude,latLng.longitude)
+        drawGeofenceArea(latLng.latitude, latLng.longitude, Definition.GEOFENCE_RADIUS_DEFAULT)
     }
 }

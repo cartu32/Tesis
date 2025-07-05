@@ -2,15 +2,18 @@ package com.example.comunicationwearmobile.ui.view.activities
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.core.graphics.ColorUtils
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
+
 
 //Esta es la clase hija que hereda de BaseMapActivity
 //Esta clase hija define metodos que solo deben usarse en este mapa.
@@ -31,13 +34,23 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
 
         configObserverIdNewArea()
         configObserverResultDelete()
+        configObserverSecurityZone()
+    }
+
+    private fun configObserverSecurityZone() {
+        viewmodelMapsActivity?.securityZone?.observe(this){isSecurity->
+            val colorCircleBackground = Color.GREEN
+            
+            circle?.fillColor = ColorUtils.setAlphaComponent(colorCircleBackground, 100)
+        }
+
     }
 
     override fun onMapClick(latLng: LatLng) {
         super.onMapClick(latLng)
 
         //grafico en el mapa la nueva area
-        circle=drawGeofenceArea(latLng.latitude,latLng.longitude)
+        circle=drawGeofenceArea(latLng.latitude, latLng.longitude,Definition.GEOFENCE_RADIUS_DEFAULT,false)
         showConfigGeofenceFragment(latLng)
 
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
@@ -174,6 +187,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         // Eliminar los observadores de LiveData
         viewmodelMapsActivity?.resultDeleteArea?.removeObservers(this)
         viewmodelMapsActivity?.idNewAreaGeof?.removeObservers(this)
+        viewmodelMapsActivity?.securityZone?.removeObservers(this)
 
         mMap?.setOnMapClickListener(null)
 
