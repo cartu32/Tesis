@@ -66,20 +66,19 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
          }
 
      }
-     private fun initMap(){
-        try{
-
-            lifecycleScope.launch(Dispatchers.IO) {
-
-                val mapFragment =
-                    supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-                withContext(Dispatchers.Main) {
-                    mapFragment.getMapAsync(this@BaseMapActivity)
-                }
-                initializeViewModel()
+    private fun initMap() {
+        try {
+            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+            if (mapFragment == null) {
+                Log.e(Definition.TAG_DEBUG, "No se pudo encontrar el fragmento del mapa.")
+                return
             }
+
+            mapFragment.getMapAsync(this@BaseMapActivity)
+            initializeViewModel()
+
         } catch (e: Exception) {
-            Log.e(Definition.TAG_DEBUG, "\"Error al inicializar Google Maps: ${e.message}\"")
+            Log.e(Definition.TAG_DEBUG, "Error al inicializar Google Maps: ${e.message}")
         }
     }
 

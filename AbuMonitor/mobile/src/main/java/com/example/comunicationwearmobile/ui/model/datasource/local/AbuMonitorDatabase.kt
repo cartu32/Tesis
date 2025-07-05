@@ -1,6 +1,5 @@
 package com.example.abumonitor.data.datasource.local
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import androidx.room.Database
@@ -17,7 +16,9 @@ import com.example.abumonitor.data.model.EntityFirstTimeState
 import com.example.abumonitor.data.model.EntityPriority
 import com.example.abumonitor.data.model.EntityReminder
 import com.example.abumonitor.utils.Converters
+import com.example.comunicationwearmobile.ui.model.datasource.local.DaoSecurityZoneTimeRange
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
+import com.example.comunicationwearmobile.ui.model.entities.EntitySecurityZoneTimeRange
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,10 +27,14 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 @Database(
-    entities = [EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
+    entities =
+    [
+        EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
         EntityEvent::class, EntityPriority::class, EntityReminder::class,
-        EntityAreaEventCrossRef::class, EntityFirstTimeState::class],
-    version = 3,
+        EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
+        EntitySecurityZoneTimeRange::class
+    ],
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -43,6 +48,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entityReminderDao(): DaoReminder
     abstract fun firstTimeStateDao(): DaoFirstTimeState
     abstract fun joinAreaGeofenceDao(): DaoJoinAreaGeofence
+    abstract fun entitySecurityZoneTimeRangeDao(): DaoSecurityZoneTimeRange
 
     companion object {
         @Volatile

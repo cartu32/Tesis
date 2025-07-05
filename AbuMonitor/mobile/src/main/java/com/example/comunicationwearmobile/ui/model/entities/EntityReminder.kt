@@ -8,6 +8,6 @@ import java.sql.Time
 @Entity(tableName = "Reminder")
 data class EntityReminder(
     @PrimaryKey(autoGenerate = true) var id_reminder: Int =0,
-    var date:Date,
-    var hour:Time
+    var date:String="2025-01-01",
+    var hour:String="00:00"
 )

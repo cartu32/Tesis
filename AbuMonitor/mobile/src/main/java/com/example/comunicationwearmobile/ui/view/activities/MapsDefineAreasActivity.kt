@@ -24,6 +24,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
         mMap?.setOnMapClickListener (this)
 
         configOberserverLivedata()
+        Log.d(Definition.TAG_DEBUG,"Mapa inicializado completo")
     }
 
     fun configOberserverLivedata() {

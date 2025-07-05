@@ -16,6 +16,7 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
 
     private val daoAreaGeofence = database.entityAreaGeofenceDao()
     private val daoJoinAreaGeofence = database.joinAreaGeofenceDao()
+    private val daoSecurityZoneTimeRange=database.entitySecurityZoneTimeRangeDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryAreaDB? = null
@@ -64,6 +65,18 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
         val newAreaId = data.entityAreaGeofence.let {
             daoAreaGeofence.insertAreaGeofence(it)
         }
+        //si inserto bien el area, inserto el time range
+        newAreaId.let {
+            //si el area no es una zona segura, entonces secZoneTimeRange es igual a null
+            //esto se establece en PropertiesGeofenceActivity cuando se apreta el boton save
+            data.secZoneTimeRange.let {
+                //si es zona segura, se guarda el time range en la tabla de security zone
+                it?.id_area=newAreaId
+                if (it != null) {
+                    daoSecurityZoneTimeRange.insertSecurityZoneTimeRange(it)
+                }
+            }
+        }
 
         // Insertar relaciones N a N con eventos
         for (eventId in data.listIdEventSelected) {
@@ -78,16 +91,6 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
     }
 
 
-
-    suspend fun getAreaWithId(areaId:Long):EntityAreaGeofence?{
-        return withContext(Dispatchers.IO) {
-            daoAreaGeofence.getAreaWithId(areaId)
-        }
-    }
-
-    suspend fun deleteArea(area: EntityAreaGeofence){
-        daoAreaGeofence.deleteArea(area)
-    }
 
     suspend fun deleteAreaWithId(idArea: Long?): Int? {
         return withContext(Dispatchers.IO) {

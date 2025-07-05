@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.ui.model.dto
 
 import android.os.Parcelable
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.comunicationwearmobile.ui.model.entities.EntitySecurityZoneTimeRange
 import kotlinx.parcelize.Parcelize
 
 //data class intermedia temporal que se usa para pasar los datos que se ingresan
@@ -9,5 +10,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class DataAreaGeofAux(
     val entityAreaGeofence: EntityAreaGeofence=EntityAreaGeofence(),
-    val listIdEventSelected: MutableList<Int> = mutableListOf()
+    val listIdEventSelected: MutableList<Int> = mutableListOf(),
+    var secZoneTimeRange: EntitySecurityZoneTimeRange?=EntitySecurityZoneTimeRange()
 ):Parcelable

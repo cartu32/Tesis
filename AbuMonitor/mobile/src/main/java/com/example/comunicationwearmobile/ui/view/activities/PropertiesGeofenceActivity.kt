@@ -116,13 +116,21 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         with(dato?.areaGeofence) {
             txtDescription?.setText(this?.description)
             txtDwellTime?.setText("Tiempo de permanencia " + this?.dwell_time.toString() + " (min)")
-            chkSecurityZone?.isChecked = this?.security_zone == true
             spPriority?.setSelection((this?.id_priority?.toInt() ?: 1) - 1)
+
+            if (this?.security_zone == true) {
+                chkSecurityZone?.isChecked=true
+                txtMinHourSecureZone?.text = dato?.securityZoneTimeRange?.min_hour.toString()
+                txtMaxHourSecureZone?.text = dato?.securityZoneTimeRange?.max_hour.toString()
+            }else{
+                chkSecurityZone?.isChecked=false
+            }
         }
         val listIdEventSelected=dato?.events?.map{it.id_event}
         listIdEventSelected?.let {
             spEventsAdapter?.setSelectedItemsByPositions(it)
         }
+
 
     }
 
@@ -276,15 +284,24 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         //por el momento hardcodeo estos el color y el tipo de area
         val color_blue=1
         var thereEventSelected = false
+        var dataAreaGeofAux=DataAreaGeofAux()
+
 
         if(chkSecurityZone?.isChecked==true){
+            //si es zona segura entonces seteo el time range
             if(txtMinHourSecureZone?.text.toString().isEmpty() || txtMaxHourSecureZone?.text.toString().isEmpty()){
                 Toast.makeText(this,"Debe ingresar el horario normal de seguridad",Toast.LENGTH_SHORT).show()
                 return
             }
+            dataAreaGeofAux.secZoneTimeRange?.let {
+                it.min_hour=txtMinHourSecureZone?.text.toString()
+                it.max_hour=txtMaxHourSecureZone?.text.toString()
+            }
+        }else{
+            //si no es area segura entonces secZoneTimeRange es null
+            dataAreaGeofAux.secZoneTimeRange=null
         }
 
-        var dataAreaGeofAux=DataAreaGeofAux()
         val resultIntent= Intent(this,ConfigGeofenceFragment::class.java)
 
 
