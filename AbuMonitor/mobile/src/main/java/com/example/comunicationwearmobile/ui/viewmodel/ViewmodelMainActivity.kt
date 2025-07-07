@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
@@ -33,10 +34,13 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     private val _allPermissionGranted = MutableLiveData<Boolean?>()
     val allPermissionGranted: LiveData<Boolean?> = _allPermissionGranted
 
-    init {
+        init {
         // Lanzamos una coroutine asincrónica en el viewModelScope
         viewModelScope.launch(Dispatchers.IO) {
             val database = AbuMonitorDatabase.getDatabase(application.applicationContext,viewModelScope)
+            val repositorySecurityZoneSPref= RepositorySecurityZoneSPref.getInstance(application.applicationContext)
+
+            repositorySecurityZoneSPref.clearSharedPreferences()
 
             // Después de obtener la base de datos en IO, podemos cambiar al hilo principal para actualizar el estado
             withContext(Dispatchers.Main) {

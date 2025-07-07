@@ -14,7 +14,7 @@ class RepositoryIDNotificationSPref private constructor(context: Context) {
     private val gson = Gson()
 
     companion object {
-        private const val PREF_FILE_NAME = "PREF_FILE_NAME"
+        private const val PREF_FILE_NAME = "SPREF_ID_NOTIFICATION"
         @Volatile
         private var INSTANCE: RepositoryIDNotificationSPref? = null
 

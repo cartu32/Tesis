@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 
 object Definition {
-    val ERROR_INDEX_OUT_OF_BOUNDS: Int =-1
     const val ZOOM_MAP: Float = 15f
 
     //nombre del archivo de la  base de datos Room
@@ -53,6 +52,11 @@ object Definition {
     const val PRIORTY_MEDIA   = 2
     const val PRIORITY_ALTA   = 3
 
+    //rango de cantidad de minutos que se considera salida circunstancial de la zona de seguridad
+    //Esto se usa para evitar falsos posirtivos de la zona de seguridad por ejemplo si la persona
+    //pasa caminando por la zona de seguridad
+    const val TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 1
+    const val TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 3
 
 
     const val PATH_SEND_DATA_TO_WEARABLE:String = "PATH_SEND_DATA_TO_WEARABLE"
