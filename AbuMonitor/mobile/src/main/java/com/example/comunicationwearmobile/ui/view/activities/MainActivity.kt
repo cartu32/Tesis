@@ -207,6 +207,8 @@ class MainActivity : AppCompatActivity() {
     }
     private fun showUnderConstruction() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this , ContactsActivity::class.java))
+
     }
 
 

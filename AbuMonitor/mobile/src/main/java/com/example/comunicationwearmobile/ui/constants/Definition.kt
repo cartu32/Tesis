@@ -50,6 +50,7 @@ object Definition {
     const val ERROR_NULL:Long                = -1
     const val ERROR_INSERT_BD_GEOF:Long      = -2
     const val ERROR_ACTIVATE_GEOF:Long       = -3
+    const val ERROR_INSERT_CONTACT:Long      = -4
 
     //constantes que indican la prioridad de las notificaciones
     const val PRIORITY_BAJA   = 1
@@ -85,6 +86,7 @@ object Definition {
         Manifest.permission.FOREGROUND_SERVICE,
         Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.WAKE_LOCK,
+        Manifest.permission.READ_CONTACTS,
 
         //backoground location se pide en el viewmodel despues
         //de comprobar de que los permisos generales fueron otorgados

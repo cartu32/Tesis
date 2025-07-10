@@ -21,6 +21,9 @@
     <string name="Hour_min_secure_zone">Hora minima</string>
     <string name="Hour_max_secure_zone">Hora Maxima</string>
     <string name="HourSecurityZone">"Rango horario normal en Zona Segura "</string>
+    <string name="contactos_guardados_en_la_base_de_datos">Contactos seleccionados a los que se les enviara las alertas</string>
+    <string name="contactos_del_tel_fono">Contactos del teléfono</string>
+    <string name="buscar_contacto">Buscar contacto...</string>
 
     <string-array name="spinner_events">
         <item>Seleccione los eventos</item>
