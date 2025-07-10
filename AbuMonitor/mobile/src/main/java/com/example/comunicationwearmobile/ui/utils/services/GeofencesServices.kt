@@ -123,18 +123,23 @@ class GeofencesServices: Service() {
     }
     private fun handleIntent(intent: Intent?)  {
         var operation=""
+        var geofLatitude=""
+        var geofLongitude=""
+
         if (intent != null) {
             operation = intent.getStringExtra(Definition.OPERATION_START_FOREGROUND_SERVICE).toString()
+            geofLongitude=intent.getStringExtra(Definition.INTENT_PARAM_SEND_SMS_LONGITUDE).toString()
+            geofLatitude=intent.getStringExtra(Definition.INTENT_PARAM_SEND_SMS_LATITUDE).toString()
         }
 
         when (operation) {
-            Definition.OPERATION_GOEFENCE_SEND_SMS->sendSMSContact(intent)
+            Definition.OPERATION_GOEFENCE_SEND_SMS->sendSMSContact(intent,geofLongitude,geofLatitude)
             else ->
                 Log.e(Definition.TAG_DEBUG , "Operation desconocido en HandleIntent")
         }
     }
 
-    private fun sendSMSContact(intent: Intent?) {
+    private fun sendSMSContact(intent: Intent?, geofLongitude: String, geofLatitude: String) {
         val smsManager= SmsManagerCustom()
 
 
@@ -142,14 +147,14 @@ class GeofencesServices: Service() {
             return
 
         val msg: SharedData.MsgNotification? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(Definition.OPERATION_GOEFENCE_SEND_SMS, SharedData.MsgNotification::class.java)
+            intent.getSerializableExtra(Definition.INTENT_PARAM_SEND_SMS_MSG, SharedData.MsgNotification::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra(Definition.OPERATION_GOEFENCE_SEND_SMS) as? SharedData.MsgNotification
+            intent.getSerializableExtra(Definition.INTENT_PARAM_SEND_SMS_MSG) as? SharedData.MsgNotification
         }
 
         msg?.let {
-            smsManager.sendSMSNotifyGeofence(this, it)
+            smsManager.sendSMSNotifyGeofence(this, it,geofLatitude,geofLongitude)
         }
     }
 

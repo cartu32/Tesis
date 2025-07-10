@@ -20,6 +20,10 @@ object Definition {
     //constantes que sirve para los intents que se la manda al foregroundservice
     const val OPERATION_START_FOREGROUND_SERVICE = "OPERATION_INTENT"
     const val OPERATION_GOEFENCE_SEND_SMS = "1"
+    const val INTENT_PARAM_SEND_SMS_MSG = "INTENT_PARAM_SEND_SMS_MSG"
+    const val INTENT_PARAM_SEND_SMS_LATITUDE = "INTENT_PARAM_SEND_SMS_LATITUDE"
+    const val INTENT_PARAM_SEND_SMS_LONGITUDE = "INTENT_PARAM_SEND_SMS_LONGITUDE"
+
 
     const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
 

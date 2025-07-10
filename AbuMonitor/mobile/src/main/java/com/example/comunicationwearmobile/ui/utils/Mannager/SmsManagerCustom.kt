@@ -41,12 +41,21 @@ class SmsManagerCustom {
         }
     }
 
-    fun sendSMSNotifyGeofence(context: Context, msg: SharedData.MsgNotification) {
+    fun sendSMSNotifyGeofence(
+        context: Context,
+        msg: SharedData.MsgNotification,
+        geofLatitude: String,
+        geofLongitude: String
+    ) {
         try {
+
+            val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
+
             val rawMessage = """
                 ${msg.title}
                 ${msg.message}
                 ${msg.date}  ${msg.hour}
+                ${googelmapsURL}
             """.trimIndent()
 
             val message = limpiarTextoParaSMS(rawMessage)
