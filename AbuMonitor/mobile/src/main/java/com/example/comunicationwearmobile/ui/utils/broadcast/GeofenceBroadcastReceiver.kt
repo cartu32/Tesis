@@ -125,6 +125,8 @@ class GeofenceWorker(
         val prefs = RepositorySecurityZoneSPref.getInstance(context)
         val entryHour = prefs.getEnteredHour()
         val exitHour = System.currentTimeMillis()
+        var msgSMS:String=""
+
         if (entryHour == -1L) return
 
         val durationMin = Duration.ofMillis(exitHour - entryHour).toMinutes()
@@ -132,17 +134,25 @@ class GeofenceWorker(
         
         if (durationMin > Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
             val msg = if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
-                createMsgCircumstantialExitSecurityZone(description)
+
+                msgSMS="El abuelo ha salido inesperadamente de la zona segura $description"
+                createMsgSecurityZone(msgSMS)
+
             } else {
                 val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
                 val isOutOfRange =Tools.isOutsideTimeRange(exitTime, minHour.toString(), maxHour.toString())
 
                 if (isOutOfRange) {
-                    Log.d(Definition.TAG_DEBUG,"El abuelo ha salido de la zona segura $description fuera del rango horario normal")
-                    createMsgExitSecurityZoneOutRange(description)
+                    msgSMS="El abuelo ha salido de la zona segura $description fuera del rango horario normal"
+                    Log.d(Definition.TAG_DEBUG,msgSMS)
+
+                    createMsgSecurityZone(msgSMS)
+
                 } else {
-                    Log.d(Definition.TAG_DEBUG,"El abuelo ha salido de la zona segura $description dentro del rango horario normal")
-                    return
+                    msgSMS="El abuelo ha salido de la zona segura $description dentro del rango horario normal"
+                    Log.d(Definition.TAG_DEBUG,msgSMS)
+
+                    createMsgSecurityZone(msgSMS)
                 }
             }
 
@@ -159,23 +169,15 @@ class GeofenceWorker(
         determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
     }
 
-    private fun createMsgCircumstantialExitSecurityZone(description: String): SharedData.MsgNotification =
+    private fun createMsgSecurityZone(msg: String): SharedData.MsgNotification =
         SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
-            message = "El abuelo ha salido inesperadamente de la zona segura $description"
+            message = msg
             hour = Tools.getHour(LocalTime.now())
             date = Tools.getDate(LocalDate.now())
         }
 
-    private fun createMsgExitSecurityZoneOutRange(description: String): SharedData.MsgNotification =
-        SharedData.MsgNotification().apply {
-            typeNotification = SharedData.TypeNotification.Alert
-            title = "¡Alerta de Seguridad!"
-            message = "El abuelo ha salido de la zona segura $description fuera del rango horario normal"
-            hour = Tools.getHour(LocalTime.now())
-            date = Tools.getDate(LocalDate.now())
-        }
 
     private fun createMsg(transition: Int?, description: String?, dwellTime: Int): SharedData.MsgNotification =
         SharedData.MsgNotification().apply {
