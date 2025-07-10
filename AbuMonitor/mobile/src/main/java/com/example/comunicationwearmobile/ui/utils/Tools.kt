@@ -14,20 +14,20 @@ import java.time.format.DateTimeFormatter
 object Tools {
     fun toEditable(text: String): Editable = Editable.Factory.getInstance().newEditable(text)
 
-    fun isPointInsideCircle(point: LatLng, center: LatLng?, radiusInMeters: Double?): Boolean {
-        if (center == null || radiusInMeters == null) {
-            Log.e(Definition.TAG_DEBUG,"Error center o readiusInmeter son null")
-            return false // Si no hay centro o radio, no puede estar dentro.
+    fun isOutsideTimeRange(currentTimeStr: String, startTimeStr: String, endTimeStr: String): Boolean {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm") // formato de hora 24hs
+
+        val currentTime = LocalTime.parse(currentTimeStr, formatter)
+        val startTime = LocalTime.parse(startTimeStr, formatter)
+        val endTime = LocalTime.parse(endTimeStr, formatter)
+
+        return if (startTime <= endTime) {
+            // Rango normal, por ejemplo de 08:00 a 20:00
+            currentTime < startTime || currentTime > endTime
+        } else {
+            // Rango que pasa por medianoche, por ejemplo de 20:00 a 06:00
+            currentTime < startTime && currentTime > endTime
         }
-
-        val distance = FloatArray(1)
-        Location.distanceBetween(
-            point.latitude, point.longitude,
-            center.latitude, center.longitude,
-            distance
-        )
-
-        return distance[0] <= radiusInMeters
     }
 
     fun desactiveStrictMode(){

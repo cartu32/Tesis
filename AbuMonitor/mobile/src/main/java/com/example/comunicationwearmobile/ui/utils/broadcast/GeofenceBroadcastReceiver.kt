@@ -4,6 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
@@ -17,67 +23,81 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.Duration
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+// Reemplazo de la corutina por Worker en el BroadcastReceiver
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-
-    override fun onReceive(mContext: Context, intent: Intent) {
-        val context=mContext.applicationContext
+    override fun onReceive(context: Context, intent: Intent) {
+        val appContext = context.applicationContext
 
         if (intent.action == "com.example.app.ACTION_GEOFENCE_EVENT") {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
 
-            if (geofencingEvent != null) {
-                if (geofencingEvent.hasError()) {
-                    Log.e(Definition.TAG_DEBUG, "Error en el Geofencing: ${geofencingEvent.errorCode}")
-                    return
-                 }
+            if (geofencingEvent == null || geofencingEvent.hasError()) {
+                Log.e(Definition.TAG_DEBUG, "Error en el Geofencing: ${geofencingEvent?.errorCode}")
+                return
             }
 
-            coroutineScope.launch {
-
-                analizeDetectedGeofences(context, geofencingEvent,coroutineScope)
-            }
-        }
-    }
-
-    private suspend fun analizeDetectedGeofences(context: Context, geofencingEvent: GeofencingEvent?, scope: CoroutineScope) {
-        val repositoryAreaDB= RepositoryAreaDB(context,scope)
-
-        geofencingEvent?.triggeringGeofences?.forEach { geofence ->
+            // Serializamos el evento (guardamos los IDs y el tipo de transición)
+            val triggeringIds = geofencingEvent.triggeringGeofences?.map { it.requestId }?.toTypedArray()
             val transition = geofencingEvent.geofenceTransition
-            val idAreaGeofence = geofence.requestId.toLong()
-            val areaGeof=repositoryAreaDB.getJoinAreaGeofence(idAreaGeofence)
 
-            if(areaGeof?.areaGeofence?.security_zone==true){
-                analizeSecurityZone(context,areaGeof,transition)
-            }else{
-                analizeNormalZone(context,areaGeof,transition)
+            val inputData = workDataOf(
+                "triggering_ids" to triggeringIds,
+                "transition" to transition
+            )
+
+            val workRequest = OneTimeWorkRequestBuilder<GeofenceWorker>()
+                .setInputData(inputData)
+                .build()
+
+            WorkManager.getInstance(appContext).enqueueUniqueWork(
+                "trabajo_geofence",
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                workRequest
+            )
+        }
+    }
+}
+
+// Nuevo Worker que reemplaza la lógica original en segundo plano
+class GeofenceWorker(
+    private val context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result = withTimeoutOrNull(60_000) {
+        val transition = inputData.getInt("transition", -1)
+        val triggeringIds = inputData.getStringArray("triggering_ids")?.mapNotNull { it.toLongOrNull() } ?: return@withTimeoutOrNull Result.failure()
+
+        val repository = RepositoryAreaDB(context, CoroutineScope(Dispatchers.IO))
+
+        for (idAreaGeofence in triggeringIds) {
+            val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence)
+
+            if (areaGeof?.areaGeofence?.security_zone == true) {
+                analizeSecurityZone(context, areaGeof, transition)
+            } else {
+                analizeNormalZone(context, areaGeof, transition)
             }
         }
 
-    }
+        Result.success()
+    } ?: Result.failure()
 
     private fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
-
-        when(transition) {
+        when (transition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                processEnterSecurityZone(context,areaGeof.areaGeofence.description)
+                processEnterSecurityZone(context, areaGeof.areaGeofence.description)
             }
-
-            Geofence.GEOFENCE_TRANSITION_EXIT ->
-            {
+            Geofence.GEOFENCE_TRANSITION_EXIT -> {
                 processExitSecurityZone(
                     context,
                     areaGeof.areaGeofence.description,
@@ -86,213 +106,124 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 )
             }
         }
-
     }
 
-    private fun processExitSecurityZone(
-        context: Context,
-        description: String,
-        minHour: String?,
-        maxHour: String?
-    ) {
-        val repositorySecurityZoneSPref= RepositorySecurityZoneSPref.getInstance(context)
-        val entryHour=repositorySecurityZoneSPref.getEnteredHour()
-        val exitHour=System.currentTimeMillis()
-        val msg:SharedData.MsgNotification
-
-        if(entryHour==-1L)
-            return
-
-        val durartionMs=exitHour-entryHour
-        val durationMin= Duration.ofMillis(durartionMs).toMinutes()
-
-        Log.d(Definition.TAG_DEBUG,"Salio zona segura duracionMin: $durationMin")
-
-        //determino si la salida de la zona segura no fue esporadica. Si es asi
-        //se envia un sms alertando de posible problema
-        if(durationMin>Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
-
-            if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
-                msg = createMsgCircumstantialExitSecurityZone(description)
-
-                //envio el sms de alerta al contacto de emergencia
-                notifyUserPriorityBaja(context, msg)
-
-                repositorySecurityZoneSPref.clearSharedPreferences()
-            }else {
-                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                val exitHourString = sdf.format(Date(exitHour))
-
-                //me fijo si la hora de salida esta dentro del rango de horas de la zona de seguridad
-                if ((LocalTime.parse(exitHourString)<LocalTime.parse(maxHour.toString()))&&
-                    (LocalTime.parse(exitHourString)>LocalTime.parse(minHour.toString())))    {
-
-                    //si esta fuera del rango de horas normal
-                    // para salir de la zona segura entonces se genera la notificacion
-                    msg = createMsgExitSecurityZoneOutRange(description)
-
-                    //envio el sms de alerta al contacto de emergencia
-                    notifyUserPriorityBaja(context, msg)
-                    repositorySecurityZoneSPref.clearSharedPreferences()
-
-                }else{
-                    //si sale de la zona de seguridad dentro del rango horario normal entonces
-                    //no se hace nada
-                    Log.d(Definition.TAG_DEBUG,"Fuera de rango horario de la zona de seguridad")
-                }
-
-            }
-        }
-   }
-
     private fun processEnterSecurityZone(context: Context, description: String) {
-        val msg:SharedData.MsgNotification
-        val repositorySecurityZoneSPref= RepositorySecurityZoneSPref.getInstance(context)
+        val msg = SharedData.MsgNotification().apply {
+            typeNotification = SharedData.TypeNotification.Alert
+            title = "¡Alerta de Seguridad!"
+            message = "El abuelo ha entrado en la zona segura $description"
+            hour = Tools.getHour(LocalTime.now())
+            date = Tools.getDate(LocalDate.now())
+        }
 
-        //guardo la hora de entrada en la zona de seguridad
-        repositorySecurityZoneSPref.saveEnteredHour(System.currentTimeMillis())
-
-        msg = createMsgEnterdSecurityZone(description)
-
-        //envio el sms de alerta al contacto de emergencia
+        RepositorySecurityZoneSPref.getInstance(context).saveEnteredHour(System.currentTimeMillis())
         notifyUserPriorityBaja(context, msg)
     }
 
-    private fun createMsgCircumstantialExitSecurityZone(description: String): SharedData.MsgNotification {
-        val msg=SharedData.MsgNotification()
+    private fun processExitSecurityZone(context: Context, description: String, minHour: String?, maxHour: String?) {
+        val prefs = RepositorySecurityZoneSPref.getInstance(context)
+        val entryHour = prefs.getEnteredHour()
+        val exitHour = System.currentTimeMillis()
+        if (entryHour == -1L) return
 
-        msg.typeNotification = SharedData.TypeNotification.Alert
-        msg.title="¡Alerta de Seguridad!"
-        msg.message= "El abuelo ha salido inesperadamente de la zona segura $description"
-        msg.hour = Tools.getHour(LocalTime.now())
-        msg.date = Tools.getDate(LocalDate.now())
+        val durationMin = Duration.ofMillis(exitHour - entryHour).toMinutes()
+        Log.d(Definition.TAG_DEBUG,"entra en processExitSecurityZone")
+        
+        if (durationMin > Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
+            val msg = if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
+                createMsgCircumstantialExitSecurityZone(description)
+            } else {
+                val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
+                val isOutOfRange =Tools.isOutsideTimeRange(exitTime, minHour.toString(), maxHour.toString())
 
-        return msg
+                if (isOutOfRange) {
+                    Log.d(Definition.TAG_DEBUG,"El abuelo ha salido de la zona segura $description fuera del rango horario normal")
+                    createMsgExitSecurityZoneOutRange(description)
+                } else {
+                    Log.d(Definition.TAG_DEBUG,"El abuelo ha salido de la zona segura $description dentro del rango horario normal")
+                    return
+                }
+            }
+
+            notifyUserPriorityBaja(context, msg)
+            prefs.clearSharedPreferences()
+        }
+        Log.d(Definition.TAG_DEBUG,"No cumplio el quantum.El abuelo ha salido de la zona segura $description dentro del rango horario norma")
     }
 
-    private fun createMsgExitSecurityZoneOutRange(description: String): SharedData.MsgNotification {
-        val msg=SharedData.MsgNotification()
-
-        msg.typeNotification = SharedData.TypeNotification.Alert
-        msg.title="¡Alerta de Seguridad!"
-        msg.message= "El abuelo ha salido de la zona segura $description fuera del rango horario normal"
-        msg.hour = Tools.getHour(LocalTime.now())
-        msg.date = Tools.getDate(LocalDate.now())
-
-        return msg
-    }
-
-    private fun createMsgEnterdSecurityZone(description: String): SharedData.MsgNotification {
-        val msg=SharedData.MsgNotification()
-
-        msg.typeNotification = SharedData.TypeNotification.Alert
-        msg.title="¡Alerta de Seguridad!"
-        msg.message= "El abuelo ha entrado en la zona segura $description"
-        msg.hour = Tools.getHour(LocalTime.now())
-        msg.date = Tools.getDate(LocalDate.now())
-
-        return msg
-    }
     private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
-        val msg:SharedData.MsgNotification
+        val msg = areaGeof?.areaGeofence?.let {
+            createMsg(transition, it.description, it.dwell_time)
+        } ?: return
+        determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
+    }
 
-        with(areaGeof?.areaGeofence){
-            msg = createMsg(transition, this?.description, this?.dwell_time ?: 0)
+    private fun createMsgCircumstantialExitSecurityZone(description: String): SharedData.MsgNotification =
+        SharedData.MsgNotification().apply {
+            typeNotification = SharedData.TypeNotification.Alert
+            title = "¡Alerta de Seguridad!"
+            message = "El abuelo ha salido inesperadamente de la zona segura $description"
+            hour = Tools.getHour(LocalTime.now())
+            date = Tools.getDate(LocalDate.now())
         }
 
-        //genera la notificacion segun l prioridad del geofence
-        determineRecipientByPriority(context.applicationContext,areaGeof?.areaGeofence?.id_priority,msg)
-    }
+    private fun createMsgExitSecurityZoneOutRange(description: String): SharedData.MsgNotification =
+        SharedData.MsgNotification().apply {
+            typeNotification = SharedData.TypeNotification.Alert
+            title = "¡Alerta de Seguridad!"
+            message = "El abuelo ha salido de la zona segura $description fuera del rango horario normal"
+            hour = Tools.getHour(LocalTime.now())
+            date = Tools.getDate(LocalDate.now())
+        }
+
+    private fun createMsg(transition: Int?, description: String?, dwellTime: Int): SharedData.MsgNotification =
+        SharedData.MsgNotification().apply {
+            hour = Tools.getHour(LocalTime.now())
+            date = Tools.getDate(LocalDate.now())
+            typeNotification = SharedData.TypeNotification.Alert
+            title = "¡Alerta de Geofence!"
+            message = when (transition) {
+                Geofence.GEOFENCE_TRANSITION_ENTER -> "El abuelo ha entrado en la zona $description"
+                Geofence.GEOFENCE_TRANSITION_EXIT -> "El abuelo ha salido de la zona $description"
+                Geofence.GEOFENCE_TRANSITION_DWELL -> "El abuelo pasó más de $dwellTime min. en la zona $description"
+                else -> "Evento desconocido en zona $description"
+            }
+        }
 
     private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
-
         val intent = Intent(context, GeofencesServices::class.java).apply {
-            putExtra(Definition.OPERATION_GOEFENCE_SEND_SMS,msg)
-            putExtra(Definition.OPERATION_START_FOREGROUND_SERVICE,Definition.OPERATION_GOEFENCE_SEND_SMS)
+            putExtra(Definition.OPERATION_GOEFENCE_SEND_SMS, msg)
+            putExtra(Definition.OPERATION_START_FOREGROUND_SERVICE, Definition.OPERATION_GOEFENCE_SEND_SMS)
         }
-
         context.startService(intent)
     }
 
     private fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
         val notificationHelper = NotificationManagerHelper.getInstance(context)
-
-        //muestro la notificacion al usuario en la bandeja de notificacion del telefono
-        val idMsgMobile=notificationHelper?.showNotificationGeneral(msg)
-
-        //le envio el SMS de alerta al contacto de emergencia
-        notifyUserPriorityBaja(context,msg)
-
-        return idMsgMobile
-    }
-
-    private fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
-        when(idPriority){
-            Definition.PRIORITY_BAJA-> notifyUserPriorityBaja(context,msg)
-            Definition.PRIORTY_MEDIA-> notifyUserPriorityMedia(context,msg)
-            Definition.PRIORITY_ALTA-> notifyUserPriorityAlta(context,msg)
-            else-> Log.e(Definition.TAG_DEBUG,"No se encontro el id de prioridad")
-        }
-
+        val id = notificationHelper?.showNotificationGeneral(msg)
+        notifyUserPriorityBaja(context, msg)
+        return id
     }
 
     private fun notifyUserPriorityAlta(context: Context, msg: SharedData.MsgNotification) {
-
-        //envio el SMS al contacto de emergencia y muestro la notificacion al usuario
-        //en la bandeja de notificaciones
-        val idMsgMobile=notifyUserPriorityMedia(context, msg)
-
-        //el id de la notificacion se la agrego al mesnaje que lo envio al smartwatch
-        if (idMsgMobile != null) {
-            msg.idMsgMobile = idMsgMobile
-
-            //envio el mensaje al smartwatch
+        val idMsg = notifyUserPriorityMedia(context, msg)
+        if (idMsg != null) {
+            msg.idMsgMobile = idMsg
             RepositoryDispatcherWearable.sendDataToWearable(
                 context,
                 SharedData.PATH_ADD_NOTIFICATION_GENERAL,
                 msg
             )
-        }else{
-            Log.e(Definition.TAG_DEBUG,"No se pudo enviar la notificacion al smartwatch")
         }
-   }
+    }
 
-
-    private fun createMsg(transition: Int?, description: String?, dwellTime: Int): SharedData.MsgNotification {
-        val msg=SharedData.MsgNotification()
-
-        msg.hour = Tools.getHour(LocalTime.now())
-        msg.date = Tools.getDate(LocalDate.now())
-
-        when (transition) {
-            Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                msg.typeNotification = SharedData.TypeNotification.Alert
-                msg.title="¡Alerta de Geofence!"
-                msg.message= "El abuelo ha entrado en la zona $description"
-
-                Log.d(Definition.TAG_DEBUG, "Entraste en un geofence")
-
-            }
-
-            Geofence.GEOFENCE_TRANSITION_EXIT -> {
-                msg.typeNotification = SharedData.TypeNotification.Alert
-                msg.title="¡Alerta de Geofence!"
-                msg.message="El abuelo ha salido de la zona $description"
-
-                Log.d(Definition.TAG_DEBUG, "Saliste de un geofence")
-
-            }
-
-            Geofence.GEOFENCE_TRANSITION_DWELL -> {
-                msg.typeNotification = SharedData.TypeNotification.Alert
-                msg.title="¡Alerta de Geofence!"
-                msg.message= "El abuelo paso más de $dwellTime min. en la zona $description"
-
-                Log.d(Definition.TAG_DEBUG, "Tiempo de permanencia en un geofence")
-
-            }
-
+    private fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
+        when (idPriority) {
+            Definition.PRIORITY_BAJA -> notifyUserPriorityBaja(context, msg)
+            Definition.PRIORTY_MEDIA -> notifyUserPriorityMedia(context, msg)
+            Definition.PRIORITY_ALTA -> notifyUserPriorityAlta(context, msg)
+            else -> Log.e(Definition.TAG_DEBUG, "No se encontró el id de prioridad")
         }
-        return msg
     }
 }

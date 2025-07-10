@@ -51,11 +51,11 @@ class RepositoryGeofActivate() {
             .setTransitionTypes(transitionTypes)
 
 
-            if (transitionTypes and Geofence.GEOFENCE_TRANSITION_DWELL != 0) {
-                val dwellTime=(dataAreaGeofAux.entityAreaGeofence.dwell_time)*60000
-                builder.setLoiteringDelay(dwellTime)
-                Log.d(Definition.TAG_DEBUG,"se definio el tiempo de espera: $dwellTime")
-            }
+        if (transitionTypes and Geofence.GEOFENCE_TRANSITION_DWELL != 0) {
+            val dwellTime=(dataAreaGeofAux.entityAreaGeofence.dwell_time)*60000
+            builder.setLoiteringDelay(dwellTime)
+            Log.d(Definition.TAG_DEBUG,"se definio el tiempo de espera: $dwellTime")
+        }
 
         val geofence=builder.build()
 

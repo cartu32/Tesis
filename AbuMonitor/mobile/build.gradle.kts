@@ -9,7 +9,7 @@ val roomVersion = "2.6.1" // Verifica que esta versión esté disponible en los 
 
 android {
     namespace = "com.example.comunicationwearmobile"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.AbuMonitor"
@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.lifecycle.viewmodel.android)
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
