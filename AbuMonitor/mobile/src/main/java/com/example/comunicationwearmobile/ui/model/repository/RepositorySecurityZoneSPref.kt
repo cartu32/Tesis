@@ -4,7 +4,6 @@ import android.content.Context
 
 class RepositorySecurityZoneSPref (context: Context){
     private val ENTERED_HOUR = "ENTERED_HOUR"
-    private val HOUR_LAST_SMS = "HOUR_LAST_SMS"
 
     private val prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
 
@@ -28,17 +27,6 @@ class RepositorySecurityZoneSPref (context: Context){
 
     fun getEnteredHour(): Long {
         return prefs.getLong(ENTERED_HOUR, -1L)
-    }
-
-    fun saveHourLastSms(hour:Long){
-        val editor = prefs.edit()
-        editor.putLong(HOUR_LAST_SMS, hour)
-        editor.apply()
-
-    }
-
-    fun getHourLastSms(): Long {
-        return prefs.getLong(HOUR_LAST_SMS, -1L)
     }
 
     fun clearSharedPreferences() {

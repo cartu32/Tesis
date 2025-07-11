@@ -14,7 +14,7 @@ import com.example.abumonitor.data.model.EntityContact
 import com.example.abumonitor.data.model.EntityEvent
 import com.example.abumonitor.data.model.EntityFirstTimeState
 import com.example.abumonitor.data.model.EntityPriority
-import com.example.abumonitor.data.model.EntityReminder
+import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.utils.Converters
 import com.example.comunicationwearmobile.ui.model.datasource.local.DaoSecurityZoneTimeRange
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
     entities =
     [
         EntityAreaGeofence::class , EntityColor::class , EntityContact::class ,
-        EntityEvent::class, EntityPriority::class, EntityReminder::class,
+        EntityEvent::class, EntityPriority::class, EntityScheduledAssistance::class,
         EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
         EntitySecurityZoneTimeRange::class
     ],
@@ -45,7 +45,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entityContactDao(): DaoContact
     abstract fun entityEventDao(): DaoEvent
     abstract fun entityPriorityDao(): DaoPriority
-    abstract fun entityReminderDao(): DaoReminder
+    abstract fun entityScheduledAssistanceDao(): DaoScheduledAssistance
     abstract fun firstTimeStateDao(): DaoFirstTimeState
     abstract fun joinAreaGeofenceDao(): DaoJoinAreaGeofence
     abstract fun entitySecurityZoneTimeRangeDao(): DaoSecurityZoneTimeRange
