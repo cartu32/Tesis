@@ -24,8 +24,12 @@ class RepositoryContact(context: Context, scope: CoroutineScope) {
         }
     }
 
-    fun getAllContacts(): LiveData<List<EntityContact>> {
-        return daoContact.getAllContact()
+    fun getAllContactsLiveData(): LiveData<List<EntityContact>> {
+        return daoContact.getAllContactLiveData()
+    }
+
+    fun getAllContactList():List<EntityContact>{
+        return daoContact.getAllContactList()
     }
 
     suspend fun deleteContact(contact: EntityContact): Int {

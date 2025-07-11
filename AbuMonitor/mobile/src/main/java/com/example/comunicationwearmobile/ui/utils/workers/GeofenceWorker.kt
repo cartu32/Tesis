@@ -1,8 +1,6 @@
 package com.example.comunicationwearmobile.ui.utils.workers
 
 import android.content.Context
-import android.content.Intent
-import android.location.Location
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -12,8 +10,8 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManagerCustom
 import com.example.comunicationwearmobile.ui.utils.Tools
-import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
 import kotlinx.coroutines.CoroutineScope
@@ -171,14 +169,10 @@ class GeofenceWorker(
     }
 
     private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
-        val intent = Intent(context, GeofencesServices::class.java).apply {
-            putExtra(Definition.INTENT_PARAM_SEND_SMS_MSG, msg)
-            putExtra(Definition.INTENT_PARAM_SEND_SMS_LATITUDE,geofLatitude)
-            putExtra(Definition.INTENT_PARAM_SEND_SMS_LONGITUDE,geofLongitude)
+        val smsManagerCustom=SmsManagerCustom()
 
-            putExtra(Definition.OPERATION_START_FOREGROUND_SERVICE, Definition.OPERATION_GOEFENCE_SEND_SMS)
-        }
-        context.startService(intent)
+        smsManagerCustom.sendSMSNotifyGeofence(context, msg,geofLatitude,geofLongitude)
+
     }
 
     private fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {

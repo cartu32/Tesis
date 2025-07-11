@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 class ViewmodelContacts(application: Application) : AndroidViewModel(application) {
     private val repositoryContact = RepositoryContact(application.applicationContext, viewModelScope)
 
-    val savedContacts: LiveData<List<EntityContact>> = repositoryContact.getAllContacts()
+    val savedContacts: LiveData<List<EntityContact>> = repositoryContact.getAllContactsLiveData()
 
     // LiveData para los contactos del teléfono
     private val _phoneContacts = MutableLiveData<List<Pair<String, String>>>()

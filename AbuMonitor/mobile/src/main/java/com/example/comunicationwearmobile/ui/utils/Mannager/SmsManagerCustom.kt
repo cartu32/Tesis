@@ -6,23 +6,36 @@ import android.content.Intent
 import android.telephony.SmsManager
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class SmsManagerCustom {
-    private val telephoneNumber = "1134926279"
 
-    fun sendSMSFallDetection(context: Context, message: ByteArray) {
-        try {
-            val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
-            val phoneNumber = telephoneNumber
+    fun sendSMSFallDetection(context: Context, message: ByteArray){
+        val repositoryContact= RepositoryContact(context, CoroutineScope(Dispatchers.IO))
 
-            val message = """
+        val listContact=repositoryContact.getAllContactList()
+        val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
+
+        val message = """
                 ${msgFallDetection.title}
                 ${msgFallDetection.message}
                 ${msgFallDetection.fechaHora}
                 """.trimIndent()
 
+        for(contact in listContact){
+            Log.d(Definition.TAG_DEBUG,"enviando sms de caidas al contacto: ${contact.name}")
+            sendSMSFallToContact(context, message, contact.telephone)
+
+        }
+
+    }
+
+    fun sendSMSFallToContact(context: Context, message: String, phoneNumber: String) {
+        try {
             if (phoneNumber.isNotBlank()) {
                 val smsManager = context.getSystemService(SmsManager::class.java)
                 smsManager.sendTextMessage(
@@ -47,18 +60,30 @@ class SmsManagerCustom {
         geofLatitude: String,
         geofLongitude: String
     ) {
-        try {
+        val repositoryContact= RepositoryContact(context, CoroutineScope(Dispatchers.IO))
+        val listContact=repositoryContact.getAllContactList()
 
-            val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
+        val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
 
-            val rawMessage = """
+        val rawMessage = """
                 ${msg.title}
                 ${msg.message}
                 ${msg.date}  ${msg.hour}
                 ${googelmapsURL}
             """.trimIndent()
 
-            val message = limpiarTextoParaSMS(rawMessage)
+        val message = limpiarTextoParaSMS(rawMessage)
+
+        for(contact in listContact){
+            Log.d(Definition.TAG_DEBUG,"enviando sms geofence al contacto: ${contact.name}")
+            sendSMSNotifyGeofenceToContact(context, message, contact.telephone)
+
+        }
+    }
+
+    fun sendSMSNotifyGeofenceToContact(context: Context, message: String,telephoneNumber:String) {
+        try {
+
 
             val sentIntent = PendingIntent.getBroadcast(
                 context,

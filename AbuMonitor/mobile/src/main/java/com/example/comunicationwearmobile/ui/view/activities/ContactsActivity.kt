@@ -108,4 +108,14 @@ class ContactsActivity : AppCompatActivity() {
         phoneContacts.addAll(filteredList)
         phoneContactsAdapter.notifyDataSetChanged()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        txtFindContact = null
+        recyclerPhone = null
+        recyclerSaved = null
+        phoneContacts.clear()
+        viewModel.savedContacts.removeObservers(this)
+        viewModel.phoneContacts.removeObservers(this)
+    }
 }

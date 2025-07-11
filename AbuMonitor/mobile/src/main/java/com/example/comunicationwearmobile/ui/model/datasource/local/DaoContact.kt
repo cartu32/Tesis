@@ -16,8 +16,10 @@ interface DaoContact {
     suspend fun insertContact(contact: EntityContact):Long
 
     @Query("SELECT * FROM Contact")
-    fun getAllContact(): LiveData<List<EntityContact>>
+    fun getAllContactLiveData(): LiveData<List<EntityContact>>
 
+    @Query("SELECT * FROM Contact")
+    fun getAllContactList():List<EntityContact>
     @Delete
     suspend fun deleteContact(contact: EntityContact):Int
 
