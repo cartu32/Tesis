@@ -20,9 +20,11 @@ import kotlinx.parcelize.Parcelize
 )data class EntityScheduledAssistance(
     @PrimaryKey(autoGenerate = true)
     var id_assistance: Int = 0,
-    var date_appointment:String="2025-01-01", //dia en que tiene la cita
-    var hour_appointment:String="00:00",      //hora en que tiene la cita
-    var hour_attended:String="00:00",         //hora en que realmente asisto a la cita
+    var title: String = "",
+    var date_appointment:Long=0, //dia en que tiene la cita
+    var hour_appointment:Long=0, //hora en que tiene la cita
+    var hour_attendance:Long=0,  //hora en que realmente asisto a la cita
+    var description:String="",
     var status:Boolean=false,
     var id_area: Long = 0,
     ): Parcelable

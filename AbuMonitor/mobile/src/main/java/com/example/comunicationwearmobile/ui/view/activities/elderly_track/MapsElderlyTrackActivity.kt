@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.elderly_track
 
 import android.content.Intent
 import android.location.Location
@@ -8,8 +8,9 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
+import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap

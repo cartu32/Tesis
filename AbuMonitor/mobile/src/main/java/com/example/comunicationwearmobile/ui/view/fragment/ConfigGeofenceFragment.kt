@@ -16,11 +16,10 @@ import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
-import com.example.comunicationwearmobile.ui.view.activities.PropertiesGeofenceActivity
+import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGeofenceActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -81,7 +80,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
     }
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog , style: Int) {
-        val contentView = View.inflate(context , R.layout.fragment_config_geofence , null)
+        val contentView = View.inflate(context , R.layout.fragment_geofence_config , null)
         dialog.setContentView(contentView)
 
         val mBottomSheetBehavior = BottomSheetBehavior.from(

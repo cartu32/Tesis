@@ -2,4 +2,5 @@
 <resources>
     <item name="txtMinHourSecureZone" type="id" />
     <item name="txtMaxHourSecureZone" type="id" />
+    <item name="cmdDefineAssistance" type="id"/>
 </resources>

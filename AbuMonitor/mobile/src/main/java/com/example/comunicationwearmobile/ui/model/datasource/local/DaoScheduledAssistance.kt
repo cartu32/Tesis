@@ -1,5 +1,6 @@
 package com.example.abumonitor.data.datasource.local
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,18 +12,18 @@ import com.example.abumonitor.data.model.EntityScheduledAssistance
 @Dao
 interface DaoScheduledAssistance {
     @Insert
-    suspend fun insertScheduledAssistance(reminder: EntityScheduledAssistance):Long
+    suspend fun insertScheduledAssistance(assistance: EntityScheduledAssistance):Long
 
     @Query("SELECT * FROM Scheduled_Assistance")
-    suspend fun getAllScheduleAssitance(): List<EntityScheduledAssistance>
+    fun getAllScheduleAssitance(): LiveData<List<EntityScheduledAssistance>>
 
     @Transaction
     @Query("SELECT * FROM Scheduled_Assistance WHERE id_assistance = :idAssistance")
-    suspend fun getAssistanceWithId(idAssistance: Int): EntityScheduledAssistance
+    fun getAssistanceWithId(idAssistance: Int): EntityScheduledAssistance
 
     @Delete
-    suspend fun deleteAssistance(scheduledAssistance: EntityScheduledAssistance)
+    fun deleteAssistance(scheduledAssistance: EntityScheduledAssistance)
 
-    @Update
-    suspend fun updateAssistance(scheduledAssistance: EntityScheduledAssistance)
+    @Query("SELECT * FROM scheduled_assistance WHERE date_appointment = :date")
+    fun getEventsByDate(date: Long): LiveData<List<EntityScheduledAssistance>>
 }

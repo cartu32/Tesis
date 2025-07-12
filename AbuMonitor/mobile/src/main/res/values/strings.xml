@@ -2,9 +2,9 @@
     <!--String del main Activity-->
     <string name="app_name">AbuMonitor</string>
     <string name="cmd_define_areas">Definir Areas</string>
-    <string name="cmd_define_reminder">Definir Recordatorios</string>
+    <string name="cmd_define_assistance">Definir Asistencias</string>
     <string name="cmd_define_contacts">Definir Contactos</string>
-    <string name="cmd_define_routes">Definir Rutas</string>
+    <string name="cmd_define_routes">Ver Areas Geofences</string>
 
     <!--String del fragment de definir Areas.-->
     <string name="cmd_configurar_geofences"> Configurar Geofences</string>
@@ -20,10 +20,11 @@
     <string name="propiedades">Propiedades</string>
     <string name="Hour_min_secure_zone">Hora minima</string>
     <string name="Hour_max_secure_zone">Hora Maxima</string>
-    <string name="HourSecurityZone">"Rango horario normal en Zona Segura "</string>
+    <string name="HourSecurityZone">Rango horario normal en Zona Segura</string>
     <string name="contactos_guardados_en_la_base_de_datos">Contactos seleccionados a los que se les enviara las alertas</string>
     <string name="contactos_del_tel_fono">Contactos del teléfono</string>
     <string name="buscar_contacto">Buscar contacto...</string>
+
 
     <string-array name="spinner_events">
         <item>Seleccione los eventos</item>

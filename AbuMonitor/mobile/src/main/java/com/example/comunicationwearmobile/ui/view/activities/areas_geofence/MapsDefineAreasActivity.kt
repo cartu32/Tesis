@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.areas_geofence
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.graphics.ColorUtils
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
+import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle

@@ -66,15 +66,19 @@ dependencies {
     implementation (libs.play.services.maps)
     implementation (libs.gms.play.services.location)
     implementation (libs.android.maps.utils)
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
     implementation (libs.gms.play.services.location)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.material.calendarview)
+    implementation(libs.threetenabp)
+
 
     // Room
 
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion") // Extensiones Kotlin para Room
-    ksp("androidx.room:room-compiler:$roomVersion") // Procesador de anotaciones para Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx) // Extensiones Kotlin para Room
+    ksp(libs.androidx.room.compiler) // Procesador de anotaciones para Room
 
     //Lifecycle
     implementation ("androidx.activity:activity-ktx:1.9.3")
@@ -86,7 +90,6 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.x")
-    implementation (libs.androidx.lifecycle.extensions)
     implementation (libs.androidx.lifecycle.runtime.ktx)
     implementation (libs.androidx.appcompat)
     implementation(libs.ui.tooling.preview)

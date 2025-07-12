@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.common
 
 import android.app.Activity
 import android.app.TimePickerDialog
@@ -57,7 +57,7 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        setContentView(R.layout.activity_properties_geofence)
+        setContentView(R.layout.activity_geofence_properties)
 
         //inicializo los elementos de la view
         configureInsets()

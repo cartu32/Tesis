@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
         EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
         EntitySecurityZoneTimeRange::class
     ],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

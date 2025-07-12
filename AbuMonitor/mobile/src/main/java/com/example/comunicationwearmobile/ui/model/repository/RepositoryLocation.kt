@@ -16,7 +16,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.view.activities.EnableGpsDialog
+import com.example.comunicationwearmobile.ui.view.activities.utils.EnableGpsDialog
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 

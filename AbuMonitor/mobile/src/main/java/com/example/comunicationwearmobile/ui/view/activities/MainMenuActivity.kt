@@ -20,10 +20,14 @@ import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
+import com.example.comunicationwearmobile.ui.view.activities.areas_geofence.MapsDefineAreasActivity
+import com.example.comunicationwearmobile.ui.view.activities.calendar_assistance.AssistanceCalendarActivity
+import com.example.comunicationwearmobile.ui.view.activities.contact.ContactsActivity
+import com.example.comunicationwearmobile.ui.view.activities.elderly_track.MapsElderlyTrackActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
 
-class MainActivity : AppCompatActivity() {
+class MainMenuActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
@@ -36,12 +40,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_menu)
         configureInsets()
         configCallbackBackPressed()
         initComponent()
 
-        Log.d(Definition.TAG_DEBUG,"OnCreate MainActivity")
+        Log.d(Definition.TAG_DEBUG,"OnCreate MainMenuActivity")
     }
 
 
@@ -58,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        Log.d(Definition.TAG_DEBUG,"Onstart MainActivity")
+        Log.d(Definition.TAG_DEBUG,"Onstart MainMenuActivity")
     }
     private fun initComponent(){
         initStrictMode()
@@ -123,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         val buttons = mapOf(
             R.id.cmdDefineAreas to ::openMapsActivity ,
             R.id.cmdDefineRoutes to ::openMapsElderlyTrackActivity ,
-            R.id.cmdDefineReminder to ::openMapExtra ,
+            R.id.cmdDefineAssistance to ::openCalendarAssistance ,
             R.id.cmdDefineContacts to ::showUnderConstruction
         )
 
@@ -202,8 +206,8 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this , MapsElderlyTrackActivity::class.java))
     }
 
-    private fun openMapExtra(){
-        startActivity(Intent(this , MapExtra::class.java))
+    private fun openCalendarAssistance(){
+        startActivity(Intent(this , AssistanceCalendarActivity::class.java))
     }
     private fun showUnderConstruction() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
@@ -216,7 +220,7 @@ class MainActivity : AppCompatActivity() {
         val buttons = listOf(
             R.id.cmdDefineAreas,
             R.id.cmdDefineRoutes,
-            R.id.cmdDefineReminder,
+            R.id.cmdDefineAssistance,
             R.id.cmdDefineContacts
         )
 
@@ -247,7 +251,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        Log.d(Definition.TAG_DEBUG,"onStop MainActivity")
+        Log.d(Definition.TAG_DEBUG,"onStop MainMenuActivity")
 
     }
 
@@ -259,7 +263,7 @@ class MainActivity : AppCompatActivity() {
             backPressedCallback.remove() // Libera el callback
         }
         notificationManagerHelper?.cancelCorutineInit()
-        Log.d(Definition.TAG_DEBUG, "onDestroy MainActivity")
+        Log.d(Definition.TAG_DEBUG, "onDestroy MainMenuActivity")
         //System.exit(0)
     }
 

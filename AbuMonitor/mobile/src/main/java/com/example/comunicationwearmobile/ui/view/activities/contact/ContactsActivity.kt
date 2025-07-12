@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.contact
 
 import android.os.Bundle
 import android.text.Editable

@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.utils
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent

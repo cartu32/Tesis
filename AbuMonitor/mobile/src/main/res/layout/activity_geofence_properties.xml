@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@color/white"
-    tools:context=".ui.view.activities.PropertiesGeofenceActivity">
+    tools:context=".ui.view.activities.common.PropertiesGeofenceActivity">
 
     <!-- Título del GroupBox -->
     <TextView

@@ -43,7 +43,7 @@
 
         <!--ACTIVITY lAUNCHER-->
             <activity
-           android:name=".ui.view.activities.MainActivity"
+           android:name=".ui.view.activities.MainMenuActivity"
            android:launchMode="singleTask"
            android:exported="true">
            <intent-filter>
@@ -55,24 +55,39 @@
 
        <!--OTHER ACTIVITIES-->
        <activity
-           android:name=".ui.view.activities.MapsDefineAreasActivity"
+           android:name=".ui.view.activities.areas_geofence.MapsDefineAreasActivity"
            android:exported="true">
        </activity>
         <activity
-            android:name=".ui.view.activities.MapsElderlyTrackActivity"
+            android:name=".ui.view.activities.elderly_track.MapsElderlyTrackActivity"
             android:exported="true">
         </activity>
         <activity
-            android:name=".ui.view.activities.MapExtra"
+            android:name=".ui.view.activities.calendar_assistance.MapsAssistance"
             android:exported="true">
         </activity>
-       <activity android:name=".ui.view.activities.EnableGpsDialog" />
-        <activity android:name=".ui.view.activities.PropertiesGeofenceActivity" />
+       <activity android:name=".ui.view.activities.utils.EnableGpsDialog" />
+        <activity android:name=".ui.view.activities.common.PropertiesGeofenceActivity" />
         <activity
-            android:name=".ui.view.activities.ContactsActivity"
+            android:name=".ui.view.activities.contact.ContactsActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light">
         </activity>
+        <activity
+            android:name=".ui.view.activities.calendar_assistance.AssistanceAddActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
+        <activity
+            android:name=".ui.view.activities.calendar_assistance.AssistanceCalendarActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
+        <activity android:name=".ui.view.activities.calendar_assistance.AssistanceDetailActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
+
 
         <!--SERVICES AND OTHERS-->
         <service

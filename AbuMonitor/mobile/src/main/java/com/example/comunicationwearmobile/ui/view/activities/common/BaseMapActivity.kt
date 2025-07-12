@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.view.activities
+package com.example.comunicationwearmobile.ui.view.activities.common
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -40,7 +40,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_base_map)
+        setContentView(R.layout.activity_map_base)
 
         Tools.desactiveStrictMode()
 
