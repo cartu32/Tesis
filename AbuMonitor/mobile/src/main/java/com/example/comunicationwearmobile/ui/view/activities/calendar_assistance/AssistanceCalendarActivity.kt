@@ -30,8 +30,8 @@ class AssistanceCalendarActivity : AppCompatActivity() {
     private lateinit var addButton: Button
     private lateinit var recyclerView: RecyclerView
     private val viewModel: ViewModelCalendarAssistance by viewModels { AssistanceViewModelFactory(application) }
-    private var selectedDate: CalendarDay? = null
     private var allEvents: List<EntityScheduledAssistance> = emptyList()
+    private lateinit var adapter: AssistanceAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,61 +43,77 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = AssistanceAdapter { assistance ->
+
+        // Inicializa decoradores con el mes actual
+        var currentMonth = calendarView.currentDate.month
+
+        configListdapter()
+        configListeners()
+        configObserver(currentMonth)
+        updateMonthDecorators(currentMonth)
+
+
+
+
+    }
+
+    private fun configObserver(currentMonth: Int) {
+        // Observa los eventos filtrados por fecha seleccionada
+        viewModel.eventsBySelectedDate.observe(this) { events ->
+            adapter.submitList(events)
+        }
+
+        // Observa todos los eventos para actualizar decoradores
+        viewModel.getAllEvents().observe(this) { events ->
+            allEvents = events
+            updateMonthDecorators(currentMonth)
+        }
+
+    }
+
+    private fun configListdapter() {
+        adapter = AssistanceAdapter { assistance ->
             val intent = Intent(this, AssistanceDetailActivity::class.java)
             intent.putExtra("assistance_id", assistance.id_assistance)
             startActivity(intent)
         }
         recyclerView.adapter = adapter
 
-        // Decorador para días según el mes visible
-        fun updateMonthDecorators(month: Int) {
-            calendarView.removeDecorators()
-            // Decorador para días con eventos
-            val datesWithEvents = allEvents.map {
-                val localDate = Instant.ofEpochMilli(it.date_appointment.toLong())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                CalendarDay.from(localDate)
-            }.toSet()
-            calendarView.addDecorator(CurrentMonthDayDecorator(month))
-            calendarView.addDecorator(OtherMonthDayDecorator(month))
-            calendarView.addDecorator(EventDecorator(datesWithEvents))
+    }
 
-        }
-        // Inicializar decoradores con el mes actual
-        var currentMonth = calendarView.currentDate.month
-        updateMonthDecorators(currentMonth)
-
-        // Actualizar decoradores al cambiar de mes
+    private fun configListeners() {
         calendarView.setOnMonthChangedListener { _, date ->
-            currentMonth = date.month
+            val currentMonth = date.month
             updateMonthDecorators(currentMonth)
         }
 
-        // Selección de día
+        // Manejo de la fecha seleccionada a través del ViewModel
         calendarView.setOnDateChangedListener { _, date, _ ->
-            selectedDate = date
-            val millis = getDateMillis(date)
-            viewModel.getEventsByDate(millis).observe(this, Observer { events ->
-                adapter.submitList(events)
-            })
+            viewModel.selectedDateMillis.value = getDateMillis(date)
         }
 
-        // Botón para agregar evento
+
         addButton.setOnClickListener {
-            selectedDate?.let {
+            viewModel.selectedDateMillis.value?.let { millis ->
                 val intent = Intent(this, AssistanceAddActivity::class.java)
-                intent.putExtra("date", getDateMillis(it))
+                intent.putExtra("date", millis)
                 startActivity(intent)
             }
         }
+    }
 
-        // Decorador para marcar días con eventos y actualizar colores al recibir eventos
-        viewModel.getAllEvents().observe(this, Observer { events ->
-            allEvents = events
-            updateMonthDecorators(currentMonth)
-        })
+    fun updateMonthDecorators(month: Int) {
+        calendarView.removeDecorators()
+        val datesWithEvents = allEvents.map {
+            val localDate = Instant.ofEpochMilli(it.date_appointment.toLong())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            CalendarDay.from(localDate)
+        }.toSet()
+
+        calendarView.addDecorator(CurrentMonthDayDecorator(month))
+        calendarView.addDecorator(OtherMonthDayDecorator(month))
+        calendarView.addDecorator(EventDecorator(datesWithEvents))
     }
 
     private fun getDateMillis(date: CalendarDay): Long {
@@ -107,32 +123,30 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         return cal.timeInMillis
     }
 
-    // Decorador para marcar días con eventos
-    class EventDecorator(private val dates: Set<CalendarDay>) : DayViewDecorator {
-        override fun shouldDecorate(day: CalendarDay): Boolean = dates.contains(day)
-        override fun decorate(view: DayViewFacade) {
-            view.addSpan(ForegroundColorSpan(Color.RED))
-        }
-    }
 
-    // Decorador para días del mes actual (negro)
-    class CurrentMonthDayDecorator(private val currentMonth: Int) : DayViewDecorator {
-        override fun shouldDecorate(day: CalendarDay): Boolean = day.month == currentMonth
-        override fun decorate(view: DayViewFacade) {
-            view.addSpan(ForegroundColorSpan(Color.BLACK))
-        }
-    }
+}
 
-    // Decorador para días de otros meses (gris)
-    class OtherMonthDayDecorator(private val currentMonth: Int) : DayViewDecorator {
-        override fun shouldDecorate(day: CalendarDay): Boolean = day.month != currentMonth
-        override fun decorate(view: DayViewFacade) {
-            view.addSpan(ForegroundColorSpan(Color.parseColor("#B0B0B0")))
-        }
+// Decorador para marcar días con eventos
+class EventDecorator(private val dates: Set<CalendarDay>) : DayViewDecorator {
+    override fun shouldDecorate(day: CalendarDay): Boolean = dates.contains(day)
+    override fun decorate(view: DayViewFacade) {
+        view.addSpan(ForegroundColorSpan(Color.RED))
     }
+}
 
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.getAllEvents().removeObservers(this)
+
+// Decorador para días del mes actual (negro)
+class CurrentMonthDayDecorator(private val currentMonth: Int) : DayViewDecorator {
+    override fun shouldDecorate(day: CalendarDay): Boolean = day.month == currentMonth
+    override fun decorate(view: DayViewFacade) {
+        view.addSpan(ForegroundColorSpan(Color.BLACK))
+    }
+}
+
+// Decorador para días de otros meses (gris)
+class OtherMonthDayDecorator(private val currentMonth: Int) : DayViewDecorator {
+    override fun shouldDecorate(day: CalendarDay): Boolean = day.month != currentMonth
+    override fun decorate(view: DayViewFacade) {
+        view.addSpan(ForegroundColorSpan(Color.parseColor("#B0B0B0")))
     }
 }
