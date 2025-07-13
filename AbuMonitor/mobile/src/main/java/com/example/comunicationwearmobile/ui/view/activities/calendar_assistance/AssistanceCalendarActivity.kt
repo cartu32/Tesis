@@ -130,4 +130,9 @@ class AssistanceCalendarActivity : AppCompatActivity() {
             view.addSpan(ForegroundColorSpan(Color.parseColor("#B0B0B0")))
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.getAllEvents().removeObservers(this)
+    }
 }

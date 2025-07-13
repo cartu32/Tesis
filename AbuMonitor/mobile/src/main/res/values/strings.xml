@@ -24,6 +24,13 @@
     <string name="contactos_guardados_en_la_base_de_datos">Contactos seleccionados a los que se les enviara las alertas</string>
     <string name="contactos_del_tel_fono">Contactos del teléfono</string>
     <string name="buscar_contacto">Buscar contacto...</string>
+    <string name="seleccionar_area_geofence">Indicar ubicacion de la zona</string>
+    <string name="hora_de_la_cita">Hora de la cita</string>
+    <string name="fecha">Fecha</string>
+    <string name="t_tulo">Título</string>
+    <string name="descripci_n">Descripción</string>
+    <string name="borrar_cita">Eliminar Cita</string>
+    <string name="view_location">Ver ubicacion</string>
 
 
     <string-array name="spinner_events">

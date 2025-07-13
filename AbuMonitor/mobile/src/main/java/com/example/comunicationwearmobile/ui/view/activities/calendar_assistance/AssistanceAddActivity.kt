@@ -28,8 +28,8 @@ class AssistanceAddActivity : AppCompatActivity() {
         val txtTitle = findViewById<EditText>(R.id.txtTitle)
         val txtDescription = findViewById<EditText>(R.id.txtDescription)
         val txtDate = findViewById<EditText>(R.id.txtDate)
-        val cmdHourAppointment = findViewById<Button>(R.id.cmdHourAppointment)
-        val cmdSave = findViewById<Button>(R.id.cmdSave)
+        val cmdHourAppointment = findViewById<Button>(R.id.cmdHourDate)
+        val cmdSave = findViewById<Button>(R.id.cmdCreateAreaGeof)
 
         val dateString = Tools.getMillisToDate(dateMillis)
 
