@@ -18,7 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.view.activities.areas_geofence.MapsDefineAreasActivity
 import com.example.comunicationwearmobile.ui.view.activities.calendar_assistance.AssistanceCalendarActivity
@@ -31,7 +31,7 @@ class MainMenuActivity : AppCompatActivity() {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
-    private var notificationManagerHelper:NotificationManagerHelper?= null
+    private var notificationManagerHelper:NotificationHelper?= null
 
     private lateinit var backPressedCallback: OnBackPressedCallback
 
@@ -76,7 +76,7 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun initNotificationManager() {
         //se inicializa el notification manager helper
-        notificationManagerHelper= NotificationManagerHelper.getInstance(this.applicationContext)
+        notificationManagerHelper= NotificationHelper.getInstance(this.applicationContext)
         notificationManagerHelper?.initConfiguration()
     }
 

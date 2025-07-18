@@ -6,8 +6,9 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
@@ -16,21 +17,41 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
 
-//Esta es la clase hija que hereda de BaseMapActivity
-//Esta clase hija define metodos que solo deben usarse en este mapa.
-//Por ejemplo showDeleteGeofenceDialog: ya que este se usa para borrar los ciruclos del mapa,
+//Esta es la clase que usa el helper MapsActivityHelper para reutilizar funcionalidad
+//Esta clase define metodos que solo deben usarse en este mapa.
+//Por ejemplo showDeleteGeofenceDialog: ya que este se usa para borrar los circulos del mapa,
 //cuando se crean las areas de geofence
-class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
+class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
+
+    private lateinit var mapsHelper: MapsActivityHelper
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Inicializar el helper
+        mapsHelper = MapsActivityHelper(this, ViewModelProvider(this))
+        mapsHelper.initializeViewModel()
+        mapsHelper.configObservers(
+            cleanMap = { cleanMap() },
+            drawArea = { lat, lng, meters, securityZone ->
+                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, securityZone)
+            },
+            setIdDrawnArea = { id -> drawAreaGeofHelper?.setIdDrawnArea(id) },
+            showToast = { msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }
+        )
+    }
 
     override fun onMapReady(googleMap: GoogleMap) {
         super.onMapReady(googleMap)
 
-        mMap?.setOnMapClickListener (this)
+        mMap?.setOnMapClickListener(this)
 
         configOberserverLivedata()
-        Log.d(Definition.TAG_DEBUG,"Mapa inicializado completo")
+        Log.d(Definition.TAG_DEBUG, "Mapa inicializado completo")
     }
 
+    //estos observer que solo se usan en el mapa para definir areas de geofence
     fun configOberserverLivedata() {
 
         configObserverIdNewArea()
@@ -39,19 +60,48 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     }
 
     private fun configObserverSecurityZone() {
-        viewmodelMapsActivity?.securityZone?.observe(this){isSecurity->
-            val colorCircleBackground = Color.GREEN
-            
-            circle?.fillColor = ColorUtils.setAlphaComponent(colorCircleBackground, 100)
+        mapsHelper.viewmodelMapsActivity?.securityZone?.observe(this) { isSecurity ->
+            drawAreaGeofHelper?.changeColorCircle(Color.GREEN)
         }
+    }
 
+    private fun configObserverResultDelete() {
+        mapsHelper.viewmodelMapsActivity?.isDeleteArea?.observe(this) { idCircleToDelete ->
+            if (idCircleToDelete != null) {
+                drawAreaGeofHelper?.deleteCircleWithId(idCircleToDelete)
+                Toast.makeText(this, "Area eliminada", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "No se pudo eliminar el area", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun configObserverIdNewArea() {
+        mapsHelper.viewmodelMapsActivity?.idNewAreaGeof?.observe(this) { id ->
+            when {
+                id > Definition.ERROR_NULL -> {
+                    drawAreaGeofHelper?.setIdDrawnArea(id)
+                    Toast.makeText(this, "Area nueva registrada", Toast.LENGTH_SHORT).show()
+                }
+
+                id == Definition.ERROR_INSERT_BD_GEOF -> {
+                    drawAreaGeofHelper?.cancelDrawnArea()
+                    Toast.makeText(this, "No se pude registrar el Area en la BD", Toast.LENGTH_SHORT).show()
+                }
+
+                id == Definition.ERROR_ACTIVATE_GEOF -> {
+                    drawAreaGeofHelper?.cancelDrawnArea()
+                    Toast.makeText(this, "No se pude activar el area de geof", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     override fun onMapClick(latLng: LatLng) {
         super.onMapClick(latLng)
 
         //grafico en el mapa la nueva area
-        circle=drawGeofenceArea(latLng.latitude, latLng.longitude,Definition.GEOFENCE_RADIUS_DEFAULT,false)
+        drawAreaGeofHelper?.drawGeofenceArea(latLng.latitude, latLng.longitude,Definition.GEOFENCE_RADIUS_DEFAULT,false)
         showConfigGeofenceFragment(latLng)
 
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
@@ -71,49 +121,6 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
 
 
 
-    private fun configObserverResultDelete() {
-        viewmodelMapsActivity?.resultDeleteArea?.observe(this){circleToDelete->
-
-            if(circleToDelete!=null){
-                circleToDelete.remove()
-                Toast.makeText(this,"Area eliminada",Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(this,"No se pudo eliminar el area",Toast.LENGTH_SHORT).show()
-            }
-
-        }
-    }
-
-    private fun configObserverIdNewArea() {
-
-        viewmodelMapsActivity?.idNewAreaGeof?.observe(this){id->
-            when {
-                id > Definition.ERROR_NULL -> {
-                    setIdDrawnArea(id)
-                    Toast.makeText(this, "Area nueva registrada", Toast.LENGTH_SHORT).show()
-                }
-
-                id == Definition.ERROR_INSERT_BD_GEOF -> {
-                    cancelDrawnArea()
-                    Toast.makeText(this, "No se pude registrar el Area en la BD", Toast.LENGTH_SHORT).show()
-                }
-
-                id == Definition.ERROR_ACTIVATE_GEOF -> {
-                    cancelDrawnArea()
-                    Toast.makeText(this, "No se pude activar el area de geof", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-        }
-    }
-
-    private fun cancelDrawnArea(){
-        circle?.remove()
-    }
-
-    override fun updateCircleRadius(meters: Double) {
-        circle?.radius= meters
-    }
 
     private fun showDeleteGeofenceDialog(idArea:Long) {
 
@@ -123,7 +130,7 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
             .setMessage("¿Estás seguro de que deseas eliminar esta área de geofence?")
             .setPositiveButton("Sí") { _, _ ->
                 // Acción cuando el usuario confirma
-                viewmodelMapsActivity?.deleteAreaGeof(this,idArea)
+                mapsHelper.viewmodelMapsActivity?.deleteAreaGeof(this, idArea)
             }
             .setNegativeButton("No") { dialog, _ ->
                 // Acción cuando el usuario cancela
@@ -164,19 +171,23 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
     }
 
     private fun operationResultCanceled() {
-        cancelDrawnArea()
+        drawAreaGeofHelper?.cancelDrawnArea()
         Toast.makeText(this,"Cancelado",Toast.LENGTH_SHORT).show()
     }
 
-    private fun operationResultOK(bundle: Bundle,latLng: LatLng) {
-        val dataNewAreaGeofence = viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
+    private fun operationResultOK(bundle: Bundle, latLng: LatLng) {
+        val dataNewAreaGeofence = mapsHelper.viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
 
-        dataNewAreaGeofence?.entityAreaGeofence?.latitude= latLng.latitude.toString()
-        dataNewAreaGeofence?.entityAreaGeofence?.longitude= latLng.longitude.toString()
+        dataNewAreaGeofence?.entityAreaGeofence?.latitude = latLng.latitude.toString()
+        dataNewAreaGeofence?.entityAreaGeofence?.longitude = latLng.longitude.toString()
 
         if (dataNewAreaGeofence != null) {
-            viewmodelMapsActivity?.insertAreaGeof(this,dataNewAreaGeofence)
+            mapsHelper.viewmodelMapsActivity?.insertAreaGeof(this, dataNewAreaGeofence)
         }
+    }
+
+    override fun updateCircleRadius(meters: Double) {
+        drawAreaGeofHelper?.updateCircleRadius(meters)
     }
 
 
@@ -185,18 +196,20 @@ class MapsDefineAreasActivity : BaseMapActivity(),OnDataSentListenerMapAct{
 
         supportFragmentManager.clearFragmentResult(Definition.BUNDLE_FRAGMENT_RESULT_NEW_AREA)
 
-        // Eliminar los observadores de LiveData
-        viewmodelMapsActivity?.resultDeleteArea?.removeObservers(this)
-        viewmodelMapsActivity?.idNewAreaGeof?.removeObservers(this)
-        viewmodelMapsActivity?.securityZone?.removeObservers(this)
+        // Limpiar el helper
+        mapsHelper.cleanUp()
+
+        // Eliminar los observadores de LiveData específicos de esta actividad
+        mapsHelper.viewmodelMapsActivity?.isDeleteArea?.removeObservers(this)
+        mapsHelper.viewmodelMapsActivity?.idNewAreaGeof?.removeObservers(this)
+        mapsHelper.viewmodelMapsActivity?.securityZone?.removeObservers(this)
 
         mMap?.setOnMapClickListener(null)
 
-        //Esto se debe realizar en la clase hija, no en la clase padre
-        viewmodelMapsActivity=null
-        mMap=null
+        drawAreaGeofHelper?.freeResources()
 
-        Log.d(Definition.TAG_DEBUG,"Ondestroy MapsActivity")
+        Log.d(Definition.TAG_DEBUG, "Ondestroy MapsActivity")
     }
+
 }
 

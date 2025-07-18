@@ -6,13 +6,8 @@ import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import com.example.shared_library.SharedData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
 // BroadcastReceiver para manejar la cancelación de notificaciones
 // Esto se hace aca dentro porque sino no puedo decrementar el contador de notificaciones en
@@ -22,14 +17,14 @@ class NotificationCancelReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val notificationId = intent.getIntExtra(SharedData.PARAM_PENDING_INTENT_NOTIFICATION_ID, 0)
 
-        val notificationManagerHelper = NotificationManagerHelper.getInstance(context.applicationContext)
+        val notificationManagerHelper = NotificationHelper.getInstance(context.applicationContext)
         manageNotificationCancel(context, notificationManagerHelper, notificationId)
         Log.d(Definition.TAG_DEBUG, "Corutina del BroadcastReceiver finalizada")
      }
 
     private fun manageNotificationCancel(
         context: Context,
-        notificationManagerHelper: NotificationManagerHelper?,
+        notificationManagerHelper: NotificationHelper?,
         notificationId: Int
     ) {
         //pregunto si se elimino el grupo de notificaciones o solamente una sola notificacion

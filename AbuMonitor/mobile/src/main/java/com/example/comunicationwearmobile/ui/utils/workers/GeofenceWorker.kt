@@ -9,8 +9,8 @@ import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManagerCustom
+import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
@@ -169,14 +169,14 @@ class GeofenceWorker(
     }
 
     private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
-        val smsManagerCustom=SmsManagerCustom()
+        val smsManagerCustom=SmsHelper()
 
         smsManagerCustom.sendSMSNotifyGeofence(context, msg,geofLatitude,geofLongitude)
 
     }
 
     private fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
-        val notificationHelper = NotificationManagerHelper.getInstance(context)
+        val notificationHelper = NotificationHelper.getInstance(context)
         val id = notificationHelper?.showNotificationGeneral(msg)
         notifyUserPriorityBaja(context, msg)
         return id

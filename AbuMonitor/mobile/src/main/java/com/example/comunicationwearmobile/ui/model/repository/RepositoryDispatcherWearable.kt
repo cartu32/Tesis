@@ -4,18 +4,18 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
-import com.example.comunicationwearmobile.ui.utils.Mannager.SmsManagerCustom
+import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.services.SenderToWearableService
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
 import com.google.android.gms.wearable.MessageEvent
 
 object RepositoryDispatcherWearable {
-    private val smsManager = SmsManagerCustom()
+    private val smsManager = SmsHelper()
 
      suspend fun dispatcherMsgFromWearable(context: Context, messageEvent: MessageEvent) {
-        val notificationManager = NotificationManagerHelper.getInstance(context.applicationContext)
+        val notificationManager = NotificationHelper.getInstance(context.applicationContext)
 
         notificationManager.let {
             when (messageEvent.path) {
@@ -24,7 +24,7 @@ object RepositoryDispatcherWearable {
                 else -> Log.d(Definition.TAG_DEBUG, "Unknown path received: ${messageEvent.path}")
             }
         }?: run {
-            Log.d(Definition.TAG_DEBUG, "NotificationManagerHelper is null")
+            Log.d(Definition.TAG_DEBUG, "NotificationHelper is null")
         }
          Log.d(Definition.TAG_DEBUG,"termina dispatcher")
 

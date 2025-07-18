@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Mannager
+package com.example.comunicationwearmobile.ui.utils.Helpers
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -20,14 +20,12 @@ import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.locks.ReentrantLock
 
-class NotificationManagerHelper(context: Context) : ContextWrapper(context.applicationContext) {
+class NotificationHelper(context: Context) : ContextWrapper(context.applicationContext) {
 
     private val scope= CoroutineScope(Dispatchers.IO+ SupervisorJob())
 
@@ -292,13 +290,13 @@ class NotificationManagerHelper(context: Context) : ContextWrapper(context.appli
 
         const val FIRST_ITEM_LIST_NOTIF = 255
 
-        var instance: NotificationManagerHelper? = null
+        var instance: NotificationHelper? = null
 
         @Synchronized
-        fun getInstance(base: Context): NotificationManagerHelper? {
+        fun getInstance(base: Context): NotificationHelper? {
             val appContext = base.applicationContext
             if (instance == null) {
-                instance = NotificationManagerHelper(appContext)
+                instance = NotificationHelper(appContext)
             }
             return instance
         }

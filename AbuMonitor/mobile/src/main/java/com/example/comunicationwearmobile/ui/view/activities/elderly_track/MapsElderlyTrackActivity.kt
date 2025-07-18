@@ -7,21 +7,22 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
-//Esta es la clase hija que hereda de BaseMapActivity
-//Esta clase hija define metodos que solo deben usarse en este mapa.
+//Esta es la clase que usa el helper MapsActivityHelper para reutilizar funcionalidad
+//Esta clase define metodos que solo deben usarse en este mapa.
 //Por ejemplo updateMapLocation: que actualiza la camara del mapa a la ubicacion actual
 
-class MapsElderlyTrackActivity : BaseMapActivity(){
+class MapsElderlyTrackActivity : BaseMapActivity() {
+    private lateinit var mapsHelper: MapsActivityHelper
     private var viewmodelLoaction: ViewmodelLocation?=null
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
@@ -29,34 +30,38 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Inicializar el helper
+        mapsHelper = MapsActivityHelper(this, ViewModelProvider(this))
+        mapsHelper.initializeViewModel()
+        mapsHelper.configObservers(
+            cleanMap = { cleanMap() },
+            drawArea = { lat, lng, meters, securityZone ->
+                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, securityZone)
+            },
+            setIdDrawnArea = { id -> drawAreaGeofHelper?.setIdDrawnArea(id) },
+            showToast = { msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }
+        )
+
         initializeViewModel()
+        configOberserverLivedata()
         configActivityResult()
     }
 
 
 
-        override fun initializeViewModel() {
-        super.initializeViewModel()
-
-        viewmodelLoaction= ViewmodelLocation(application)
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        super.onMapReady(googleMap)
-
-        configOberserverLivedata()
+    fun initializeViewModel() {
+        viewmodelLoaction = ViewmodelLocation(application)
     }
 
     fun configOberserverLivedata() {
         configObserverLocation()
-        configObserverClickInMap()
+        configObserverClickInCircle()
     }
 
-    private fun configObserverClickInMap() {
+    private fun configObserverClickInCircle() {
         // Observamos una sola vez
-        viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { dato ->
+        mapsHelper.viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { dato ->
             dato?.let {
-
                 with(dato.areaGeofence) {
                     val intent = Intent(applicationContext, PropertiesGeofenceActivity::class.java)
                     intent.putExtra(Definition.INTENT_DATA_NEW_AREA_GEOF, it)
@@ -85,15 +90,9 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
     override fun onCircleClick(circle: Circle) {
         super.onCircleClick(circle)
 
-        viewmodelMapsActivity?.getAreaGeofWithId(circle.tag.toString().toLong())
+        mapsHelper.viewmodelMapsActivity?.getAreaGeofWithId(circle.tag.toString().toLong())
 
         Toast.makeText(this, "Cargando información del área...", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showPropertiesAreaGeof(areaGeofence: JoinAreaGeofence?) {
-        val intent= Intent(this, PropertiesGeofenceActivity::class.java)
-        activityResultLauncher?.launch(intent)
-
     }
 
     private fun configActivityResult() {
@@ -104,16 +103,17 @@ class MapsElderlyTrackActivity : BaseMapActivity(){
     override fun onDestroy() {
         super.onDestroy()
 
+        // Limpiar el helper
+        mapsHelper.cleanUp()
+
         viewmodelLoaction?.locationLiveData?.removeObservers(this)
         viewmodelLoaction?.onDestroyed()
-        viewmodelLoaction=null
+        viewmodelLoaction = null
 
-        //Esto se debe realizar en la clase hija, no en la clase padre
-        viewmodelMapsActivity?.areaGeofenceForId?.removeObservers(this)
-        viewmodelMapsActivity=null
-        mMap=null
+        // Eliminar observadores específicos de esta actividad
+        mapsHelper.viewmodelMapsActivity?.areaGeofenceForId?.removeObservers(this)
 
-        Log.d(Definition.TAG_DEBUG,"Ondestroy MapsElderlyAcivity")
+        Log.d(Definition.TAG_DEBUG, "Ondestroy MapsElderlyAcivity")
     }
 }
 

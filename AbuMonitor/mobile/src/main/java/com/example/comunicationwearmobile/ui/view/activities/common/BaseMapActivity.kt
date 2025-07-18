@@ -7,12 +7,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.Helpers.DrawAreaGeofHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
-import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMapsActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.maps.GoogleMap
@@ -23,20 +21,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 
-//Esta es la clase padre que se usa para crear los mapas con las areas de geofencing
-//De esta clase heredan las demas.Por ejemplo:
-//-MapDefineAreasActvity
-//-MapsElderlyTrackActivity
-
+//Esta es la clase padre que se usa para crear todos los mapas
 abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMapLongClickListener,
     OnMapClickListener, GoogleMap.OnCircleClickListener {
 
 
     var mMap: GoogleMap? = null
-    var circle: Circle? = null
     private val RC_HANDLE_GMS = 9001
 
-    var viewmodelMapsActivity: ViewmodelMapsActivity?=null
+    var drawAreaGeofHelper: DrawAreaGeofHelper?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +39,9 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
 
         initGooglePlayServices()
         initMap()
+
+        //instancio la clase para usar el helper que dibuja en el mapa
+        drawAreaGeofHelper= DrawAreaGeofHelper(mMap)
 
     }
 
@@ -71,31 +67,18 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
             }
 
             mapFragment.getMapAsync(this@BaseMapActivity)
-            initializeViewModel()
 
         } catch (e: Exception) {
             Log.e(Definition.TAG_DEBUG, "Error al inicializar Google Maps: ${e.message}")
         }
     }
 
-    open fun initializeViewModel() {
-        // Obtén una instancia del ViewModel usando el GenericViewModelFactory
-        val factory = GenericViewModelFactory {
-            ViewmodelMapsActivity(application)
-        }
-
-        viewmodelMapsActivity = ViewModelProvider(this, factory)[ViewmodelMapsActivity::class.java]
-
-    }
-
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
+        drawAreaGeofHelper = DrawAreaGeofHelper(mMap)
         mMap?.setOnCircleClickListener(this)
 
         enableFeatureMaps()
-        configOberserverLivedataBase()
     }
 
 
@@ -125,28 +108,6 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    open fun configOberserverLivedataBase() {
-        configObserverShowMessage()
-        configObserverGetAllAreasGeofence()
-    }
-
-    private fun configObserverGetAllAreasGeofence() {
-
-        viewmodelMapsActivity?.allAreas?.observe(this){listAllAreas->
-            cleanMap()
-            listAllAreas.forEach{
-                Log.d(Definition.TAG_DEBUG,"Id:{${it.id_area} Description{${it.description}}")
-                circle=drawGeofenceArea(it.latitude.toDouble(),it.longitude.toDouble(),it.meters.toDouble(),it.security_zone)
-                setIdDrawnArea(it.id_area)
-            }
-        }
-    }
-
-    private fun configObserverShowMessage() {
-        viewmodelMapsActivity?.showMessage?.observe(this) { message ->
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     override fun onMapClick(latLng: LatLng) {
 
@@ -162,30 +123,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
 
-    open fun drawGeofenceArea(
-        latitude: Double,
-        longitude: Double,
-        meters: Double = Definition.GEOFENCE_RADIUS_DEFAULT,
-        securityZone: Boolean = false
-    ): Circle? {
-        val latLng=LatLng(latitude,longitude)
-        var newCicle:Circle?=null
 
-        val circleOptions=viewmodelMapsActivity?.createCircle(latLng,meters,securityZone)
-
-        circleOptions?.let {
-            newCicle=mMap?.addCircle(it)
-        }
-        return newCicle
-    }
-
-
-    open fun setIdDrawnArea(idCircle: Long) {
-        circle?.let {
-            circle?.tag = idCircle
-            viewmodelMapsActivity?.addCircleInList(it)
-        }
-    }
 
     open fun cleanMap(){
         mMap?.clear()
@@ -194,17 +132,10 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     override fun onDestroy() {
         super.onDestroy()
 
-        viewmodelMapsActivity?.allAreas?.removeObservers(this)
-        viewmodelMapsActivity?.showMessage?.removeObservers(this)
-
-        // Limpiar referencias del ViewModel si es necesario
-        viewmodelMapsActivity?.onDestroyed()
-
         // Limpiar referencias del círculo
-        circle?.remove() // Esto elimina el círculo del mapa
         mMap?.setOnCircleClickListener(null)
+        mMap=null
 
-        circle=null
 
     }
 

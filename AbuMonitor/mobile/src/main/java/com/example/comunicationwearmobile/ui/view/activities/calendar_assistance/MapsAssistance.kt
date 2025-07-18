@@ -20,6 +20,6 @@ class MapsAssistance: BaseMapActivity() {
     override fun onMapClick(latLng: LatLng) {
         super.onMapClick(latLng)
 
-        drawGeofenceArea(latLng.latitude, latLng.longitude, Definition.GEOFENCE_RADIUS_DEFAULT)
+        drawAreaGeofHelper?.drawGeofenceArea(latLng.latitude, latLng.longitude, Definition.GEOFENCE_RADIUS_DEFAULT)
     }
 }

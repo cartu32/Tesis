@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Mannager
+package com.example.comunicationwearmobile.ui.utils.Helpers
 
 import android.app.PendingIntent
 import android.content.Context
@@ -12,7 +12,7 @@ import com.example.shared_library.fromByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
-class SmsManagerCustom {
+class SmsHelper {
 
     fun sendSMSFallDetection(context: Context, message: ByteArray){
         val repositoryContact= RepositoryContact(context, CoroutineScope(Dispatchers.IO))

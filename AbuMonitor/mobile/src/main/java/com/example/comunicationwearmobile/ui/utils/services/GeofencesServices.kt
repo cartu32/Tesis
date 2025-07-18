@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
-import com.example.comunicationwearmobile.ui.utils.Mannager.NotificationManagerHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +28,7 @@ class GeofencesServices: Service() {
     private var requestChannel: Channel<Intent>? = null
     private var serviceScope:CoroutineScope? = null
 
-    private var notificationManagerHelper:NotificationManagerHelper?= null
+    private var notificationManagerHelper:NotificationHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
     private var locationObserver :Observer<Location>?=null
 
@@ -40,7 +40,7 @@ class GeofencesServices: Service() {
 
         repositoryLocation = RepositoryLocation.getInstance(application)
 
-        notificationManagerHelper=NotificationManagerHelper.getInstance(applicationContext)
+        notificationManagerHelper=NotificationHelper.getInstance(applicationContext)
 
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
