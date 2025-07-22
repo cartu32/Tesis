@@ -1,19 +1,15 @@
 package com.example.comunicationwearmobile.ui.view.activities.calendar_assistance
 
+import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView
-import com.prolificinteractive.materialcalendarview.CalendarDay
-import com.prolificinteractive.materialcalendarview.DayViewDecorator
-import com.prolificinteractive.materialcalendarview.DayViewFacade
-import java.util.*
 import android.graphics.Color
+import android.os.Bundle
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
@@ -21,8 +17,13 @@ import com.example.comunicationwearmobile.ui.view.adapter.AssistanceAdapter
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceViewModelFactory
 import com.example.comunicationwearmobile.ui.viewmodel.ViewModelCalendarAssistance
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.prolificinteractive.materialcalendarview.CalendarDay
+import com.prolificinteractive.materialcalendarview.DayViewDecorator
+import com.prolificinteractive.materialcalendarview.DayViewFacade
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
+import java.util.Calendar
 
 class AssistanceCalendarActivity : AppCompatActivity() {
 
@@ -43,6 +44,9 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        calendarView.selectedDate = CalendarDay.today()
+        viewModel.selectedDateMillis.value = getDateMillis(CalendarDay.today())
 
         // Inicializa decoradores con el mes actual
         var currentMonth = calendarView.currentDate.month
@@ -114,6 +118,8 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         calendarView.addDecorator(CurrentMonthDayDecorator(month))
         calendarView.addDecorator(OtherMonthDayDecorator(month))
         calendarView.addDecorator(EventDecorator(datesWithEvents))
+        calendarView.addDecorator(TodayDecorator(this))
+
     }
 
     private fun getDateMillis(date: CalendarDay): Long {
@@ -148,5 +154,17 @@ class OtherMonthDayDecorator(private val currentMonth: Int) : DayViewDecorator {
     override fun shouldDecorate(day: CalendarDay): Boolean = day.month != currentMonth
     override fun decorate(view: DayViewFacade) {
         view.addSpan(ForegroundColorSpan(Color.parseColor("#B0B0B0")))
+    }
+}
+
+class TodayDecorator(context: Context) : DayViewDecorator {
+    private val appContext=context.applicationContext
+    private val today: CalendarDay = CalendarDay.today()
+    override fun shouldDecorate(day: CalendarDay): Boolean {
+        return day == today
+    }
+    override fun decorate(view: DayViewFacade) {
+        val drawable = ContextCompat.getDrawable(appContext, R.drawable.circle_background)
+        view.setBackgroundDrawable(drawable!!)
     }
 }

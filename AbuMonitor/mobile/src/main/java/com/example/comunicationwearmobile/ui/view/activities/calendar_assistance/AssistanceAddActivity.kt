@@ -31,7 +31,9 @@ class AssistanceAddActivity : AppCompatActivity() {
     private var cmdHourAppointment:Button?=null
     private var cmdCreateAreaGeof:Button?=null
 
+    private var isSetTimeAppointment=false
     private var resultLauncher: ActivityResultLauncher<Intent>?=null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +50,7 @@ class AssistanceAddActivity : AppCompatActivity() {
         val dateString = Tools.getMillisToDate(dateMillis)
 
         txtDate?.setText(dateString)
+        txtDate?.isEnabled = false
 
         cmdHourAppointment?.setOnClickListener { onClickListenerCmdHourAppointment() }
         cmdCreateAreaGeof?.setOnClickListener { onClickListenerCmdSave() }
@@ -105,12 +108,29 @@ class AssistanceAddActivity : AppCompatActivity() {
     }
 
     private fun onClickListenerCmdSave(){
+        if(!isSetTimeAppointment){
+            Toast.makeText(this,"Debe seleccionar una hora para la cita",Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(txtTitle?.text.toString().isEmpty()){
+            Toast.makeText(this,"Debe ingresar un titulo para la cita",Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (txtDescription?.text.toString().isEmpty()) {
+            Toast.makeText(this, "Debe ingresar una descripcion para la cita", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
         var intent = Intent(this, MapsAddAssistance::class.java)
         resultLauncher?.launch(intent)
     }
 
     private fun showTimePicker(onTimeSet: (Long) -> Unit) {
         val cal = Calendar.getInstance()
+
+        isSetTimeAppointment=true
+
         TimePickerDialog(this, { _, hour, minute ->
             cal.set(Calendar.HOUR_OF_DAY, hour)
             cal.set(Calendar.MINUTE, minute)
