@@ -65,11 +65,11 @@ class RepositoryGeofActivate() {
 
         geofencingClient.addGeofences(geofencingRequest, pendingIntent)
             .addOnSuccessListener {
-                Log.d("Geofence", "Agregada geocerca ${area.id_area}")
+                Log.d(Definition.TAG_DEBUG, "Agregada geocerca ${area.id_area}")
                 continuation.resume(true)
             }
             .addOnFailureListener {
-                Log.e("Geofence", "Error al agregar geocerca: ${it.message}")
+                Log.e(Definition.TAG_DEBUG, "Error al agregar geocerca: ${it.message}")
                 continuation.resume(false)
             }
     }
@@ -96,7 +96,7 @@ class RepositoryGeofActivate() {
         if (geofencePendingIntent != null) return geofencePendingIntent!!
 
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java).apply {
-            action = "com.example.app.ACTION_GEOFENCE_EVENT"
+            action = Definition.ACTION_GEOFENCE_EVENT_BROADCAST
         }
 
         geofencePendingIntent = PendingIntent.getBroadcast(

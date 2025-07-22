@@ -18,7 +18,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val appContext = context.applicationContext
 
-        if (intent.action == "com.example.app.ACTION_GEOFENCE_EVENT") {
+        if (intent.action == Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
 
             if (geofencingEvent == null || geofencingEvent.hasError()) {

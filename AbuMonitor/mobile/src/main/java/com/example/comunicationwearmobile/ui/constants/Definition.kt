@@ -82,6 +82,13 @@ object Definition {
     const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
 
     /********************************************************
+     ************** constantes para detectar las geofence****
+     ********************************************************
+     */
+    //Esta constante sirve para activar la deteccion de geofence a traves del broadcast
+    const val ACTION_GEOFENCE_EVENT_BROADCAST: String="com.example.app.ACTION_GEOFENCE_EVENT"
+
+    /********************************************************
      ************** constantes de tiempo*****************
      ********************************************************
      */

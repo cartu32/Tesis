@@ -89,45 +89,64 @@ class GeofenceWorker(
         notifyUserPriorityBaja(context, msg)
     }
 
+    /********************************************************************
+    * Método que se ejecuta al salir de una zona segura:
+    *
+    * 1) Si estuvo menos de 1 minuto → se descarta el evento.
+    * 2) Si estuvo entre X y Z minutos → se notifica salida inesperada.
+    * 3) Si estuvo más de Z minutos:
+    *   a) Si salió fuera del horario seguro → se notifica salida fuera de horario.
+    *   b) Si salió dentro del horario seguro → se notifica salida dentro del horario.
+    ********************************************************************/
+
     private fun processExitSecurityZone(context: Context, description: String, minHour: String?, maxHour: String?) {
         val prefs = RepositorySecurityZoneSPref.getInstance(context)
         val entryHour = prefs.getEnteredHour()
         val exitHour = System.currentTimeMillis()
-        var msgSMS:String=""
+        var msgSMS=""
+        var msg:SharedData.MsgNotification
 
         if (entryHour == -1L) return
 
         val durationMin = Duration.ofMillis(exitHour - entryHour).toMinutes()
         Log.d(Definition.TAG_DEBUG,"entra en processExitSecurityZone")
 
-        if (durationMin > Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
-            val msg = if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
+        //si estuvo menos de 1 minuto descartamos el evento
+        if (durationMin < Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
+            Log.d(Definition.TAG_DEBUG, "No cumplio el quantum.El abuelo ha salido de la zona segura $description dentro del rango horario norma")
+            return
+        }
+        //si estuvo mas de 1 minuto y menor a 3 minutos notificamos la salida inesperada
+        if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
 
-                msgSMS="El abuelo ha salido inesperadamente de la zona segura $description"
-                createMsgSecurityZone(msgSMS)
+            msgSMS="El abuelo ha salido inesperadamente de la zona segura $description"
+            msg=createMsgSecurityZone(msgSMS)
+
+        } else {
+            val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
+            val isOutOfRange = Tools.isOutsideTimeRange(exitTime, minHour.toString(), maxHour.toString())
+
+            //si estuvo mas de 3 minutos y esta fuera de horario notificamos la salida fuera de horario
+            if (isOutOfRange) {
+                msgSMS="El abuelo ha salido de la zona segura $description fuera del rango horario normal"
+                Log.d(Definition.TAG_DEBUG,msgSMS)
+
+                msg=createMsgSecurityZone(msgSMS)
 
             } else {
-                val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
-                val isOutOfRange = Tools.isOutsideTimeRange(exitTime, minHour.toString(), maxHour.toString())
+                //si estuvo mas de 3 minutos y esta dentro de horario notificamos la salida dentro de horario
+                msgSMS="El abuelo ha salido de la zona segura $description dentro del rango horario normal"
+                Log.d(Definition.TAG_DEBUG,msgSMS)
 
-                if (isOutOfRange) {
-                    msgSMS="El abuelo ha salido de la zona segura $description fuera del rango horario normal"
-                    Log.d(Definition.TAG_DEBUG,msgSMS)
-
-                    createMsgSecurityZone(msgSMS)
-
-                } else {
-                    msgSMS="El abuelo ha salido de la zona segura $description dentro del rango horario normal"
-                    Log.d(Definition.TAG_DEBUG,msgSMS)
-
-                    createMsgSecurityZone(msgSMS)
-                }
+                msg=createMsgSecurityZone(msgSMS)
             }
-
-            notifyUserPriorityBaja(context, msg)
-            prefs.clearSharedPreferences()
         }
-        Log.d(Definition.TAG_DEBUG,"No cumplio el quantum.El abuelo ha salido de la zona segura $description dentro del rango horario norma")
+
+        //enviamos la notificacion por sms
+        notifyUserPriorityBaja(context, msg)
+        prefs.clearSharedPreferences()
+
+        Log.d(Definition.TAG_DEBUG,msgSMS)
     }
 
     private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
