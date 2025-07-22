@@ -24,6 +24,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isDebuggable = false // Asegura que no sea modo debug
+            isProfileable = true // <-- Esto habilita el profiler sin debug
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -98,8 +100,8 @@ dependencies {
     implementation (libs.kotlin.stdlib)
     implementation (libs.androidx.core.ktx.v160)
     implementation (libs.jetbrains.kotlin.parcelize.runtime)
-    debugImplementation (libs.leakcanary.android)
-    releaseImplementation (libs.leakcanary.android.no.op)
+  //  debugImplementation (libs.leakcanary.android)
+  //  releaseImplementation (libs.leakcanary.android.no.op)
     //dependencias de librerias compartidas entre wear y mobile
     implementation(project(":shared_library"))
 }

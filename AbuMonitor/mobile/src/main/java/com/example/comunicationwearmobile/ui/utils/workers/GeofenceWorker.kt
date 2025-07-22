@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
@@ -49,7 +49,7 @@ class GeofenceWorker(
             geofLongitude= areaGeof?.areaGeofence?.longitude.toString()
             geofLatitude=areaGeof?.areaGeofence?.latitude.toString()
 
-            if (areaGeof?.areaGeofence?.security_zone == true) {
+            if (areaGeof?.areaGeofence?.id_type_area == Definition.TYPE_AREA_ID_SECURITY_ZONE) {
                 analizeSecurityZone(context, areaGeof, transition)
             } else {
                 analizeNormalZone(context, areaGeof, transition)
@@ -196,9 +196,9 @@ class GeofenceWorker(
 
     private fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
         when (idPriority) {
-            Definition.PRIORITY_BAJA -> notifyUserPriorityBaja(context, msg)
-            Definition.PRIORTY_MEDIA -> notifyUserPriorityMedia(context, msg)
-            Definition.PRIORITY_ALTA -> notifyUserPriorityAlta(context, msg)
+            Definition.PRIORITY_ID_LOW -> notifyUserPriorityBaja(context, msg)
+            Definition.PRIORITY_ID_MEDIUM -> notifyUserPriorityMedia(context, msg)
+            Definition.PRIORITY_ID_HIGH -> notifyUserPriorityAlta(context, msg)
             else -> Log.e(Definition.TAG_DEBUG, "No se encontró el id de prioridad")
         }
     }

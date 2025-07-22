@@ -16,9 +16,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 class RepositoryGeofActivate() {
-    val GEOFENCE_TRANSITION_ENTER = 1
-    val GEOFENCE_TRANSITION_EXIT = 2
-    val GEOFENCE_TRANSITION_DWELL = 3
 
     private var geofencePendingIntent: PendingIntent? = null
 
@@ -113,9 +110,9 @@ class RepositoryGeofActivate() {
 
     private fun determineTransitionTypes(event: Int): Int {
         when (event) {
-            GEOFENCE_TRANSITION_ENTER -> return Geofence.GEOFENCE_TRANSITION_ENTER
-            GEOFENCE_TRANSITION_EXIT -> return Geofence.GEOFENCE_TRANSITION_EXIT
-            GEOFENCE_TRANSITION_DWELL -> return Geofence.GEOFENCE_TRANSITION_DWELL
+            Definition.GEOFENCE_EVENT_ID_ENTER -> return Geofence.GEOFENCE_TRANSITION_ENTER
+            Definition.GEOFENCE_EVENT_ID_EXIT -> return Geofence.GEOFENCE_TRANSITION_EXIT
+            Definition.GEOFENCE_EVENT_ID_DWELL -> return Geofence.GEOFENCE_TRANSITION_DWELL
         }
         return 0
     }

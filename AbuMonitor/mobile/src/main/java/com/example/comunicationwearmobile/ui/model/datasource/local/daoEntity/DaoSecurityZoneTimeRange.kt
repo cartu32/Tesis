@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.model.datasource.local
+package com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity
 
 import androidx.room.Dao
 import androidx.room.Insert

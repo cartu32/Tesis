@@ -1,11 +1,17 @@
 package com.example.comunicationwearmobile.ui.view.activities.calendar_assistance
 
+import android.app.Activity
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Tools
@@ -19,39 +25,88 @@ class AssistanceAddActivity : AppCompatActivity() {
     private var dateMillis: Long = 0
     private var hour:Long=0
 
+    private var txtTitle:EditText?=null
+    private var txtDescription:EditText?=null
+    private var txtDate:EditText?=null
+    private var cmdHourAppointment:Button?=null
+    private var cmdCreateAreaGeof:Button?=null
+
+    private var resultLauncher: ActivityResultLauncher<Intent>?=null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_assistance_add)
 
         dateMillis = intent.getLongExtra("date", 0)
 
-        val txtTitle = findViewById<EditText>(R.id.txtTitle)
-        val txtDescription = findViewById<EditText>(R.id.txtDescription)
-        val txtDate = findViewById<EditText>(R.id.txtDate)
-        val cmdHourAppointment = findViewById<Button>(R.id.cmdHourDate)
-        val cmdSave = findViewById<Button>(R.id.cmdCreateAreaGeof)
+        txtTitle = findViewById<EditText>(R.id.txtTitle)
+        txtDescription = findViewById<EditText>(R.id.txtDescription)
+        txtDate = findViewById<EditText>(R.id.txtDate)
+        cmdHourAppointment = findViewById<Button>(R.id.cmdHourDate)
+        cmdCreateAreaGeof = findViewById<Button>(R.id.cmdCreateAreaGeof)
 
         val dateString = Tools.getMillisToDate(dateMillis)
 
-        txtDate.setText(dateString)
+        txtDate?.setText(dateString)
 
-        cmdHourAppointment.setOnClickListener {
-            showTimePicker { millis ->
-                hour = millis
-                cmdHourAppointment.text = Tools.formatHour(millis)
+        cmdHourAppointment?.setOnClickListener { onClickListenerCmdHourAppointment() }
+        cmdCreateAreaGeof?.setOnClickListener { onClickListenerCmdSave() }
+
+        configResultLauncher()
+        configObservers()
+    }
+
+    private fun configObservers() {
+        viewModel.idNewAssistance.observe(this) {idNewAssitance ->
+            if(idNewAssitance!=-1L){
+                Toast.makeText(this,"Se guardo correctamente la cita",Toast.LENGTH_SHORT).show()
+                finish()
+            }else{
+                Toast.makeText(this,"ERROR No se pudo guardar correctamente la cita",Toast.LENGTH_SHORT).show()
+            }
+
+        }
+    }
+
+    private fun configResultLauncher() {
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+
+                val data: Intent? = result.data
+                val meters = data?.getIntExtra(Definition.INTENT_DATA_METERS, 0)
+                val latitude = data?.getStringExtra(Definition.INTENT_DATA_LATITUDE)
+                val longitude = data?.getStringExtra(Definition.INTENT_DATA_LONGITUDE)
+
+                val assistance = EntityScheduledAssistance(
+                    title = txtTitle?.text.toString(),
+                    description = txtDescription?.text.toString(),
+                    date_appointment = dateMillis,
+                    hour_appointment = hour,
+                )
+
+                if (meters != null) {
+                    if (latitude != null) {
+                        if (longitude != null) {
+                            viewModel.insert(assistance,latitude,longitude,meters)
+                            return@registerForActivityResult
+                        }
+                    }
+                }
+                Toast.makeText(this,"ERROR No se pudo guardar correctamente la cita",Toast.LENGTH_SHORT).show()
             }
         }
+    }
 
-        cmdSave.setOnClickListener {
-            val assistance = EntityScheduledAssistance(
-                title = txtTitle.text.toString(),
-                description = txtDescription.text.toString(),
-                date_appointment = dateMillis,
-                hour_appointment = hour,
-            )
-            viewModel.insert(assistance)
-            finish()
+    private fun onClickListenerCmdHourAppointment() {
+        showTimePicker { millis ->
+            hour = millis
+            cmdHourAppointment?.text = Tools.formatHour(millis)
         }
+    }
+
+    private fun onClickListenerCmdSave(){
+        var intent = Intent(this, MapsAddAssistance::class.java)
+        resultLauncher?.launch(intent)
     }
 
     private fun showTimePicker(onTimeSet: (Long) -> Unit) {
@@ -65,4 +120,9 @@ class AssistanceAddActivity : AppCompatActivity() {
         }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        viewModel.idNewAssistance.removeObservers(this)
+    }
 } 

@@ -1,28 +1,17 @@
-package com.example.abumonitor.data.model
+package com.example.comunicationwearmobile.ui.model.pojo
 
 import android.os.Parcelable
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
-import com.example.comunicationwearmobile.ui.model.datasource.local.DaoSecurityZoneTimeRange
+import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.EntityEvent
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.entities.EntitySecurityZoneTimeRange
-import java.sql.Time
 
 @kotlinx.parcelize.Parcelize
 data class JoinAreaGeofence (
     @Embedded var areaGeofence: EntityAreaGeofence,
-
- /*   @Relation(
-        parentColumn = "id_color",
-        entityColumn = "id_color"
-    )
-    var color: EntityColor,*/
-    @Relation(
-        parentColumn = "id_priority",
-        entityColumn = "id_priority"
-    )
-    var priority: EntityPriority,
 
     @Relation(
         parentColumn = "id_area",                 // de EntityAreaGeofence
@@ -40,4 +29,6 @@ data class JoinAreaGeofence (
         entityColumn = "id_area"
     )
     val securityZoneTimeRange: EntitySecurityZoneTimeRange?,//ya que es de 1 a 1 puede ser que no sea zona segura entonces no tenga time range, por lo que seria nulo
+
+
 ): Parcelable

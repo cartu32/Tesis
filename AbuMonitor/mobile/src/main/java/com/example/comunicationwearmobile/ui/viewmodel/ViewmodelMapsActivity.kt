@@ -2,24 +2,18 @@ package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.graphics.Color
-import android.os.Build
-import android.os.Bundle
 import android.util.Log
-import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.data.model.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -40,8 +34,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private var _isDeleteArea: MutableLiveData<Long?>? = MutableLiveData<Long?>()
     val isDeleteArea: LiveData<Long?>? = _isDeleteArea
 
-    private var _allAreas:MutableLiveData<List<EntityAreaGeofence>>?=MutableLiveData<List<EntityAreaGeofence>>()
-    val  allAreas: LiveData<List<EntityAreaGeofence>>? =_allAreas
+    private var _allAreas:MutableLiveData<List<AreaGeofenceForMap>>?=MutableLiveData<List<AreaGeofenceForMap>>()
+    val  allAreas: LiveData<List<AreaGeofenceForMap>>? =_allAreas
 
     private val _areaGeofenceForId = MutableLiveData<JoinAreaGeofence?>()
     val areaGeofenceForId: LiveData<JoinAreaGeofence?> = _areaGeofenceForId
@@ -69,7 +63,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private fun getListAreasGefence() {
         viewModelScope.launch(Dispatchers.IO) {
             //obtengfo el listado de la base de datos
-            val rawGeofenceList = repositoryAreaDB?.getListAllAreas()
+            val rawGeofenceList = repositoryAreaDB?.getListAreasForMap()
 
             //configuro el livedata para la view y le envio el el listado de todas las areas que estan en la bd
             //a mapactivity
@@ -80,8 +74,9 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     }
 
+
     fun insertAreaGeof(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
-        if(dataAreaGeofAux.entityAreaGeofence.security_zone){
+        if(dataAreaGeofAux.entityAreaGeofence.id_type_area==Definition.TYPE_AREA_ID_SECURITY_ZONE){
             _isSecurityZone?.postValue(true)
         }
 
@@ -114,7 +109,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
 
     fun getAreaGeofWithId(idArea: Long){
-        var dato:JoinAreaGeofence?=null
+        var dato: JoinAreaGeofence?=null
         try{
             viewModelScope.launch {
 
@@ -183,16 +178,6 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
 
 
-
-    fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
-        //Recibo los datos desde la activty PropertiesGeofence Activty
-        val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF,DataAreaGeofAux::class.java)
-        } else {
-            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
-        }
-        return dataNewAreaGeof
-    }
 
     fun onDestroyed() {
 

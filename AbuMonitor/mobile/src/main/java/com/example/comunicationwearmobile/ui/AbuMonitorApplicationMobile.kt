@@ -2,7 +2,7 @@ package com.example.abumonitor
 
 
 import android.app.Application
-import leakcanary.LeakCanary
+//import leakcanary.LeakCanary
 
 
 class AbuMonitorApplicationMobile : Application() {
@@ -10,7 +10,7 @@ class AbuMonitorApplicationMobile : Application() {
         super.onCreate()
 
         // Configuración adicional si es necesario
-        LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
+     //   LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
     }
 
 }

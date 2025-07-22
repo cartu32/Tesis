@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
@@ -18,6 +19,9 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
     private val _assistanceDetail = MutableLiveData<EntityScheduledAssistance>()
     val assistanceDetail: LiveData<EntityScheduledAssistance> get() = _assistanceDetail
 
+    private val _areaGeofenceData = MutableLiveData<EntityAreaGeofence?>()
+    val areaGeofenceData: LiveData<EntityAreaGeofence?> get() = _areaGeofenceData
+
     fun loadAssistanceDetail(id: Int) {
         viewModelScope.launch {
             val result = repoAssistance.getAssistanceWithId(id)
@@ -29,6 +33,13 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
         viewModelScope.launch {
             repositoryAreaDB.deleteAreaWithId(id)
             onComplete()
+        }
+    }
+
+    fun getAreaGeofenceById(id: Long) {
+        viewModelScope.launch {
+            val result = repositoryAreaDB.getAreaGeofenceById(id)
+            _areaGeofenceData.postValue(result)
         }
     }
 }

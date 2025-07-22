@@ -3,10 +3,18 @@ package com.example.comunicationwearmobile.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.comunicationwearmobile.ui.model.extra.InsertResultAssistance
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import kotlinx.coroutines.launch
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
+
+
+    private var repositoryGeofActivate: RepositoryGeofActivate=RepositoryGeofActivate()
+
+    private val _idNewAssistance = MutableLiveData<Long>()
+    val idNewAssistance: LiveData<Long> get() = _idNewAssistance
 
     private val repoAssistance = RepositoryScheduleAssistance
         .getInstance(application.applicationContext, viewModelScope)
@@ -37,8 +45,19 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     fun getAllEvents(): LiveData<List<EntityScheduledAssistance>> =
         repoAssistance.getAllScheduleAssitance()
 
-    fun insert(assistance: EntityScheduledAssistance) = viewModelScope.launch {
-        repoAssistance.insertScheduledAssistance(assistance, "8", "8", 300)
+    fun insert(assistance: EntityScheduledAssistance, latitude: String, longitude: String, meters: Int) {
+        viewModelScope.launch {
+            var insertResultAssistance: InsertResultAssistance? =null
+
+            insertResultAssistance=repoAssistance.insertScheduledAssistance(assistance, latitude, longitude, meters)
+
+            //si se pudo insertar correctamente la nueva area en la base de datos
+            if (insertResultAssistance!=null) {
+                //se debe activar el area de geofence para la deteccion del evento
+                //FALTA HACER
+            }
+            _idNewAssistance.postValue(insertResultAssistance?.idAssistance)
+        }
     }
 }
 

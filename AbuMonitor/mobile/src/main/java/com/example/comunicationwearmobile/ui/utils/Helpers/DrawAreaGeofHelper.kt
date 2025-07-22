@@ -13,11 +13,11 @@ class DrawAreaGeofHelper(private val mMap: GoogleMap?) {
     private var circlesMap = mutableMapOf<Long?, Circle?>()
     private var currentCircle: Circle?=null
 
-    fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double = Definition.GEOFENCE_RADIUS_DEFAULT, securityZone: Boolean = false): Circle? {
+    fun drawGeofenceArea(latitude: Double, longitude: Double, meters: Double = Definition.GEOFENCE_RADIUS_DEFAULT, colorCircle:Int=Definition.TYPE_AREA_COLOR_ERROR): Circle? {
         val latLng= LatLng(latitude,longitude)
 
 
-        val circleOptions=createCircle(latLng,meters,securityZone)
+        val circleOptions=createCircle(latLng,meters,colorCircle)
 
         circleOptions.let {
             currentCircle=mMap?.addCircle(it)
@@ -25,16 +25,9 @@ class DrawAreaGeofHelper(private val mMap: GoogleMap?) {
         return currentCircle
     }
 
-    fun createCircle(latLng: LatLng, radius: Double, securityZone: Boolean): CircleOptions {
+    fun createCircle(latLng: LatLng, radius: Double, circleBackground: Int): CircleOptions {
         val alpha = 100
-        val circleBackground: Int
         val circleBorder= Color.BLACK
-
-        circleBackground = if (!securityZone) {
-            Color.BLUE
-        } else {
-            Color.GREEN
-        }
 
         val circleOptions = CircleOptions()
             .center(latLng)

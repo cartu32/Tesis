@@ -3,48 +3,108 @@ package com.example.abumonitor.constants
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
+import android.graphics.Color
+import android.graphics.Typeface
 
 object Definition {
+
+
+
+    //TAG para hacer los logs
+    const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
+
+    //ID del Request permisson
+    //   lateinit var application:Application
+
+    /********************************************************
+     ************** constantes de configuracion del mapa*****
+     ********************************************************
+     */
+
+    //Definicion de configuracion del mapa
     const val ZOOM_MAP: Float = 15f
+    const val GEOFENCE_RADIUS_DEFAULT:Double = 100.0
+
+    /********************************************************
+     ************** constantes de la base de datos **********
+     ********************************************************
+     */
 
     //nombre del archivo de la  base de datos Room
     const val DATABASE_NAME= "AbuMonitorDatabase.db"
-    //TAG para hacer los logs
-    const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
+
+    const val COLOR_BLUE = Color.BLUE
+    const val COLOR_LIGHT_BLUE = 0xFF02196F3.toInt()
+    const val COLOR_GREEN = 0xFF04CAF50.toInt()
+    const val COLOR_RED = Color.RED
+    const val COLOR_AMBAR = 0xFF0FFC107.toInt()
+    const val COLOR_GRIS = Color.GRAY
+    const val COLOR_MAGENTA = Color.MAGENTA
+
+    const val TYPE_AREA_ID_NORMAL = 1
+    const val TYPE_AREA_ID_SECURITY_ZONE = 2
+    const val TYPE_AREA_ID_ASSISTANCE = 3
+    const val TYPE_AREA_DESC_NORMAL="Area Normal"
+    const val TYPE_AREA_DESC_SECURITY_ZONE="Zona de Seguridad"
+    const val TYPE_AREA_DESC_ASSISTANCE="Area de Asistencia"
+    const val TYPE_AREA_COLOR_NORMAL= COLOR_LIGHT_BLUE
+    const val TYPE_AREA_COLOR_SECURITY_ZONE= COLOR_GREEN
+    const val TYPE_AREA_COLOR_ASSISTANCE= COLOR_AMBAR
+    const val TYPE_AREA_COLOR_ERROR= COLOR_RED
+
+    const val GEOFENCE_EVENT_ID_ENTER = 1
+    const val GEOFENCE_EVENT_ID_EXIT = 2
+    const val GEOFENCE_EVENT_ID_DWELL = 3
+    const val GEOFENCE_EVENT_DESC_ENTER = "Entrar"
+    const val GEOFENCE_EVENT_DESC_EXIT = "Salir"
+    const val GEOFENCE_EVENT_DESC_DWELL = "Permanecer"
+
+    //constantes que indican la prioridad de las notificaciones
+    const val PRIORITY_ID_LOW   = 1
+    const val PRIORITY_ID_MEDIUM   = 2
+    const val PRIORITY_ID_HIGH  = 3
+    const val PRIORITY_DESC_LOW = "Baja"
+    const val PRIORITY_DESC_MEDIUM = "Media"
+    const val PRIORITY_DESC_HIGH = "Alta"
+
+    /********************************************************
+     ************** constantes para intents *****************
+     ********************************************************
+     */
 
     //Intent que se usa para pasar al viewmodel los datos de la nueva area de gofecne
     // cuando el usuario crea una nueva
     const val INTENT_DATA_NEW_AREA_GEOF = "INTENT_DATA_NEW_AREA_GEOF"
     const val INTENT_STATE_OPERATION = "INTENT_STATE_OPERATION"
-
-    //constantes que sirve para los intents que se la manda al foregroundservice
-    const val OPERATION_START_FOREGROUND_SERVICE = "OPERATION_INTENT"
-    const val OPERATION_GOEFENCE_SEND_SMS = "1"
-    const val INTENT_PARAM_SEND_SMS_MSG = "INTENT_PARAM_SEND_SMS_MSG"
-    const val INTENT_PARAM_SEND_SMS_LATITUDE = "INTENT_PARAM_SEND_SMS_LATITUDE"
-    const val INTENT_PARAM_SEND_SMS_LONGITUDE = "INTENT_PARAM_SEND_SMS_LONGITUDE"
-
-
+    const val INTENT_DATA_LATITUDE = "INTENT_DATA_LATITUDE"
+    const val INTENT_DATA_LONGITUDE = "INTENT_DATA_LONGITUDE"
+    const val INTENT_DATA_METERS = "INTENT_DATA_METERS"
     const val BUNDLE_FRAGMENT_RESULT_NEW_AREA = "BUNDLE_FRAGMENT_RESULT_NEW_AREA"
 
-    //tiempo minimo de permanencia en la zona de seguridad para alertar al usuario
-    const val MIN_MINUTES_STAY_IN_SECURITY_ZONE = 2
-
-    //Definicion de configuracion del mapa
-    const val GEOFENCE_RADIUS_DEFAULT:Double = 100.0
+    /********************************************************
+     ************** constantes de tiempo*****************
+     ********************************************************
+     */
 
     //constantes que indican cada cuanto tiempo se lee del gps para mover el
     //mapa
     const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=5000
     const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 2000
 
-    //tiempo que se indica para cancelar las cortuinas que estan el dispatcher
-    const val TIMEOUT_COURTINE_DISPATCH:Long = 10000
-    //ID del Request permisson
-    lateinit var application:Application
+    //rango de cantidad de minutos que se considera salida circunstancial de la zona de seguridad
+    //Esto se usa para evitar falsos posirtivos de la zona de seguridad por ejemplo si la persona
+    //pasa caminando por la zona de seguridad
+
+    const val TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 1
+    const val TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 3
 
     //Nombre de los serializables de los intent
     const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
+
+    /********************************************************
+     ************** constantes de errores********************
+     ********************************************************
+     */
 
     //constantes de errores
     const val ERROR_NULL:Long                = -1
@@ -52,18 +112,10 @@ object Definition {
     const val ERROR_ACTIVATE_GEOF:Long       = -3
     const val ERROR_INSERT_CONTACT:Long      = -4
 
-    //constantes que indican la prioridad de las notificaciones
-    const val PRIORITY_BAJA   = 1
-    const val PRIORTY_MEDIA   = 2
-    const val PRIORITY_ALTA   = 3
-
-    //rango de cantidad de minutos que se considera salida circunstancial de la zona de seguridad
-    //Esto se usa para evitar falsos posirtivos de la zona de seguridad por ejemplo si la persona
-    //pasa caminando por la zona de seguridad
-    const val TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 1
-    const val TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 3
-
-
+    /********************************************************
+     ************ constantes para mensajes a wearable********
+     ********************************************************
+     */
     const val PATH_SEND_DATA_TO_WEARABLE:String = "PATH_SEND_DATA_TO_WEARABLE"
     const val MSG_TO_WEARABLE:String="MSG_TO_WEARABLE"
 

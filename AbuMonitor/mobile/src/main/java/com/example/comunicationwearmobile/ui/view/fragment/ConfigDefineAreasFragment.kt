@@ -23,13 +23,14 @@ import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGe
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class ConfigGeofenceFragment : BottomSheetDialogFragment() {
+class ConfigDefineAreasFragment : BottomSheetDialogFragment() {
     private var seekBar: SeekBar? = null
-    private var cmdConfigArea: Button? = null
+    private var cmdActionArea: Button? = null
     private var lblMetros: TextView? = null
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
     private var radius: Double =Definition.GEOFENCE_RADIUS_DEFAULT
 
+    private val textCmdActionArea ="Configurar Geofence"
     private var listener: OnDataSentListenerMapAct? = null
 
 
@@ -56,7 +57,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
         super.onDestroy()
 
         seekBar=null
-        cmdConfigArea=null
+        cmdActionArea=null
         lblMetros=null
         activityResultLauncher=null
         listener=null
@@ -91,11 +92,13 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
 
 
         seekBar = contentView.findViewById(R.id.seekBar)
-        cmdConfigArea = contentView.findViewById(R.id.cmdConfigArea)
+        cmdActionArea = contentView.findViewById(R.id.cmdActionArea)
         lblMetros = contentView.findViewById(R.id.lblMetros)
 
+        cmdActionArea?.text = textCmdActionArea
+
         seekBar?.setOnSeekBarChangeListener(listenerSeekBar)
-        cmdConfigArea?.setOnClickListener(listenerCmdConfig)
+        cmdActionArea?.setOnClickListener(listenerCmdAction)
         seekBar?.progress = radius.toInt()
 
         configActivityResult()
@@ -147,7 +150,7 @@ class ConfigGeofenceFragment : BottomSheetDialogFragment() {
         return dataNewAreaGeof
     }
 
-    private val listenerCmdConfig =View.OnClickListener {
+    private val listenerCmdAction =View.OnClickListener {
         val intent=Intent(context, PropertiesGeofenceActivity::class.java)
         activityResultLauncher?.launch(intent)
     }

@@ -5,21 +5,23 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @Entity(
     tableName = "Area_Geofence",
     foreignKeys = [ForeignKey(
-        entity = EntityColor::class,
-        parentColumns = ["id_color"],
-        childColumns = ["id_color"]
+        entity = EntityTypeArea::class,
+        parentColumns = ["id_type_area"],
+        childColumns = ["id_type_area"]
     ), ForeignKey(
         entity = EntityPriority::class,
         parentColumns = ["id_priority"],
         childColumns = ["id_priority"]
     )], indices = [
-        Index(value = ["id_color"]) ,
+        Index(value = ["id_type_area"]) ,
         Index(value = ["id_priority"]),
     ]
 )
@@ -28,10 +30,9 @@ data class EntityAreaGeofence(
     var latitude:String= null.toString() ,
     var longitude:String= null.toString() ,
     var meters:Int=0 ,
-    var security_zone:Boolean=false ,
     var dwell_time: Int=0 ,
     var description:String= null.toString() ,
 
-    var id_color: Int =0 ,
-    var id_priority: Int =0 ,
+    var id_type_area: Int =Definition.TYPE_AREA_ID_NORMAL ,
+    var id_priority: Int =Definition.PRIORITY_ID_LOW,
 ) : Parcelable

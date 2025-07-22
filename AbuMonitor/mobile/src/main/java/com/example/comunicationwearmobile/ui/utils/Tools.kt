@@ -1,10 +1,13 @@
 package com.example.comunicationwearmobile.ui.utils
 
 import android.location.Location
+import android.os.Build
+import android.os.Bundle
 import android.os.StrictMode
 import android.text.Editable
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -76,4 +79,16 @@ object Tools {
         val min = cal.get(Calendar.MINUTE)
         return String.format("%02d:%02d", hour, min)
     }
+
+    fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
+        //Recibo los datos desde la activty PropertiesGeofence Activty
+        val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF,
+                DataAreaGeofAux::class.java)
+        } else {
+            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+        }
+        return dataNewAreaGeof
+    }
+
 }

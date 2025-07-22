@@ -6,6 +6,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.comunicationwearmobile.ui.model.extra.InsertResultAssistance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,27 +26,35 @@ class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
         }
     }
 
-    suspend fun insertScheduledAssistance(assistance: EntityScheduledAssistance,latitude:String, longitude:String, meters:Int): Long {
+
+    suspend fun insertScheduledAssistance(assistance: EntityScheduledAssistance, latitude: String, longitude: String, meters: Int): InsertResultAssistance? {
         return withContext(Dispatchers.IO) {
             try {
-                val areaGeof = EntityAreaGeofence()
-                areaGeof.latitude=latitude
-                areaGeof.longitude=longitude
-                areaGeof.meters=meters
-                areaGeof.id_priority=Definition.PRIORITY_BAJA
-                areaGeof.id_color=1
-
-                val id_area=daoAreaGeofence.insertAreaGeofence(areaGeof)
-
-                if(id_area!=-1L){
-                    assistance.id_area=id_area
-                    daoAssistance.insertScheduledAssistance(assistance)
-                }else {
-                    Definition.ERROR_INSERT_BD_GEOF
+                val areaGeof = EntityAreaGeofence().apply {
+                    description = "Area de Asistencia"
+                    this.latitude = latitude
+                    this.longitude = longitude
+                    this.meters = meters
+                    id_priority = Definition.PRIORITY_ID_LOW
+                    id_type_area = Definition.TYPE_AREA_ID_ASSISTANCE
                 }
+
+                val idArea = daoAreaGeofence.insertAreaGeofence(areaGeof)
+                if (idArea == -1L) return@withContext null
+
+                assistance.id_area = idArea
+                val idAssistance = daoAssistance.insertScheduledAssistance(assistance)
+
+                if (idAssistance == -1L) {
+                    daoAreaGeofence.deleteArea(areaGeof)
+                    return@withContext null
+                }
+                //se retorna el data class con el id de la asistencia y el id de la area de geofence
+                InsertResultAssistance(idArea, idAssistance)
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                Definition.ERROR_INSERT_CONTACT
+                null
             }
         }
     }

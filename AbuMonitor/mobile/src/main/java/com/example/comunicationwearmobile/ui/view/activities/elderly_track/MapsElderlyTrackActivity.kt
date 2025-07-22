@@ -22,7 +22,12 @@ import com.google.android.gms.maps.model.LatLng
 //Por ejemplo updateMapLocation: que actualiza la camara del mapa a la ubicacion actual
 
 class MapsElderlyTrackActivity : BaseMapActivity() {
+    //como no se puede hacer herencia multiple en kotlin y para no complicar el codigo hago lo siguiente:
+    //como el viewmodelmapsacivity se usa en 2 activities: MapsDefineAreasActivity y MapElderlyTrackActivty
+    //lo que hago es un helper que contiene las funcionalidades que usan ambas activities del
+    //viewmodelmapsactivity.
     private lateinit var mapsHelper: MapsActivityHelper
+
     private var viewmodelLoaction: ViewmodelLocation?=null
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
@@ -35,8 +40,8 @@ class MapsElderlyTrackActivity : BaseMapActivity() {
         mapsHelper.initializeViewModel()
         mapsHelper.configObservers(
             cleanMap = { cleanMap() },
-            drawArea = { lat, lng, meters, securityZone ->
-                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, securityZone)
+            drawArea = { lat, lng, meters, color ->
+                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, color)
             },
             setIdDrawnArea = { id -> drawAreaGeofHelper?.setIdDrawnArea(id) },
             showToast = { msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }

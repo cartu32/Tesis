@@ -9,9 +9,10 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
-import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
+import com.example.comunicationwearmobile.ui.view.fragment.ConfigDefineAreasFragment
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
@@ -23,6 +24,10 @@ import com.google.android.gms.maps.model.LatLng
 //cuando se crean las areas de geofence
 class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
 
+    //como no se puede hacer herencia multiple en kotlin y para no complicar el codigo hago lo siguiente:
+    //como el viewmodelmapsacivity se usa en 2 activities: MapsDefineAreasActivity y MapElderlyTrackActivty
+    //lo que hago es un helper que contiene las funcionalidades que usan ambas activities del
+    //viewmodelmapsactivity.
     private lateinit var mapsHelper: MapsActivityHelper
 
 
@@ -34,8 +39,8 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
         mapsHelper.initializeViewModel()
         mapsHelper.configObservers(
             cleanMap = { cleanMap() },
-            drawArea = { lat, lng, meters, securityZone ->
-                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, securityZone)
+            drawArea = { lat, lng, meters, color ->
+                drawAreaGeofHelper?.drawGeofenceArea(lat, lng, meters, color)
             },
             setIdDrawnArea = { id -> drawAreaGeofHelper?.setIdDrawnArea(id) },
             showToast = { msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }
@@ -61,7 +66,7 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
 
     private fun configObserverSecurityZone() {
         mapsHelper.viewmodelMapsActivity?.securityZone?.observe(this) { isSecurity ->
-            drawAreaGeofHelper?.changeColorCircle(Color.GREEN)
+            drawAreaGeofHelper?.changeColorCircle(Definition.TYPE_AREA_COLOR_SECURITY_ZONE)
         }
     }
 
@@ -101,7 +106,7 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
         super.onMapClick(latLng)
 
         //grafico en el mapa la nueva area
-        drawAreaGeofHelper?.drawGeofenceArea(latLng.latitude, latLng.longitude,Definition.GEOFENCE_RADIUS_DEFAULT,false)
+        drawAreaGeofHelper?.drawGeofenceArea(latLng.latitude, latLng.longitude,Definition.GEOFENCE_RADIUS_DEFAULT,Definition.TYPE_AREA_COLOR_NORMAL)
         showConfigGeofenceFragment(latLng)
 
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
@@ -145,11 +150,11 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
 
     private fun showConfigGeofenceFragment(latLng: LatLng) {
         val fragmentManager = supportFragmentManager
-        val configGeofenceFragment = ConfigGeofenceFragment()
+        val configDefineAreasFragment = ConfigDefineAreasFragment()
         val ft = fragmentManager.beginTransaction()
 
         //muestro el fragment de configuracion
-        configGeofenceFragment.show(ft,"configGeofenceFragment")
+        configDefineAreasFragment.show(ft,"configGeofenceFragment")
 
         //configuro el listener de respuesta del fragment
         configListenerResultFragment(latLng)
@@ -176,7 +181,7 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
     }
 
     private fun operationResultOK(bundle: Bundle, latLng: LatLng) {
-        val dataNewAreaGeofence = mapsHelper.viewmodelMapsActivity?.extractDataNewAreaOfIntent(bundle)
+        val dataNewAreaGeofence = Tools.extractDataNewAreaOfIntent(bundle)
 
         dataNewAreaGeofence?.entityAreaGeofence?.latitude = latLng.latitude.toString()
         dataNewAreaGeofence?.entityAreaGeofence?.longitude = latLng.longitude.toString()

@@ -1,4 +1,4 @@
-package com.example.abumonitor.data.datasource.local
+package com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,7 +7,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.abumonitor.data.model.EntityEvent
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceBasic
 
 @Dao
 
@@ -45,4 +47,19 @@ interface DaoAreaGeofence {
     // Actualizar el área (solo actualiza la tabla principal)
     @Update
     suspend fun updateArea(areaGeofence: EntityAreaGeofence):Int
+
+    @Query("""
+        SELECT ag.id_area, ag.latitude, ag.longitude, ag.meters, ta.id_type_area,ta.description AS type_area, ta.color
+        FROM Area_Geofence AS ag
+        INNER JOIN Type_Area AS ta ON ag.id_type_area = ta.id_type_area
+    """)
+    suspend fun getBasicAreas(): List<AreaGeofenceBasic>
+
+    @Query("""
+        SELECT *
+        FROM Event AS e
+        INNER JOIN Area_Event AS ae ON ae.id_event = e.id_event
+        WHERE ae.id_area = :areaId
+    """)
+    suspend fun getEventByArea(areaId: Long): List<EntityEvent>
 }

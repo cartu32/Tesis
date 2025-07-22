@@ -23,7 +23,7 @@ import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
@@ -31,7 +31,7 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnCheckboxClickListener
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerMultipleAdapter
 import com.example.comunicationwearmobile.ui.view.adapter.SpinnerSimpleAdapter
-import com.example.comunicationwearmobile.ui.view.fragment.ConfigGeofenceFragment
+import com.example.comunicationwearmobile.ui.view.fragment.ConfigDefineAreasFragment
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -118,7 +118,7 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
             txtDwellTime?.setText("Tiempo de permanencia " + this?.dwell_time.toString() + " (min)")
             spPriority?.setSelection((this?.id_priority?.toInt() ?: 1) - 1)
 
-            if (this?.security_zone == true) {
+            if (this?.id_type_area == Definition.TYPE_AREA_ID_SECURITY_ZONE) {
                 chkSecurityZone?.isChecked=true
                 txtMinHourSecureZone?.text = dato?.securityZoneTimeRange?.min_hour.toString()
                 txtMaxHourSecureZone?.text = dato?.securityZoneTimeRange?.max_hour.toString()
@@ -302,7 +302,7 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
             dataAreaGeofAux.secZoneTimeRange=null
         }
 
-        val resultIntent= Intent(this,ConfigGeofenceFragment::class.java)
+        val resultIntent= Intent(this,ConfigDefineAreasFragment::class.java)
 
 
         with(dataAreaGeofAux) {
@@ -318,11 +318,15 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
             with(entityAreaGeofence) {
                 //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
                 id_priority = spPriority?.selectedItemPosition?.plus(1) ?: 0
-                security_zone = chkSecurityZone?.isChecked == true
                 dwell_time = txtDwellTime?.text.toString().toIntOrNull() ?: 0
                 description = txtDescription?.text.toString()
 
-                id_color = color_blue
+                val security_zone = chkSecurityZone?.isChecked == true
+
+                if (!security_zone)
+                    id_type_area = Definition.TYPE_AREA_ID_NORMAL
+                else
+                    id_type_area = Definition.TYPE_AREA_ID_SECURITY_ZONE
             }
         }
 

@@ -1,7 +1,5 @@
 package com.example.comunicationwearmobile.ui.utils.Helpers
 
-import android.widget.Toast
-import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
@@ -29,7 +27,7 @@ class MapsActivityHelper(
     //Configura los observadores base que se usan en todas las actividades con ViewmodelMapsActivity
     fun configObservers(
         cleanMap: () -> Unit,
-        drawArea: (Double, Double, Double, Boolean) -> Unit,
+        drawArea: (Double, Double, Double, Int) -> Unit,
         setIdDrawnArea: (Long) -> Unit,
         showToast: (String) -> Unit
     ) {
@@ -47,15 +45,17 @@ class MapsActivityHelper(
 
     private fun configObserverGetAllAreasGeofence(
         cleanMap: () -> Unit,
-        drawArea: (Double, Double, Double, Boolean) -> Unit,
+        drawArea: (Double, Double, Double, Int) -> Unit,
         setIdDrawnArea: (Long) -> Unit
     ) {
         viewmodelMapsActivity?.allAreas?.observe(lifecycleOwner) { listAllAreas ->
             cleanMap()
             listAllAreas.forEach {
-                Log.d(Definition.TAG_DEBUG, "Id:{${it.id_area} Description{${it.description}}")
-                drawArea(it.latitude.toDouble(), it.longitude.toDouble(), it.meters.toDouble(), it.security_zone)
-                setIdDrawnArea(it.id_area)
+              // Descomentar el if cuando se haga la vista de asistencia
+               if(it.type_area!=Definition.TYPE_AREA_DESC_ASSISTANCE) {
+                    drawArea(it.latitude.toDouble(), it.longitude.toDouble(), it.meters.toDouble(), it.color)
+                    setIdDrawnArea(it.id_area)
+                }
             }
         }
     }

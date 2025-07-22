@@ -63,12 +63,19 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".ui.view.activities.calendar_assistance.MapsAssistance"
+            android:name=".ui.view.activities.calendar_assistance.MapsAddAssistance"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.view.activities.calendar_assistance.MapsViewAssistance"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.view.activities.common.PropertiesGeofenceActivity"
             android:exported="true">
         </activity>
        <activity android:name=".ui.view.activities.utils.EnableGpsDialog" />
-        <activity android:name=".ui.view.activities.common.PropertiesGeofenceActivity" />
-        <activity
+       <activity
             android:name=".ui.view.activities.contact.ContactsActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light">

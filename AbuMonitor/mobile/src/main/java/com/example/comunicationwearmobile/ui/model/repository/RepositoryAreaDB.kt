@@ -4,9 +4,10 @@ import android.content.Context
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
-import com.example.abumonitor.data.model.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,17 +29,23 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
         }
     }
 
-    suspend fun getListAllAreas(): List<EntityAreaGeofence> {
-        return withContext(Dispatchers.IO) {
-            val list=daoAreaGeofence.getAllAreas()
-            list
-        }
-    }
 
     suspend fun getJoinAreaGeofence(idArea: Long): JoinAreaGeofence? {
         return withContext(Dispatchers.IO) {
             try {
                 val areaGeof = daoJoinAreaGeofence.getJoinAreaGeofence(idArea = idArea)
+                areaGeof
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null  // Retorna null si hay un error
+            }
+        }
+    }
+
+    suspend fun getAreaGeofenceById(idArea: Long): EntityAreaGeofence? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val areaGeof = daoAreaGeofence.getAreaWithId(idArea = idArea)
                 areaGeof
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -105,5 +112,31 @@ class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
             }
         }
     }
+
+    suspend fun getListAreasForMap(): List<AreaGeofenceForMap> {
+        return withContext(Dispatchers.IO) {
+            // obtenemos las áreas básicas
+            val basicAreas = daoAreaGeofence.getBasicAreas()
+
+            val areasForMap = basicAreas.map { area ->
+                val eventsForArea = daoAreaGeofence.getEventByArea(area.id_area)
+
+                AreaGeofenceForMap(
+                    id_area = area.id_area,
+                    latitude = area.latitude,
+                    longitude = area.longitude,
+                    meters = area.meters,
+                    id_type_area = area.id_type_area,
+                    type_area = area.type_area,
+                    color = area.color,
+                    events = eventsForArea
+                )
+            }
+
+            // se retorna la lista construida
+            areasForMap
+        }
+    }
+
 
 }
