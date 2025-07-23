@@ -2,6 +2,7 @@ package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,9 +18,13 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
@@ -155,11 +160,36 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         return inputDate.isAfter(today) || inputDate.isEqual(today)
     }
 
-
-    fun isGreatherCurrentDateTime(date:Long,Time:Long):Boolean{
-        val currentDateTime = System.currentTimeMillis()
-        return date>currentDateTime && Time>currentDateTime
+    fun isTimeAndDateGreaterThanCurrentDate(dateMillis: Long,timeMillis: Long): Boolean {
+        if(isToday(dateMillis)){
+            if(isTimeGreaterThanCurrentTime(timeMillis)){
+                Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta bien:")
+                return true
+            }
+            Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta mal:")
+            return false
+        }
+        Log.d(Definition.TAG_DEBUG,"es un dia mayor a hoy")
+        return true
     }
+
+     fun isToday(dateMillis: Long): Boolean {
+        val formatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+
+        val today = formatter.format(Date())
+        val givenDate = formatter.format(Date(dateMillis))
+
+        return today == givenDate
+    }
+
+    fun isTimeGreaterThanCurrentTime(givenTimeMillis: Long): Boolean {
+        val currentTimeMillis = System.currentTimeMillis()
+        //se compara la hora seleccionada con la hora actual adelantada un minuto
+        val oneMinuteLater = currentTimeMillis + 60 * 1000
+
+        return givenTimeMillis >= oneMinuteLater
+    }
+
 }
 
 class AssistanceViewModelFactory(private val app: Application) : ViewModelProvider.Factory {

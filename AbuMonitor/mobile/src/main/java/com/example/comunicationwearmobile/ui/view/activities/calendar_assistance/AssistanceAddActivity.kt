@@ -108,8 +108,13 @@ class AssistanceAddActivity : AppCompatActivity() {
     }
 
     private fun onClickListenerCmdSave(){
+
         if(!isSetTimeAppointment){
             Toast.makeText(this,"Debe seleccionar una hora para la cita",Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(!viewModel.isTimeAndDateGreaterThanCurrentDate(dateMillis,hour)) {
+            Toast.makeText(this, "La hora seleccionada debe ser mayor a la actual ", Toast.LENGTH_SHORT).show()
             return
         }
         if(txtTitle?.text.toString().isEmpty()){

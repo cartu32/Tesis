@@ -88,6 +88,9 @@ object Definition {
     //Esta constante sirve para activar la deteccion de geofence a traves del broadcast
     const val ACTION_GEOFENCE_EVENT_BROADCAST: String="com.example.app.ACTION_GEOFENCE_EVENT"
 
+    //cantidad de citas maximas que se pueden agendar por cada dia
+    const val COUNT_MAX_DATE_FOR_DAY = 2
+
     /********************************************************
      ************** constantes de tiempo*****************
      ********************************************************

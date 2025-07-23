@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.adapter.AssistanceAdapter
@@ -86,6 +88,14 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
     }
 
+    private fun getCountItemsRecicleView():Int{
+        val totalItems = recyclerView.adapter?.itemCount ?: 0
+
+        Log.d(Definition.TAG_DEBUG, "Total item Recycleview: $totalItems")
+
+        return totalItems
+    }
+
     private fun configListeners() {
         calendarView.setOnMonthChangedListener { _, date ->
             val currentMonth = date.month
@@ -100,7 +110,10 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
             viewModel.selectedDateMillis.value?.let { millis ->
-
+                if(getCountItemsRecicleView()>=Definition.COUNT_MAX_DATE_FOR_DAY){
+                    Toast.makeText(this,"Se llego al maximo de citas para registrar en esta fecha",Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
                 if(!viewModel.isGreaterThanToday(millis)){
                     Toast.makeText(this,"Seleccione una fecha en el futuro",Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
