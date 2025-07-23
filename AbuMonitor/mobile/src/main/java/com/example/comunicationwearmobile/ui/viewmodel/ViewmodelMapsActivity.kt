@@ -146,7 +146,6 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     fun deleteAreaGeof(context: Context,idArea: Long) {
         viewModelScope.launch {
-            var circleToDeleteinGraphic:Circle?=null
             val error=-1
 
             val result = repositoryAreaDB?.deleteAreaWithId(idArea)

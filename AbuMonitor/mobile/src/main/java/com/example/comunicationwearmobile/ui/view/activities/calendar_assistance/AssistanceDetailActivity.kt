@@ -82,6 +82,7 @@ class AssistanceDetailActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun configObserverAssistanceDetail() {
         viewModel.assistanceDetail.observe(this) { assistance ->
             assistance?.let {
@@ -105,14 +106,21 @@ class AssistanceDetailActivity : AppCompatActivity() {
             setTitle("Eliminar cita")
             setMessage("¿Seguro que desea eliminar la cita")
             setPositiveButton("Eliminar") { _, _ ->
-                viewModel.deleteAreaById(id_area_geof){
-                    finish()
+                viewModel.deleteAreaById(context,id_area_geof){result->
+                    showDeleteResult(result)
                 }
                 Toast.makeText(this@AssistanceDetailActivity, "Cita eliminada", Toast.LENGTH_SHORT).show()
             }
             setNegativeButton("Cancelar", null)
             show()
         }
+    }
+
+    private fun showDeleteResult(result: Boolean) {
+        if(result)
+            finish()
+        else
+            Toast.makeText(this@AssistanceDetailActivity, "Error al eliminar la cita", Toast.LENGTH_SHORT).show()
     }
 
 }

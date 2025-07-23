@@ -84,11 +84,11 @@ class RepositoryGeofActivate() {
         geofencingClient.removeGeofences(geofenceRequestIds)
             .addOnSuccessListener {
                 // El Geofence ha sido eliminado correctamente
-                Log.d("Geofencing", "Geofence removed successfully")
+                Log.d(Definition.TAG_DEBUG, "Geofence removed successfully")
             }
             .addOnFailureListener { exception ->
                 // Error al eliminar el geofence
-                Log.e("Geofencing", "Failed to remove geofence: ${exception.localizedMessage}")
+                Log.e(Definition.TAG_DEBUG, "Failed to remove geofence: ${exception.localizedMessage}")
             }
     }
 
