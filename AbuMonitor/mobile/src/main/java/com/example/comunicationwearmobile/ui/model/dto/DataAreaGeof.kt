@@ -9,7 +9,7 @@ import kotlinx.parcelize.Parcelize
 // desde la actitivty properties al viewmodel cuando se ingresa un area nueva.
 @Parcelize
 data class DataAreaGeofAux(
-    val entityAreaGeofence: EntityAreaGeofence=EntityAreaGeofence(),
-    val listIdEventSelected: MutableList<Int> = mutableListOf(),
+    var entityAreaGeofence: EntityAreaGeofence=EntityAreaGeofence(),
+    var listIdEventSelected: MutableList<Int> = mutableListOf(),
     var secZoneTimeRange: EntitySecurityZoneTimeRange?=EntitySecurityZoneTimeRange()
 ):Parcelable

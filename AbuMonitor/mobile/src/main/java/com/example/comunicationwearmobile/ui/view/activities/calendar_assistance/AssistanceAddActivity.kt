@@ -90,7 +90,7 @@ class AssistanceAddActivity : AppCompatActivity() {
                 if (meters != null) {
                     if (latitude != null) {
                         if (longitude != null) {
-                            viewModel.insert(assistance,latitude,longitude,meters)
+                            viewModel.insert(this,assistance,latitude,longitude,meters)
                             return@registerForActivityResult
                         }
                     }

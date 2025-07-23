@@ -1,23 +1,38 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
+import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.comunicationwearmobile.ui.model.extra.InsertResultAssistance
+import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
 
-    private var repositoryGeofActivate: RepositoryGeofActivate=RepositoryGeofActivate()
+    private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
+    private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB
+        .getInstance(application.applicationContext, viewModelScope)
+    private val repoAssistance = RepositoryScheduleAssistance
+        .getInstance(application.applicationContext, viewModelScope)
+
 
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
-
-    private val repoAssistance = RepositoryScheduleAssistance
-        .getInstance(application.applicationContext, viewModelScope)
 
     // MutableLiveData para la fecha seleccionada
     val selectedDateMillis = MutableLiveData<Long>()
@@ -45,19 +60,105 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     fun getAllEvents(): LiveData<List<EntityScheduledAssistance>> =
         repoAssistance.getAllScheduleAssitance()
 
-    fun insert(assistance: EntityScheduledAssistance, latitude: String, longitude: String, meters: Int) {
+    fun insert(
+        context: Context,
+        assistance: EntityScheduledAssistance,
+        latitude: String,
+        longitude: String,
+        meters: Int
+    ) {
         viewModelScope.launch {
-            var insertResultAssistance: InsertResultAssistance? =null
-
-            insertResultAssistance=repoAssistance.insertScheduledAssistance(assistance, latitude, longitude, meters)
-
-            //si se pudo insertar correctamente la nueva area en la base de datos
-            if (insertResultAssistance!=null) {
-                //se debe activar el area de geofence para la deteccion del evento
-                //FALTA HACER
-            }
-            _idNewAssistance.postValue(insertResultAssistance?.idAssistance)
+            val result = handleInsertionDateAssistance(context, assistance, latitude, longitude, meters)
+            _idNewAssistance.postValue(result)
         }
+    }
+
+    //este metodo realiza toda la insercion de datos en la base de datos
+    private suspend fun handleInsertionDateAssistance(
+        context: Context,
+        assistance: EntityScheduledAssistance,
+        latitude: String,
+        longitude: String,
+        meters: Int
+    ): Long {
+        //creo e inserto una nueva area de geofence en la bd
+        val dataAreaGeofAux = createAreaGeof(latitude, longitude, meters)
+        val idNewArea = insertArea(dataAreaGeofAux)
+
+        //si no se pudo insertar la nueva area en la bd
+        if(idNewArea<0) {
+            return Definition.ERROR_INSERT_BD_GEOF
+        }
+        //si se pudo insertar la nueva area en la bd, se inserta la nueva cita de asistencia
+        dataAreaGeofAux.entityAreaGeofence.id_area = idNewArea
+        assistance.id_area=idNewArea
+        val idNewAssistance = insertAssistance(assistance)
+
+        //si no se pudo insertar la nueva cita de asistencia en la bd
+        if(idNewAssistance<0) {
+            rollbackArea(idNewArea)
+            return Definition.ERROR_INSERT_BD_GEOF
+        }
+
+        //si se pudo insertar la nueva cita de asistencia en la bd, se activa el geofence
+        val geofenceActivated = activateGeofence(context, dataAreaGeofAux)
+        //si no se pudo activar el geofence
+        if (!geofenceActivated) {
+            rollbackArea(idNewArea)
+            return Definition.ERROR_ACTIVATE_GEOF
+        }
+
+        return idNewAssistance
+    }
+
+    private suspend fun insertArea(dataAreaGeofAux: DataAreaGeofAux): Long {
+        return repositoryAreaDB.insertAreaGeofence(dataAreaGeofAux)
+    }
+
+    private suspend fun insertAssistance(assistance: EntityScheduledAssistance): Long {
+        return repoAssistance.insertScheduledAssistance(assistance)
+    }
+
+    private suspend fun rollbackArea(areaId: Long) {
+        repositoryAreaDB.deleteAreaWithId(areaId)
+    }
+
+    private suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
+        return repositoryGeofActivate.activateGeofence(context, dataAreaGeofAux)
+    }
+
+    // Configura los datos para el área geográfica
+    fun createAreaGeof(latitude: String, longitude: String, meters: Int): DataAreaGeofAux {
+        return DataAreaGeofAux().apply {
+            entityAreaGeofence = EntityAreaGeofence().apply {
+                description = "Area de Asistencia"
+                this.latitude = latitude
+                this.longitude = longitude
+                this.meters = meters
+                id_priority = Definition.PRIORITY_ID_LOW
+                id_type_area = Definition.TYPE_AREA_ID_ASSISTANCE
+            }
+            listIdEventSelected = mutableListOf(
+                Definition.GEOFENCE_EVENT_ID_ENTER,
+                Definition.GEOFENCE_EVENT_ID_EXIT
+            )
+            secZoneTimeRange = null
+        }
+    }
+
+    fun isGreaterThanToday(timestamp: Long): Boolean {
+        val inputDate = Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+
+        val today = LocalDate.now()
+        return inputDate.isAfter(today) || inputDate.isEqual(today)
+    }
+
+
+    fun isGreatherCurrentDateTime(date:Long,Time:Long):Boolean{
+        val currentDateTime = System.currentTimeMillis()
+        return date>currentDateTime && Time>currentDateTime
     }
 }
 

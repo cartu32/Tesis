@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -99,6 +100,12 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
             viewModel.selectedDateMillis.value?.let { millis ->
+
+                if(!viewModel.isGreaterThanToday(millis)){
+                    Toast.makeText(this,"Seleccione una fecha en el futuro",Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
                 val intent = Intent(this, AssistanceAddActivity::class.java)
                 intent.putExtra("date", millis)
                 startActivity(intent)
