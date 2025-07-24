@@ -12,12 +12,19 @@ import java.util.Calendar
 
 class AlarmHelper() {
 
-    fun setDailyAlarm(context: Context, hour: Int, minute: Int, receiverClass: Class<out BroadcastReceiver>) {
+    companion object {
+        private var alarmId: Int = 0
+    }
+    fun setDailyAlarm(context: Context, hour: Int, minute: Int,mAction:String, receiverClass: Class<out BroadcastReceiver>,): Int {
         val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+        alarmId++
+
         val intent = Intent(context, receiverClass).apply {
-            putExtra("hour", hour)
-            putExtra("minute", minute)
+            action=mAction
+            putExtra(Definition.INTENT_ALARM_ALARM_ID,alarmId)
+            putExtra(Definition.INTENT_ALARM_HOUR, hour)
+            putExtra(Definition.INTENT_ALARM_MINUTE, minute)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -40,6 +47,7 @@ class AlarmHelper() {
 
         configExactAlarm(calendar,pendingIntent,alarmManager)
 
+        return alarmId
     }
 
     private fun configExactAlarm(

@@ -1,10 +1,14 @@
 package com.example.comunicationwearmobile.ui.utils.Helpers
 
+import android.app.Activity
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.telephony.SmsManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import com.example.shared_library.SharedData
@@ -138,6 +142,37 @@ class SmsHelper {
             .replace("¿", "")
             .replace("[^\\p{Print}\n\r]".toRegex(), "")
     }
+
+
+    fun registerSMSReceivers(context: Context) {
+        // Receiver para el envío del SMS
+        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (resultCode) {
+                    Activity.RESULT_OK -> Log.d("SMS", " SMS enviado correctamente")
+                    SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(
+                        "SMS",
+                        " Fallo genérico al enviar SMS"
+                    )
+
+                    SmsManager.RESULT_ERROR_NO_SERVICE -> Log.e(Definition.TAG_DEBUG, " Sin servicio")
+                    SmsManager.RESULT_ERROR_NULL_PDU -> Log.e(Definition.TAG_DEBUG, " PDU nulo")
+                    SmsManager.RESULT_ERROR_RADIO_OFF -> Log.e(Definition.TAG_DEBUG, " Radio apagada")
+                }
+            }
+        }, IntentFilter("SMS_SENT"), ContextCompat.RECEIVER_NOT_EXPORTED)
+
+        // Receiver para la entrega del SMS
+        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (resultCode) {
+                    Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
+                    else -> Log.e(Definition.TAG_DEBUG, " SMS no fue entregado")
+                }
+            }
+        }, IntentFilter("SMS_DELIVERED"), ContextCompat.RECEIVER_EXPORTED)
+    }
+
 }
 
 

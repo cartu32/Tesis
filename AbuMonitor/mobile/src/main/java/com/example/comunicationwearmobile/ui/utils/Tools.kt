@@ -10,8 +10,10 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
@@ -90,5 +92,55 @@ object Tools {
         }
         return dataNewAreaGeof
     }
+
+    fun calculateTomorrowMidnight(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        return calendar.timeInMillis
+    }
+
+    fun isGreaterThanToday(timestamp: Long): Boolean {
+        val inputDate = Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+
+        val today = LocalDate.now()
+        return inputDate.isAfter(today) || inputDate.isEqual(today)
+    }
+
+    fun isTimeAndDateGreaterThanCurrentDate(dateMillis: Long,timeMillis: Long): Boolean {
+        if(isToday(dateMillis)){
+            if(isTimeGreaterThanCurrentTime(timeMillis)){
+                Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta bien:")
+                return true
+            }
+            Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta mal:")
+            return false
+        }
+        Log.d(Definition.TAG_DEBUG,"es un dia mayor a hoy")
+        return true
+    }
+
+    fun isToday(dateMillis: Long): Boolean {
+        val formatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+
+        val today = formatter.format(Date())
+        val givenDate = formatter.format(Date(dateMillis))
+
+        return today == givenDate
+    }
+
+    fun isTimeGreaterThanCurrentTime(givenTimeMillis: Long): Boolean {
+        val currentTimeMillis = System.currentTimeMillis()
+        //se compara la hora seleccionada con la hora actual adelantada un minuto
+        val oneMinuteLater = currentTimeMillis + 60 * 1000
+
+        return givenTimeMillis >= oneMinuteLater
+    }
+
 
 }

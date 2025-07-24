@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
+import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,7 +14,7 @@ import kotlinx.coroutines.withContext
 class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
     private val database = AbuMonitorDatabase.getDatabase(context, scope)
     private val daoAssistance = database.entityScheduledAssistanceDao()
-    private val daoAreaGeofence = database.entityAreaGeofenceDao()
+    private val daoJoinAreaGeofence=database.joinAreaGeofenceDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryScheduleAssistance? = null
@@ -55,5 +57,18 @@ class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
         return daoAssistance.getEventsByDate(date)
 
     }
+
+    suspend fun getAreasForTomorrow(): List<AreaGeofenceWithAppointment> {
+        //se calcula la fecha de mañana en milisegundos
+        val tomorrowDate = Tools.calculateTomorrowMidnight()
+
+        //se obtienen las areas de geofence de mañana
+        return withContext(Dispatchers.IO){
+            daoJoinAreaGeofence.getAreasWithAppointmentsTomorrow(tomorrowDate)
+        }
+    }
+
+
+
 
 }

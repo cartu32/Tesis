@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.view.adapter.AssistanceAdapter
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceViewModelFactory
 import com.example.comunicationwearmobile.ui.viewmodel.ViewModelCalendarAssistance
@@ -114,7 +115,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
                     Toast.makeText(this,"Se llego al maximo de citas para registrar en esta fecha",Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
-                if(!viewModel.isGreaterThanToday(millis)){
+                if(!Tools.isGreaterThanToday(millis)){
                     Toast.makeText(this,"Seleccione una fecha en el futuro",Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }

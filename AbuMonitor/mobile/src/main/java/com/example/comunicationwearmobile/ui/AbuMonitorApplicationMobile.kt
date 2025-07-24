@@ -26,6 +26,7 @@ class AbuMonitorApplicationMobile : Application() {
             this,
             Definition.HOUR_DAILY_ACTIVATION_GEOF,
             Definition.MINUTE_DAILY_ACTIVATION_GEOF,
+            Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF,
             AlarmDailyActivateGeofReceiver::class.java
         )
     }

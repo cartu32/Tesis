@@ -8,13 +8,21 @@ import android.graphics.Typeface
 
 object Definition {
 
+
+
     /********************************************************
      ************** constantes de configuracion de alarmas*****
      ********************************************************
      */
 
-    const val HOUR_DAILY_ACTIVATION_GEOF        = 11
-    const val MINUTE_DAILY_ACTIVATION_GEOF      = 40
+    const val HOUR_DAILY_ACTIVATION_GEOF        = 18
+    const val MINUTE_DAILY_ACTIVATION_GEOF      = 56
+
+    const val ACTION_ALARM_DAILY_ACTIVATION_GEOF      = "ACTION_ALARM_DAILY_ACTIVATION_GEOF"
+
+    const val INTENT_ALARM_ALARM_ID            = "INTENT_ALARAM_ALARM_ID"
+    const val INTENT_ALARM_HOUR                = "INTENT_ALARM_HOUR"
+    const val INTENT_ALARM_MINUTE              = "INTENT_ALARM_MINUTE"
 
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"

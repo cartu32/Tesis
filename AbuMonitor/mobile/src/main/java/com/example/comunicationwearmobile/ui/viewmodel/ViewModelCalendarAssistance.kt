@@ -17,13 +17,8 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
+import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
-import java.util.Locale
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
@@ -105,12 +100,19 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         }
 
         //si se pudo insertar la nueva cita de asistencia en la bd, se activa el geofence
+        //me fijo si corresponde a la fecha a partir de mañana. Osea que no sea hoy(la fecha actual)
+        if(!Tools.isToday(assistance.date_appointment)){
+            Log.d(Definition.TAG_DEBUG,"No se activa el geofence para la cita no es hoy")
+            return idNewAssistance
+        }
+        //
         val geofenceActivated = activateGeofence(context, dataAreaGeofAux)
         //si no se pudo activar el geofence
         if (!geofenceActivated) {
             rollbackArea(idNewArea)
             return Definition.ERROR_ACTIVATE_GEOF
         }
+        Log.d(Definition.TAG_DEBUG,"Se activo el geofence para la cita para hoy")
 
         return idNewAssistance
     }
@@ -149,46 +151,6 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
             secZoneTimeRange = null
         }
     }
-
-    fun isGreaterThanToday(timestamp: Long): Boolean {
-        val inputDate = Instant.ofEpochMilli(timestamp)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-
-        val today = LocalDate.now()
-        return inputDate.isAfter(today) || inputDate.isEqual(today)
-    }
-
-    fun isTimeAndDateGreaterThanCurrentDate(dateMillis: Long,timeMillis: Long): Boolean {
-        if(isToday(dateMillis)){
-            if(isTimeGreaterThanCurrentTime(timeMillis)){
-                Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta bien:")
-                return true
-            }
-            Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta mal:")
-            return false
-        }
-        Log.d(Definition.TAG_DEBUG,"es un dia mayor a hoy")
-        return true
-    }
-
-     fun isToday(dateMillis: Long): Boolean {
-        val formatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-
-        val today = formatter.format(Date())
-        val givenDate = formatter.format(Date(dateMillis))
-
-        return today == givenDate
-    }
-
-    fun isTimeGreaterThanCurrentTime(givenTimeMillis: Long): Boolean {
-        val currentTimeMillis = System.currentTimeMillis()
-        //se compara la hora seleccionada con la hora actual adelantada un minuto
-        val oneMinuteLater = currentTimeMillis + 60 * 1000
-
-        return givenTimeMillis >= oneMinuteLater
-    }
-
 }
 
 class AssistanceViewModelFactory(private val app: Application) : ViewModelProvider.Factory {

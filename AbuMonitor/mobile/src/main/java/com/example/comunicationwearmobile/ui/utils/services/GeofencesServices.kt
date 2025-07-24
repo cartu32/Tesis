@@ -14,7 +14,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
+import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,7 +33,7 @@ class GeofencesServices: Service() {
     private var notificationManagerHelper:NotificationHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
     private var locationObserver :Observer<Location>?=null
-
+    private val smsHelper=SmsHelper()
     override fun onCreate() {
         super.onCreate()
 
@@ -53,7 +55,7 @@ class GeofencesServices: Service() {
 
         channelLector()
         configOberserverLivedata()
-        registerSMSReceivers(this)
+        smsHelper.registerSMSReceivers(this)
     }
 
     private fun configOberserverLivedata() {
@@ -73,10 +75,41 @@ class GeofencesServices: Service() {
 
             // Encola la solicitud en el Channel
             requestChannel?.trySend(it)
+
+
         }
 
         return START_STICKY
     }
+
+    private fun channelLector() {
+        // Lector del Channel: consume las solicitudes encoladas
+
+        serviceScope?.launch {
+            requestChannel?.let { channel ->
+                for (intent in channel) {
+                    try {
+                        handleIntent(intent) // Procesa cada intent
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.e(Definition.TAG_DEBUG, "Error al procesar intent: ${e.message}")
+                    }
+                }
+            }
+        }
+
+    }
+    suspend fun handleIntent(intent: Intent?)  {
+        val geofenceHelper=GeofenceHelper(this, serviceScope)
+
+        when(intent?.action){
+            Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF-> geofenceHelper.activateGeofenceScheduled()
+        }
+    }
+
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -100,57 +133,6 @@ class GeofencesServices: Service() {
 
         Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
 
-    }
-
-    private fun channelLector() {
-        // Lector del Channel: consume las solicitudes encoladas
-
-        serviceScope?.launch {
-            requestChannel?.let { channel ->
-                for (intent in channel) {
-                    try {
-                        handleIntent(intent) // Procesa cada intent
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
-
-    }
-    private fun handleIntent(intent: Intent?)  {
-    }
-
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
-    fun registerSMSReceivers(context: Context) {
-        // Receiver para el envío del SMS
-        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (resultCode) {
-                    Activity.RESULT_OK -> Log.d("SMS", " SMS enviado correctamente")
-                    SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(
-                        "SMS",
-                        " Fallo genérico al enviar SMS"
-                    )
-
-                    SmsManager.RESULT_ERROR_NO_SERVICE -> Log.e(Definition.TAG_DEBUG, " Sin servicio")
-                    SmsManager.RESULT_ERROR_NULL_PDU -> Log.e(Definition.TAG_DEBUG, " PDU nulo")
-                    SmsManager.RESULT_ERROR_RADIO_OFF -> Log.e(Definition.TAG_DEBUG, " Radio apagada")
-                }
-            }
-        }, IntentFilter("SMS_SENT"), ContextCompat.RECEIVER_NOT_EXPORTED)
-
-        // Receiver para la entrega del SMS
-        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (resultCode) {
-                    Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
-                    else -> Log.e(Definition.TAG_DEBUG, " SMS no fue entregado")
-                }
-            }
-        }, IntentFilter("SMS_DELIVERED"), ContextCompat.RECEIVER_EXPORTED)
     }
 
 }
