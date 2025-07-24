@@ -13,7 +13,6 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
-import com.google.android.gms.maps.model.Circle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch

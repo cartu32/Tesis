@@ -8,7 +8,13 @@ import android.graphics.Typeface
 
 object Definition {
 
+    /********************************************************
+     ************** constantes de configuracion de alarmas*****
+     ********************************************************
+     */
 
+    const val HOUR_DAILY_ACTIVATION_GEOF        = 11
+    const val MINUTE_DAILY_ACTIVATION_GEOF      = 40
 
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"
@@ -149,6 +155,8 @@ object Definition {
         Manifest.permission.FOREGROUND_SERVICE_LOCATION,
         Manifest.permission.WAKE_LOCK,
         Manifest.permission.READ_CONTACTS,
+      //  Manifest.permission.USE_EXACT_ALARM,
+        Manifest.permission.SCHEDULE_EXACT_ALARM,
 
         //backoground location se pide en el viewmodel despues
         //de comprobar de que los permisos generales fueron otorgados
