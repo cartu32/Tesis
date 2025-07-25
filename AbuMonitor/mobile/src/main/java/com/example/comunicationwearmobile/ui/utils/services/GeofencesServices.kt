@@ -1,20 +1,14 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
-import android.app.Activity
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.location.Location
 import android.os.IBinder
-import android.telephony.SmsManager
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
-import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +94,7 @@ class GeofencesServices: Service() {
 
     }
     suspend fun handleIntent(intent: Intent?)  {
-        val geofenceHelper=GeofenceHelper(this, serviceScope)
+        val geofenceHelper=GeofenceScheduleHelper(this, serviceScope)
 
         when(intent?.action){
             Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF-> geofenceHelper.activateGeofenceScheduled()

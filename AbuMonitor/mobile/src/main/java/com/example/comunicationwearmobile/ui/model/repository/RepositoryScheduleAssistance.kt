@@ -64,11 +64,18 @@ class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
 
         //se obtienen las areas de geofence de mañana
         return withContext(Dispatchers.IO){
-            daoJoinAreaGeofence.getAreasWithAppointmentsTomorrow(tomorrowDate)
+            daoJoinAreaGeofence.getAreasWithAppointmentsOfTomorrow(tomorrowDate)
         }
     }
 
+    suspend fun getAreasForToday(): List<Long> {
+        //se calcula la fecha de hoy en milisegundos
+        val todayDate = Tools.calculateTodayMidnight()
 
-
+        //se obtienen las areas de geofence de hoy
+        return withContext(Dispatchers.IO){
+            daoJoinAreaGeofence.getAreasWithAppointmentsOfToday(todayDate)
+        }
+    }
 
 }

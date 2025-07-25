@@ -30,5 +30,14 @@ interface DaoJoinAreaGeofence {
         WHERE sa.date_appointment = :tomorrowDate
         GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,p.id_priority,ta.id_type_area
     """)
-    suspend fun getAreasWithAppointmentsTomorrow(tomorrowDate: Long): List<AreaGeofenceWithAppointment>
+    suspend fun getAreasWithAppointmentsOfTomorrow(tomorrowDate: Long): List<AreaGeofenceWithAppointment>
+
+    @Transaction
+    @Query("""
+         SELECT sa.id_area
+         FROM Scheduled_Assistance sa
+         WHERE sa.date_appointment = :todayDate
+    """)
+    suspend fun getAreasWithAppointmentsOfToday(todayDate: Long): List<Long>
 }
+

@@ -10,7 +10,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActi
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import kotlinx.coroutines.CoroutineScope
 
-class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
+class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
 
     private val context=mContext.applicationContext
     private var repositoryScheduleAssistance:RepositoryScheduleAssistance?=null
@@ -24,9 +24,15 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
         repositoryGeofActivate= RepositoryGeofActivate()
     }
 
+    //metodo que me desactiva las geofences que se activaron para hoy de forma programada
+    //y me activa todas las areas de geofences que fueron programadas para mañana
     suspend fun activateGeofenceScheduled() {
         var listAreasTomorrow:List<AreaGeofenceWithAppointment>?=null
 
+        //desactivo todas las geofences programadas para hoy
+        desactivateAllGeofenceToToday()
+
+        //activo todas las geofences programadas para mañana
         listAreasTomorrow=repositoryScheduleAssistance?.getAreasForTomorrow()
 
         Log.d(Definition.TAG_DEBUG,"listAreasTomorrow: $listAreasTomorrow")
@@ -36,6 +42,8 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
         }
 
     }
+
+    //metodo que activa todas las areas de geofence programadas para mañana
     suspend fun activateAllGeofenceForTomorrow(listAreasTomorrow: List<AreaGeofenceWithAppointment>) {
         var allGeofencesActivated = true
 
@@ -69,10 +77,10 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
             }
         }
 
-        checkActivationAllGeofences(context,allGeofencesActivated)
+        checkActivationAllGeofences(allGeofencesActivated)
     }
 
-    private fun checkActivationAllGeofences(context:Context,allGeofencesActivated: Boolean) {
+    private fun checkActivationAllGeofences(allGeofencesActivated: Boolean) {
         var notificationHelper:NotificationHelper?=null
 
         notificationHelper=NotificationHelper.getInstance(context)
@@ -84,7 +92,24 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
         }
     }
 
-    fun desactivateAllGeofenceToToday(){
+    //este metodo me desactiva todas las areas de geofence que fueron programadas
+    //para que esten actibvdas en el dia de hoy
+    suspend fun desactivateAllGeofenceToToday(){
+        var listAreasToday:List<Long>?=null
 
+        listAreasToday=repositoryScheduleAssistance?.getAreasForToday()
+
+        Log.d(Definition.TAG_DEBUG,"listAreasToday: $listAreasToday")
+
+        if (listAreasToday != null) {
+            desactivateAllGeofenceForToday(listAreasToday)
+        }
+
+    }
+
+    private fun desactivateAllGeofenceForToday(listAreasToday: List<Long>) {
+        for(idArea in listAreasToday){
+            repositoryGeofActivate?.desactivateGeofence(context,idArea.toString())
+        }
     }
 }
