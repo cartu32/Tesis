@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryIDNotificationSPref
@@ -160,12 +161,16 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
     }
 
 
-    private fun createChannelAlerts(): NotificationCompat.Builder {
+    private fun createChannelAlerts(
+        channelId: String ,
+        channelName: String,
+        channelDescription: String
+    ): NotificationCompat.Builder {
         val notificationChannel = NotificationChannel(
-            CHANNEL_ID_ALERTS, CHANNEL_ALERTS, NotificationManager.IMPORTANCE_HIGH
+            channelId, channelName, NotificationManager.IMPORTANCE_HIGH
         )
 
-        notificationChannel.description = "Canal de Alerta"
+        notificationChannel.description = channelDescription
         notificationChannel.enableLights(true)
         notificationChannel.lightColor = Color.RED
         notificationChannel.enableVibration(true)
@@ -173,7 +178,7 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
         manager?.createNotificationChannel(notificationChannel)
 
-        return NotificationCompat.Builder(appContext, CHANNEL_ID_ALERTS)
+        return NotificationCompat.Builder(appContext, channelId)
     }
 
     // Crea la notifcación del foregroundservice
@@ -255,9 +260,11 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
         return notification
     }
 
+    //Estas notificaciones se agrupan todas en el mismo grupo de notificaciones
+    //son utilizadas principalmente para notificaciones de alerta
     fun showNotificationGeneral(msg:SharedData.MsgNotification):Int{
         // Crear el canal de notificaciones
-        val notificationBuilder = createChannelAlerts()
+        val notificationBuilder = createChannelAlerts(CHANNEL_ID_ALERTS,CHANNEL_ALERTS,CHANNEL_DESCRIPTION_ALERTS)
 
         // crear y mostrar(muestra como una notificacion) el grupo de notificaciones
         //En este caso al crear grupo se configuro para que no se muestra una notificacion
@@ -275,7 +282,22 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
         return notificationId
     }
 
+    @SuppressLint("MissingPermission")
+    fun showNotificationIndependent(context:Context, title:String, msg:String){
+        val notificationBuilder = createChannelAlerts(CHANNEL_ID_INDEPENDENT,CHANNEL_INDEPENDENT,CHANNEL_DESCRIPTION_INDEPENDENT)
 
+        notificationBuilder
+            .setSmallIcon(R.drawable.ic_old_person)
+            .setContentTitle(title)
+            .setContentText(msg)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        idNotificationIndependent++
+
+        with(NotificationManagerCompat.from(context)) {
+            notify(idNotificationIndependent, notificationBuilder.build())
+        }
+    }
 
     companion object {
         const val CHANNEL_FOREGROUND_SERVICE = "Foregroundservice"
@@ -285,10 +307,17 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
         const val CHANNEL_ALERTS = "Alertas"
         const val CHANNEL_ID_ALERTS = "Channel_ID_Alerts"
+        const val CHANNEL_DESCRIPTION_ALERTS = "canal de alertas"
+
+        const val CHANNEL_INDEPENDENT = "Independiente"
+        const val CHANNEL_ID_INDEPENDENT="Channel_ID_Independent"
+        const val CHANNEL_DESCRIPTION_INDEPENDENT = "canal independiente"
 
         const val KEY_LIST_NOTIFICATION_SP = "KEY_LIST_NOTIFICATION_SP"
 
         const val FIRST_ITEM_LIST_NOTIF = 255
+
+        var idNotificationIndependent=0
 
         var instance: NotificationHelper? = null
 

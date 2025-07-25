@@ -15,8 +15,8 @@ object Definition {
      ********************************************************
      */
 
-    const val HOUR_DAILY_ACTIVATION_GEOF        = 18
-    const val MINUTE_DAILY_ACTIVATION_GEOF      = 56
+    const val HOUR_DAILY_ACTIVATION_GEOF        = 21
+    const val MINUTE_DAILY_ACTIVATION_GEOF      = 36
 
     const val ACTION_ALARM_DAILY_ACTIVATION_GEOF      = "ACTION_ALARM_DAILY_ACTIVATION_GEOF"
 

@@ -37,6 +37,8 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
 
     }
     suspend fun activateAllGeofenceForTomorrow(listAreasTomorrow: List<AreaGeofenceWithAppointment>) {
+        var allGeofencesActivated = true
+
         //activo cada area de geofence de mañana
         for(areaTomorrow in listAreasTomorrow){
 
@@ -61,8 +63,24 @@ class GeofenceHelper(mContext:Context, scope: CoroutineScope?) {
                                                     listIdEventSelected = events,
                                                     secZoneTimeRange = null // o como lo necesites
                                                 )
-            repositoryGeofActivate?.activateGeofence(context,areaForActivate)
+            //activo el area de geofence y si hay algun error lo indico en allGeofencesActivated
+            if(repositoryGeofActivate?.activateGeofence(context,areaForActivate)==false){
+                allGeofencesActivated=false
+            }
+        }
 
+        checkActivationAllGeofences(context,allGeofencesActivated)
+    }
+
+    private fun checkActivationAllGeofences(context:Context,allGeofencesActivated: Boolean) {
+        var notificationHelper:NotificationHelper?=null
+
+        notificationHelper=NotificationHelper.getInstance(context)
+
+        if(allGeofencesActivated){
+            notificationHelper?.showNotificationIndependent(context,"Abumonitor","Se activaron las areas programadas para mañana")
+        }else{
+            notificationHelper?.showNotificationIndependent(context,"Abumonitor","No se pudo activar alguna area de geofence para mañana")
         }
     }
 
