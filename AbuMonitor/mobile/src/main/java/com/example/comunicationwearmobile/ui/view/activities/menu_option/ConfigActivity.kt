@@ -14,7 +14,6 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyActivateGeofReceiver
 import java.util.Calendar
 import java.util.Locale
@@ -25,6 +24,8 @@ class ConfigActivity: AppCompatActivity() {
     private var cmdDateAlarmCheckAssistance: Button? = null
     private var cmdSaveConfig: Button? = null
     private var cmdCancelConfig: Button? = null
+
+
     private var isChangedAlarmActivateGeof=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,13 +42,21 @@ class ConfigActivity: AppCompatActivity() {
         cmdDateAlarmActivateGeof?.setOnClickListener {listenerCmdDateAlarmActivateGeof()}
         cmdDateAlarmCheckAssistance?.setOnClickListener {listenerCmdDateAlarmCheckAssistance()}
 
+        //seteo el texto del boton para configurar la alarma para activar geofence segun el valor cargado.
+        cmdDateAlarmActivateGeof?.text = String.format(Locale.getDefault(), "%02d:%02d", SharedVariables.hourDailyActivateGeofence, SharedVariables.minuteDailyActivateGeofence)
+
         configActionBar()
     }
 
     private fun listenerCmdSaveConfig() {
-        val alarmHelper=AlarmHelper()
+        if(saveHourAlarmActivateGeof())
+            finish()
+    }
 
+    private fun saveHourAlarmActivateGeof(): Boolean {
         with(SharedVariables) {
+            val alarmHelper=AlarmHelper()
+
             if (isChangedAlarmActivateGeof) {
                 alarmHelper.cancelAlarm(
                     this@ConfigActivity,
@@ -69,8 +78,11 @@ class ConfigActivity: AppCompatActivity() {
 
                 Log.d(Definition.TAG_DEBUG, "Alarma Activate Geofence cancelada")
                 Toast.makeText(this@ConfigActivity, "Alarma configurada correctamente", Toast.LENGTH_SHORT).show()
+                return true
             }
+            Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
         }
+        return false
     }
 
     private fun listenerCmdCancelConfig() {
