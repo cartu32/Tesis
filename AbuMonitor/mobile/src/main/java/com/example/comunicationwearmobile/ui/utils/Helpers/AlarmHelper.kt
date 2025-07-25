@@ -9,26 +9,39 @@ import android.os.Build
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import java.util.Calendar
-
-class AlarmHelper() {
+class AlarmHelper {
 
     companion object {
-        private var alarmId: Int = 0
+        private var alarmIdCounter: Int = 0
     }
-    fun setDailyAlarm(context: Context, hour: Int, minute: Int,mAction:String, receiverClass: Class<out BroadcastReceiver>,): Int {
-        val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        alarmId++
+    /**
+     * Crea una alarma diaria exacta.
+     * @return el ID único de la alarma, útil para cancelarla después.
+     */
+    fun setDailyAlarm(
+        context: Context,
+        hour: Int,
+        minute: Int,
+        mAction: String,
+        receiverClass: Class<out BroadcastReceiver>
+    ): Int {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val alarmId = ++alarmIdCounter // ID único para esta alarma
 
         val intent = Intent(context, receiverClass).apply {
-            action=mAction
-            putExtra(Definition.INTENT_ALARM_ALARM_ID,alarmId)
+            action = mAction
+            putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
             putExtra(Definition.INTENT_ALARM_HOUR, hour)
             putExtra(Definition.INTENT_ALARM_MINUTE, minute)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
-            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            context,
+            alarmId, // ahora usamos un ID único
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val calendar = Calendar.getInstance().apply {
@@ -37,17 +50,35 @@ class AlarmHelper() {
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
+
+            if (timeInMillis <= System.currentTimeMillis()) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
         }
 
-        // Si la hora ya pasó hoy, programar para mañana
-        if (calendar.timeInMillis <= System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-        }
-
-
-        configExactAlarm(calendar,pendingIntent,alarmManager)
+        configExactAlarm(calendar, pendingIntent, alarmManager)
 
         return alarmId
+    }
+
+    /**
+     * Cancela una alarma previamente creada usando el mismo alarmId.
+     */
+    fun cancelAlarm(context: Context, alarmId: Int, mAction: String, receiverClass: Class<out BroadcastReceiver>) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val intent = Intent(context, receiverClass).apply {
+            action = mAction
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            alarmId, // debe coincidir con el usado en setDailyAlarm
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.cancel(pendingIntent)
     }
 
     private fun configExactAlarm(
@@ -55,9 +86,8 @@ class AlarmHelper() {
         pendingIntent: PendingIntent,
         alarmManager: AlarmManager
     ) {
-
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -65,19 +95,14 @@ class AlarmHelper() {
                         pendingIntent
                     )
                 } else {
-                    // No tiene permiso para alarmas exactas
-                    // Aquí podés usar alarmas inexactas como fallback
                     alarmManager.set(
                         AlarmManager.RTC_WAKEUP,
                         calendar.timeInMillis,
                         pendingIntent
                     )
-                    // O mostrar UI para que usuario habilite permiso
-                    // También podés informar con un Toast o Log
                     Log.w(Definition.TAG_DEBUG, "No tiene permiso para alarmas exactas. Se usa alarma inexacta.")
                 }
             } else {
-                // Android < 12, no hay restricciones
                 alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
@@ -85,9 +110,7 @@ class AlarmHelper() {
                 )
             }
         } catch (e: SecurityException) {
-            // Capturar excepción si falta permiso (por si acaso)
-            Log.e("Alarm", "SecurityException al programar alarma exacta: ${e.message}")
-            // Podés intentar usar alarma inexacta como fallback
+            Log.e("AlarmHelper", "Error al programar alarma exacta: ${e.message}")
             alarmManager.set(
                 AlarmManager.RTC_WAKEUP,
                 calendar.timeInMillis,
@@ -95,5 +118,4 @@ class AlarmHelper() {
             )
         }
     }
-
 }

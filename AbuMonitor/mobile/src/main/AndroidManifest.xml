@@ -96,7 +96,10 @@
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light">
         </activity>
-
+        <activity android:name=".ui.view.activities.menu_option.ConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
 
         <!--SERVICES AND OTHERS-->
         <service

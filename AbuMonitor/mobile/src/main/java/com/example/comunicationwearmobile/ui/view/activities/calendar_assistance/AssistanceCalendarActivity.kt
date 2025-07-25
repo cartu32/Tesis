@@ -3,7 +3,9 @@ package com.example.comunicationwearmobile.ui.view.activities.calendar_assistanc
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.widget.Button
@@ -55,15 +57,22 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         // Inicializa decoradores con el mes actual
         var currentMonth = calendarView.currentDate.month
 
+        configActionBar()
         configListdapter()
         configListeners()
         configObserver(currentMonth)
         updateMonthDecorators(currentMonth)
-
-
-
-
     }
+
+    private fun configActionBar() {
+        val actionBar = supportActionBar
+        actionBar?.title = "AbuMonitor"
+        actionBar?.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        val textColor = SpannableString(actionBar?.title ?: "")
+        textColor.setSpan(ForegroundColorSpan(Color.WHITE), 0, textColor.length, 0)
+        actionBar?.title = textColor
+    }
+
 
     private fun configObserver(currentMonth: Int) {
         // Observa los eventos filtrados por fecha seleccionada

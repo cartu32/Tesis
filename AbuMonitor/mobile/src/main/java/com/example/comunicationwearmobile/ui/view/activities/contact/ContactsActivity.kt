@@ -1,8 +1,12 @@
 package com.example.comunicationwearmobile.ui.view.activities.contact
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -41,11 +45,21 @@ class ContactsActivity : AppCompatActivity() {
         recyclerPhone?.layoutManager = LinearLayoutManager(this)
         recyclerSaved?.layoutManager = LinearLayoutManager(this)
 
+        configActionBar()
         configAdapters()
         configListeners()
         configObservers()
 
         viewModel.loadPhoneContacts(contentResolver)
+    }
+
+    private fun configActionBar() {
+        val actionBar = supportActionBar
+        actionBar?.title = "AbuMonitor"
+        actionBar?.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        val textColor = SpannableString(actionBar?.title ?: "")
+        textColor.setSpan(ForegroundColorSpan(Color.WHITE), 0, textColor.length, 0)
+        actionBar?.title = textColor
     }
 
     private fun configListeners() {

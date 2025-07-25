@@ -3,7 +3,11 @@ package com.example.comunicationwearmobile.ui.view.activities.calendar_assistanc
 import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -57,6 +61,16 @@ class AssistanceAddActivity : AppCompatActivity() {
 
         configResultLauncher()
         configObservers()
+        configActionBar()
+    }
+
+    private fun configActionBar() {
+        val actionBar = supportActionBar
+        actionBar?.title = "AbuMonitor"
+        actionBar?.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        val textColor = SpannableString(actionBar?.title ?: "")
+        textColor.setSpan(ForegroundColorSpan(Color.WHITE), 0, textColor.length, 0)
+        actionBar?.title = textColor
     }
 
     private fun configObservers() {

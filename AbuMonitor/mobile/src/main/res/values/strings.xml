@@ -31,6 +31,11 @@
     <string name="descripci_n">Descripción</string>
     <string name="borrar_cita">Eliminar Cita</string>
     <string name="view_location">Ver ubicacion</string>
+    <string name="configuracion">Configuracion</string>
+    <string name="cambiar_modo_usuario">Entrar modo administrador</string>
+    <string name="hora_de_alarma_para_activar_geofence">Hora para activar geofence del dia siguiente</string>
+    <string name="configurar_hora_de_alarma">Configurar hora de alarma</string>
+    <string name="hora_de_alarma_para_verificar_asistencia">Hora para verificar asistencia del dia actual</string>
 
 
     <string-array name="spinner_events">

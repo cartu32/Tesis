@@ -2,23 +2,21 @@ package com.example.comunicationwearmobile.ui.view.activities.calendar_assistanc
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityContact
-import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceDetailViewModel
-import kotlinx.coroutines.launch
-import java.util.*
+
 class AssistanceDetailActivity : AppCompatActivity() {
     private var title:TextView?=null
     private var desc:TextView?=null
@@ -41,6 +39,7 @@ class AssistanceDetailActivity : AppCompatActivity() {
         cmdDelete = findViewById<Button>(R.id.cmdDeleteDate)
         cmdViewLocation = findViewById<Button>(R.id.cmdViewLocation)
 
+        configActionBar()
         initViewModel()
         configObserver()
 
@@ -48,6 +47,15 @@ class AssistanceDetailActivity : AppCompatActivity() {
         cmdViewLocation?.setOnClickListener { cmdViewLocationListener()}
 
         viewModel.loadAssistanceDetail(assistanceId)
+    }
+
+    private fun configActionBar() {
+        val actionBar = supportActionBar
+        actionBar?.title = "AbuMonitor"
+        actionBar?.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        val textColor = SpannableString(actionBar?.title ?: "")
+        textColor.setSpan(ForegroundColorSpan(Color.WHITE), 0, textColor.length, 0)
+        actionBar?.title = textColor
     }
 
     private fun cmdDeleteListener() {

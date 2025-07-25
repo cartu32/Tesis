@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.StrictMode
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -24,6 +26,7 @@ import com.example.comunicationwearmobile.ui.view.activities.areas_geofence.Maps
 import com.example.comunicationwearmobile.ui.view.activities.calendar_assistance.AssistanceCalendarActivity
 import com.example.comunicationwearmobile.ui.view.activities.contact.ContactsActivity
 import com.example.comunicationwearmobile.ui.view.activities.elderly_track.MapsElderlyTrackActivity
+import com.example.comunicationwearmobile.ui.view.activities.menu_option.ConfigActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
 
@@ -215,6 +218,26 @@ class MainMenuActivity : AppCompatActivity() {
 
     }
 
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_option, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.opt_cambiar_modo_usuario -> {
+                Toast.makeText(this, "Opción 1", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.opt_configuracion -> {
+                val intent=Intent(this, ConfigActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     private fun freeListeners() {
         val buttons = listOf(

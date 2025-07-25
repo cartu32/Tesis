@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
@@ -29,8 +30,8 @@ class AlarmDailyActivateGeofReceiver: BroadcastReceiver() {
         val alarmHelper=AlarmHelper()
         alarmHelper.setDailyAlarm(
             context,
-            Definition.HOUR_DAILY_ACTIVATION_GEOF,
-            Definition.MINUTE_DAILY_ACTIVATION_GEOF,
+            SharedVariables.hourDailyActivateGeofence,
+            SharedVariables.minuteDailyActivateGeofence,
             Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF,
             AlarmDailyActivateGeofReceiver::class.java
         )
