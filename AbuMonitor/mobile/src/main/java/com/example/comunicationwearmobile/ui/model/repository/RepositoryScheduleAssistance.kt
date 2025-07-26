@@ -7,21 +7,23 @@ import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
 import com.example.comunicationwearmobile.ui.utils.Tools
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
-    private val database = AbuMonitorDatabase.getDatabase(context, scope)
+class RepositoryScheduleAssistance(context: Context) {
+
+    private val database = AbuMonitorDatabase.getDatabase(context)
     private val daoAssistance = database.entityScheduledAssistanceDao()
     private val daoJoinAreaGeofence=database.joinAreaGeofenceDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryScheduleAssistance? = null
 
-        fun getInstance(context: Context,scope: CoroutineScope): RepositoryScheduleAssistance {
+        fun getInstance(context: Context): RepositoryScheduleAssistance {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: RepositoryScheduleAssistance(context,scope).also { INSTANCE = it }
+                INSTANCE ?: RepositoryScheduleAssistance(context.applicationContext).also {
+                    INSTANCE = it
+                }
             }
         }
     }
@@ -54,9 +56,16 @@ class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
     }
 
     fun getEventsByDate(date: Long): LiveData<List<EntityScheduledAssistance>> {
-        return daoAssistance.getEventsByDate(date)
+        return daoAssistance.getAppointmetByDate(date)
 
     }
+
+    suspend fun getAssistanceWithAreaId(idArea: Long): EntityScheduledAssistance {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getAppointmetByIdArea(idArea)
+        }
+    }
+
 
     suspend fun getAreasForTomorrow(): List<AreaGeofenceWithAppointment> {
         //se calcula la fecha de mañana en milisegundos
@@ -77,5 +86,9 @@ class RepositoryScheduleAssistance(context: Context, scope: CoroutineScope) {
             daoJoinAreaGeofence.getAreasWithAppointmentsOfToday(todayDate)
         }
     }
-
+    suspend fun updateScheduleAssistance(assistance: EntityScheduledAssistance): Int {
+        return withContext(Dispatchers.IO){
+            daoAssistance.updateScheduledAssistance(assistance)
+        }
+    }
 }

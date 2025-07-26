@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 
 class AssistanceDetailViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repoAssistance = RepositoryScheduleAssistance(application, viewModelScope)
-    private val repositoryAreaDB = RepositoryAreaDB(application, viewModelScope)
+    private val repoAssistance = RepositoryScheduleAssistance(application)
+    private val repositoryAreaDB = RepositoryAreaDB(application)
 
     private val _assistanceDetail = MutableLiveData<EntityScheduledAssistance>()
     val assistanceDetail: LiveData<EntityScheduledAssistance> get() = _assistanceDetail

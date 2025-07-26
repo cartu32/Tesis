@@ -23,7 +23,8 @@ import kotlinx.parcelize.Parcelize
     var title: String = "",
     var date_appointment:Long=0, //dia en que tiene la cita
     var hour_appointment:Long=0, //hora en que tiene la cita
-    var hour_attendance:Long=0,  //hora en que realmente asisto a la cita
+    var hour_enter_assistance:Long=0,  //hora en que realmente asisto a la cita
+    var hour_exit_assistance:Long=0,  //hora en que realmente salio de la cita
     var description:String="",
     var status:Boolean=false,
     var id_area: Long = 0,

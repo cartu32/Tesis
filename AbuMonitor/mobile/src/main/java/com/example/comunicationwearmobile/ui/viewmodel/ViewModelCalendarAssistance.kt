@@ -22,13 +22,9 @@ import kotlinx.coroutines.launch
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
-
     private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
-    private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB
-        .getInstance(application.applicationContext, viewModelScope)
-    private val repoAssistance = RepositoryScheduleAssistance
-        .getInstance(application.applicationContext, viewModelScope)
-
+    private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
+    private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
 
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
@@ -134,7 +130,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     }
 
     // Configura los datos para el área geográfica
-    fun createAreaGeof(latitude: String, longitude: String, meters: Int): DataAreaGeofAux {
+    private fun createAreaGeof(latitude: String, longitude: String, meters: Int): DataAreaGeofAux {
         return DataAreaGeofAux().apply {
             entityAreaGeofence = EntityAreaGeofence().apply {
                 description = "Area de Asistencia"

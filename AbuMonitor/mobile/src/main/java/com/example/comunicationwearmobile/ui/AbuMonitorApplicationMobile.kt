@@ -4,8 +4,12 @@ package com.example.abumonitor
 import android.app.Application
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
+import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyActivateGeofReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 //import leakcanary.LeakCanary
 
@@ -13,12 +17,24 @@ import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyActivateG
 class AbuMonitorApplicationMobile : Application() {
     override fun onCreate() {
         super.onCreate()
-        initializeAplication()
-        // Configuración adicional si es necesario
-     //   LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
+
+        initilizerDB()
+        initializeAlarm()
+        configLeakCanary()
+
+      }
+
+
+    private fun initilizerDB() {
+        val dbInitializer = dbInitializer()
+
+        // Iniciar la base de datos en background
+        CoroutineScope(Dispatchers.Default).launch {
+            dbInitializer.checkAndInitDatabase(applicationContext)
+        }
     }
 
-    private fun initializeAplication() {
+    private fun initializeAlarm() {
         val alarmHelper = AlarmHelper()
 
         with(SharedVariables) {
@@ -37,6 +53,10 @@ class AbuMonitorApplicationMobile : Application() {
                     AlarmDailyActivateGeofReceiver::class.java
                 )
         }
+    }
+    private fun configLeakCanary() {
+        // Configuración adicional si es necesario
+        //   LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
     }
 
 }

@@ -122,6 +122,9 @@ object Definition {
     const val TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 1
     const val TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE = 3
 
+    //rango de minutos que se considera dentro del horario de asistencia
+    const val TIME_MIN_IN_ASSISTANCE_ZONE: Long  =1
+
     //Nombre de los serializables de los intent
     const val  RESOLVABLE_API_EXCEPTION: String = "Resolvable_Api"
 

@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 class SmsHelper {
 
     fun sendSMSFallDetection(context: Context, message: ByteArray){
-        val repositoryContact= RepositoryContact(context, CoroutineScope(Dispatchers.IO))
+        val repositoryContact= RepositoryContact(context)
 
         val listContact=repositoryContact.getAllContactList()
         val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
@@ -64,7 +64,7 @@ class SmsHelper {
         geofLatitude: String,
         geofLongitude: String
     ) {
-        val repositoryContact= RepositoryContact(context, CoroutineScope(Dispatchers.IO))
+        val repositoryContact= RepositoryContact(context)
         val listContact=repositoryContact.getAllContactList()
 
         val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"

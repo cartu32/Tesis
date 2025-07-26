@@ -8,6 +8,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
@@ -39,7 +40,7 @@ class GeofenceWorker(
         val transition = inputData.getInt("transition", -1)
         val triggeringIds = inputData.getStringArray("triggering_ids")?.mapNotNull { it.toLongOrNull() } ?: return@withTimeoutOrNull Result.failure()
 
-        val repository = RepositoryAreaDB(context, CoroutineScope(Dispatchers.IO))
+        val repository = RepositoryAreaDB(context)
 
         for (idAreaGeofence in triggeringIds) {
             val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence)
@@ -49,15 +50,23 @@ class GeofenceWorker(
             geofLongitude= areaGeof?.areaGeofence?.longitude.toString()
             geofLatitude=areaGeof?.areaGeofence?.latitude.toString()
 
-            if (areaGeof?.areaGeofence?.id_type_area == Definition.TYPE_AREA_ID_SECURITY_ZONE) {
-                analizeSecurityZone(context, areaGeof, transition)
-            } else {
-                analizeNormalZone(context, areaGeof, transition)
+            when(areaGeof?.areaGeofence?.id_type_area){
+                Definition.TYPE_AREA_ID_NORMAL ->analizeNormalZone(context, areaGeof, transition)
+                Definition.TYPE_AREA_ID_SECURITY_ZONE ->analizeSecurityZone(context, areaGeof, transition)
+                Definition.TYPE_AREA_ID_ASSISTANCE ->analizeAssistanceZone(context, areaGeof.areaGeofence.id_area, transition)
             }
         }
 
         Result.success()
     } ?: Result.failure()
+
+
+    private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
+        val msg = areaGeof?.areaGeofence?.let {
+            createMsg(transition, it.description, it.dwell_time)
+        } ?: return
+        determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
+    }
 
     private fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
 
@@ -74,6 +83,102 @@ class GeofenceWorker(
                 )
             }
         }
+    }
+
+    private suspend fun analizeAssistanceZone(context: Context, idArea: Long, transition: Int) {
+
+
+        when (transition) {
+            Geofence.GEOFENCE_TRANSITION_ENTER -> {
+                processEnterAssistenceZone(context,idArea)
+            }
+
+            Geofence.GEOFENCE_TRANSITION_EXIT -> {
+                proccessExitAssistanceZone(context,idArea)
+            }
+        }
+    }
+
+    private suspend fun processEnterAssistenceZone(context: Context, idArea: Long) {
+        val repositoryScheduleAssistance=RepositoryScheduleAssistance(context)
+        val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
+
+        with(entityAssistance){
+            //pregunto si la persona ya asistio a la cita
+            if(status){
+                Log.d(Definition.TAG_DEBUG,"Ya asistio a la cita")
+                return
+            }
+
+            //pregunto si la fecha de la cita es para el dia de hoy
+            if(!Tools.isToday(date_appointment)){
+                Log.e(Definition.TAG_DEBUG,"Error en la fecha de la cita")
+                return
+            }
+
+            //si es para el dia hoy, pregunto si esta la persona dentro del horario de la cita
+            if(!Tools.isTimeEnterAssistanceCorrect(hour_appointment)){
+                Log.d(Definition.TAG_DEBUG,"Se descarta la entrada porque no esta dentro del horario de la cita")
+                return
+            }
+
+            hour_enter_assistance=System.currentTimeMillis()
+
+            val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+
+            if(respUpdate==1){
+                Log.d(Definition.TAG_DEBUG,"Hora de entrada de la cita actualizada")
+            }else{
+                Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
+            }
+        }
+    }
+
+    private suspend fun proccessExitAssistanceZone(context: Context, idArea: Long) {
+
+        val minuteInMillis=60000L
+        val repositoryScheduleAssistance=RepositoryScheduleAssistance(context)
+        val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
+
+        with(entityAssistance) {
+            //pregunto si la persona ya asistio a la cita
+            if (status) {
+                Log.d(Definition.TAG_DEBUG, "Ya asistio a la cita")
+                return
+            }
+            //si la persona todavia no ingreso en el horario que debia ingresar se descarta el evento
+            if(hour_enter_assistance==0L){
+                Log.d(Definition.TAG_DEBUG,"La persona todavia no ingreso a la zona de asistencia en el horario agendado")
+                return
+            }
+
+            val hourExit=System.currentTimeMillis()
+            //conveirto el tiempo que estuvo en la zona de asistencia a minutos
+            val timeInAssitanceZone = (hourExit - hour_enter_assistance)/minuteInMillis
+
+            //si la persona menos de un minuto en la zona de asistencia descartamos el evento
+            if(timeInAssitanceZone<Definition.TIME_MIN_IN_ASSISTANCE_ZONE){
+                Log.d(Definition.TAG_DEBUG,"Se descarta la salida porque estuvo menos de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos")
+                return
+            }
+
+            //si la persona estuvo mas de un minuto en la zona de asistencia se lo considera como que asistio a la cita
+            Log.d(Definition.TAG_DEBUG,"La persona asistio a la cita, estuvo mas de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos en la zona de asistencia")
+
+            //guardo en la base de datos la hora de salida de la cita e indico que asistio a la cita
+            hour_exit_assistance=hourExit
+            status=true
+
+            val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+
+            if(respUpdate==1){
+                Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
+            }else{
+                Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
+            }
+
+        }
+
     }
 
     private fun processEnterSecurityZone(context: Context, description: String) {
@@ -149,12 +254,7 @@ class GeofenceWorker(
         Log.d(Definition.TAG_DEBUG,msgSMS)
     }
 
-    private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
-        val msg = areaGeof?.areaGeofence?.let {
-            createMsg(transition, it.description, it.dwell_time)
-        } ?: return
-        determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
-    }
+
 
 
 

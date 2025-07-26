@@ -152,5 +152,17 @@ object Tools {
         return givenTimeMillis >= oneMinuteLater
     }
 
+    fun isTimeEnterAssistanceCorrect(timeAppointment: Long): Boolean {
+        //a la hora de la cita le resto 30 minutos por si llega antes de la hora
+        val earlyMinutes = 30*60*1000
+        val timeAppointmentEarly = timeAppointment - earlyMinutes
+
+        //obtengo la hora actual
+        val currentTimeMillis = System.currentTimeMillis()
+
+        //pregunto si la hora a la que llego la persona
+        //es mayor o igual a la hora de la cita menos 30 minutos
+        return currentTimeMillis >= timeAppointmentEarly
+    }
 
 }

@@ -9,8 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class RepositoryContact(context: Context, scope: CoroutineScope) {
-    private val database = AbuMonitorDatabase.getDatabase(context, scope)
+class RepositoryContact(context: Context) {
+    private val database = AbuMonitorDatabase.getDatabase(context)
     private val daoContact = database.entityContactDao()
 
     suspend fun insertContact(contact: EntityContact): Long {

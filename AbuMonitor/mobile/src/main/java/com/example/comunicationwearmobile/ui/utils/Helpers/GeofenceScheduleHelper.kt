@@ -18,7 +18,7 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
     init {
         repositoryScheduleAssistance=
             scope?.let {
-                RepositoryScheduleAssistance.getInstance(context, it)
+                RepositoryScheduleAssistance.getInstance(context)
             }
 
         repositoryGeofActivate= RepositoryGeofActivate()

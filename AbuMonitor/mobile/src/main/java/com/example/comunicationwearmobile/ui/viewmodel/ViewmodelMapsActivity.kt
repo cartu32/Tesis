@@ -48,7 +48,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
             withContext(Dispatchers.Main) {
 
-                repositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext, viewModelScope)
+                repositoryAreaDB = RepositoryAreaDB.getInstance(application)
                 repositoryGeofActivate = RepositoryGeofActivate()
 
                 getListAreasGefence()

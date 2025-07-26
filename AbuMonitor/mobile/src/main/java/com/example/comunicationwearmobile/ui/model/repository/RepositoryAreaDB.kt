@@ -11,24 +11,25 @@ import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+class RepositoryAreaDB (context: Context) {
 
-class RepositoryAreaDB(context: Context, scope: CoroutineScope) {
-    private val database = AbuMonitorDatabase.getDatabase(context, scope)
+    private val database = AbuMonitorDatabase.getDatabase(context.applicationContext)
 
     private val daoAreaGeofence = database.entityAreaGeofenceDao()
     private val daoJoinAreaGeofence = database.joinAreaGeofenceDao()
-    private val daoSecurityZoneTimeRange=database.entitySecurityZoneTimeRangeDao()
+    private val daoSecurityZoneTimeRange = database.entitySecurityZoneTimeRangeDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryAreaDB? = null
 
-        fun getInstance(context: Context,scope: CoroutineScope): RepositoryAreaDB {
+        fun getInstance(context: Context): RepositoryAreaDB {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: RepositoryAreaDB(context,scope).also { INSTANCE = it }
+                INSTANCE ?: RepositoryAreaDB(context.applicationContext).also {
+                    INSTANCE = it
+                }
             }
         }
     }
-
 
     suspend fun getJoinAreaGeofence(idArea: Long): JoinAreaGeofence? {
         return withContext(Dispatchers.IO) {

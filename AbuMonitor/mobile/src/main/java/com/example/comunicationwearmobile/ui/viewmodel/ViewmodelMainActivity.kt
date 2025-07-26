@@ -37,7 +37,6 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
         init {
         // Lanzamos una coroutine asincrónica en el viewModelScope
         viewModelScope.launch(Dispatchers.IO) {
-            val database = AbuMonitorDatabase.getDatabase(application.applicationContext,viewModelScope)
             val repositorySecurityZoneSPref= RepositorySecurityZoneSPref.getInstance(application.applicationContext)
 
             repositorySecurityZoneSPref.clearSharedPreferences()

@@ -11,6 +11,6 @@ interface DaoFirstTimeState {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(firstTimeState: EntityFirstTimeState)
 
-    @Query("SELECT * FROM first_time_state LIMIT 1")
+    @Query("SELECT * FROM first_time_state WHERE id = 1")
     suspend fun getFirstTimeState(): EntityFirstTimeState?
 }

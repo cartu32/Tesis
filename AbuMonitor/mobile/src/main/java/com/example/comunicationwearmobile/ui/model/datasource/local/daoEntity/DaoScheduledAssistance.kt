@@ -6,6 +6,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
+import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 
 @Dao
@@ -24,5 +26,11 @@ interface DaoScheduledAssistance {
     fun deleteAssistance(scheduledAssistance: EntityScheduledAssistance)
 
     @Query("SELECT * FROM scheduled_assistance WHERE date_appointment = :date")
-    fun getEventsByDate(date: Long): LiveData<List<EntityScheduledAssistance>>
+    fun getAppointmetByDate(date: Long): LiveData<List<EntityScheduledAssistance>>
+
+    @Query("SELECT * FROM scheduled_assistance WHERE id_area = :idArea")
+    fun getAppointmetByIdArea(idArea: Long): EntityScheduledAssistance
+
+    @Update
+    suspend fun updateScheduledAssistance(assistance: EntityScheduledAssistance):Int
 }

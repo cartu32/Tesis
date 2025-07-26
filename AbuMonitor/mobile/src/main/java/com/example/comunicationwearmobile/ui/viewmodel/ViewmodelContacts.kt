@@ -12,7 +12,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 class ViewmodelContacts(application: Application) : AndroidViewModel(application) {
-    private val repositoryContact = RepositoryContact(application.applicationContext, viewModelScope)
+    private val repositoryContact = RepositoryContact(application.applicationContext)
 
     val savedContacts: LiveData<List<EntityContact>> = repositoryContact.getAllContactsLiveData()
 
