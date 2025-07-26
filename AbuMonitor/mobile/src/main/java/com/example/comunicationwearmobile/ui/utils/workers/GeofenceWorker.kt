@@ -5,9 +5,10 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
@@ -15,8 +16,6 @@ import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -28,10 +27,7 @@ import java.util.Locale
 
 //worker que trabaja la logica de cuando se detectan(activan) areas de geofence
 //esta clase se llama desde GeofenceBrodacst
-class GeofenceWorker(
-    private val context: Context,
-    params: WorkerParameters
-) : CoroutineWorker(context, params) {
+class GeofenceWorker(private val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     private var geofLatitude: String=""
     private var geofLongitude: String=""
@@ -135,10 +131,11 @@ class GeofenceWorker(
     }
 
     private suspend fun proccessExitAssistanceZone(context: Context, idArea: Long) {
+        val repositoryGeofActivate= RepositoryGeofActivate()
 
-        val minuteInMillis=60000L
         val repositoryScheduleAssistance=RepositoryScheduleAssistance(context)
         val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
+        val minuteInMillis=60000L
 
         with(entityAssistance) {
             //pregunto si la persona ya asistio a la cita
@@ -172,6 +169,7 @@ class GeofenceWorker(
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 
             if(respUpdate==1){
+                //notifico al contacto de que el abuelo asistio a la cita
                 val msg = SharedData.MsgNotification().apply {
                     typeNotification = SharedData.TypeNotification.Alert
                     title = "¡Notificacion de Asistencia!"
@@ -181,6 +179,8 @@ class GeofenceWorker(
                 }
                 notifyUserPriorityBaja(context, msg)
 
+                //como ya se asitio a la cita desactivo el area de geofence
+                repositoryGeofActivate.desactivateGeofence(context, id_area.toString())
                 Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
             }else{
                 Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
