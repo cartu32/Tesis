@@ -172,6 +172,15 @@ class GeofenceWorker(
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 
             if(respUpdate==1){
+                val msg = SharedData.MsgNotification().apply {
+                    typeNotification = SharedData.TypeNotification.Alert
+                    title = "¡Notificacion de Asistencia!"
+                    message = "El abuelo ha asistido a la cita de $description"
+                    hour = Tools.getHour(LocalTime.now())
+                    date = Tools.getDate(LocalDate.now())
+                }
+                notifyUserPriorityBaja(context, msg)
+
                 Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
             }else{
                 Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
