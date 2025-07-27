@@ -27,10 +27,11 @@ import com.example.comunicationwearmobile.ui.view.activities.calendar_assistance
 import com.example.comunicationwearmobile.ui.view.activities.contact.ContactsActivity
 import com.example.comunicationwearmobile.ui.view.activities.elderly_track.MapsElderlyTrackActivity
 import com.example.comunicationwearmobile.ui.view.activities.menu_option.ConfigActivity
+import com.example.comunicationwearmobile.ui.view.fragment.LoginDialogFragmentDialogFragment
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
 
-class MainMenuActivity : AppCompatActivity() {
+class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.LoginListener {
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
@@ -227,7 +228,7 @@ class MainMenuActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.opt_cambiar_modo_usuario -> {
-                Toast.makeText(this, "Opción 1", Toast.LENGTH_SHORT).show()
+                LoginDialogFragmentDialogFragment().show(supportFragmentManager, "loginDialog")
                 true
             }
             R.id.opt_configuracion -> {
@@ -237,6 +238,10 @@ class MainMenuActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onLogin(username: String, password: String) {
+        Toast.makeText(this, "Usuario: $username\nContraseña: $password", Toast.LENGTH_SHORT).show()
     }
 
     private fun freeListeners() {
@@ -289,6 +294,7 @@ class MainMenuActivity : AppCompatActivity() {
         Log.d(Definition.TAG_DEBUG, "onDestroy MainMenuActivity")
         //System.exit(0)
     }
+
 
 }
 
