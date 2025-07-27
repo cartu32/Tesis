@@ -1,6 +1,5 @@
 package com.example.comunicationwearmobile.ui.utils
 
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -8,7 +7,6 @@ import android.text.Editable
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -72,7 +70,11 @@ object Tools {
 
         return dateFormatter
     }
-
+    fun getMillisToHourMinutes(millis: Long): String {
+        val date = Date(millis)
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return format.format(date)
+    }
 
     fun formatHour(millis: Long): String {
         val cal = Calendar.getInstance()
@@ -165,4 +167,16 @@ object Tools {
         return currentTimeMillis >= timeAppointmentEarly
     }
 
+    //funcion que retorna la fecha de hoy en millis pero sin incluir la hora.
+    //Por ejemplo retorna: 21-05-2025, pero en milisegundos
+    fun getDateTodayInMillis():Long{
+        val calendar = Calendar.getInstance()
+
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        return calendar.timeInMillis
+    }
 }

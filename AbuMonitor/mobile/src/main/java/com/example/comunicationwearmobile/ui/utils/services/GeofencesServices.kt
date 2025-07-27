@@ -98,6 +98,7 @@ class GeofencesServices: Service() {
 
         when(intent?.action){
             Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF-> geofenceHelper.activateGeofenceScheduled()
+            Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE-> geofenceHelper.checkAssistanceScheduled()
         }
     }
 

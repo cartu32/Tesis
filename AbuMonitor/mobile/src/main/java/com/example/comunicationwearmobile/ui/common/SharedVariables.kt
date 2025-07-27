@@ -6,6 +6,6 @@ object SharedVariables {
 
     var hourDailyActivateGeofence = 0
     var minuteDailyActivateGeofence = 0
-    var hourCheckAssitance = 0
-    var minuteCheckAssitance = 0
+    var hourDailyCheckAssitance = 0
+    var minuteDailyCheckAssitance = 0
 }

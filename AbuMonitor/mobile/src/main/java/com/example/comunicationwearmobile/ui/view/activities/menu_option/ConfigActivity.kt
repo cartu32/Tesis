@@ -27,6 +27,7 @@ class ConfigActivity: AppCompatActivity() {
 
 
     private var isChangedAlarmActivateGeof=false
+    private var isChangedAlarmCheckAssistance=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,13 +45,19 @@ class ConfigActivity: AppCompatActivity() {
 
         //seteo el texto del boton para configurar la alarma para activar geofence segun el valor cargado.
         cmdDateAlarmActivateGeof?.text = String.format(Locale.getDefault(), "%02d:%02d", SharedVariables.hourDailyActivateGeofence, SharedVariables.minuteDailyActivateGeofence)
+        cmdDateAlarmCheckAssistance?.text = String.format(Locale.getDefault(), "%02d:%02d", SharedVariables.hourDailyCheckAssitance, SharedVariables.minuteDailyCheckAssitance)
+
+        cmdSaveConfig?.isEnabled=false
 
         configActionBar()
     }
 
     private fun listenerCmdSaveConfig() {
-        if(saveHourAlarmActivateGeof())
+        if(saveHourAlarmActivateGeof() || saveHourAlarmCheckAssistance())
             finish()
+        else
+            Toast.makeText(this@ConfigActivity,"No se realizaron cambios en la alarma",Toast.LENGTH_SHORT).show()
+
     }
 
     private fun saveHourAlarmActivateGeof(): Boolean {
@@ -76,11 +83,43 @@ class ConfigActivity: AppCompatActivity() {
                         AlarmDailyActivateGeofReceiver::class.java
                     )
 
-                Log.d(Definition.TAG_DEBUG, "Alarma Activate Geofence cancelada")
-                Toast.makeText(this@ConfigActivity, "Alarma configurada correctamente", Toast.LENGTH_SHORT).show()
+                Log.d(Definition.TAG_DEBUG, "Alarma Activate Geofence configurada correctamente")
+                Toast.makeText(this@ConfigActivity, "Alarma de activacion configurada correctamente", Toast.LENGTH_SHORT).show()
                 return true
             }
-            Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
+        }
+        return false
+    }
+
+    private fun saveHourAlarmCheckAssistance(): Boolean {
+        with(SharedVariables) {
+            val alarmHelper=AlarmHelper()
+
+            if (isChangedAlarmCheckAssistance) {
+                alarmHelper.cancelAlarm(
+                    this@ConfigActivity,
+                    alarmIdCheckAssitance,
+                    Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
+                    AlarmDailyActivateGeofReceiver::class.java
+                )
+
+                Log.d(Definition.TAG_DEBUG, "Alarma de chekear asistencia cancelada")
+
+                alarmIdActivateGeofence =
+                    alarmHelper.setDailyAlarm(
+                        this@ConfigActivity,
+                        hourDailyCheckAssitance,
+                        minuteDailyCheckAssitance,
+                        Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
+                        AlarmDailyActivateGeofReceiver::class.java
+                    )
+
+                Log.d(Definition.TAG_DEBUG, "Alarma de chekear asistencia configurada corrctamente")
+                Toast.makeText(this@ConfigActivity, "Alarma de checkeo configurada correctamente", Toast.LENGTH_SHORT).show()
+                return true
+            }
+            //Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
         }
         return false
     }
@@ -103,7 +142,9 @@ class ConfigActivity: AppCompatActivity() {
         showTimePicker { hour,minute->
             SharedVariables.hourDailyActivateGeofence=hour
             SharedVariables.minuteDailyActivateGeofence=minute
+
             isChangedAlarmActivateGeof=true
+            cmdSaveConfig?.isEnabled=true
             cmdDateAlarmActivateGeof?.text = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
         }
 
@@ -111,8 +152,11 @@ class ConfigActivity: AppCompatActivity() {
 
     private fun listenerCmdDateAlarmCheckAssistance() {
         showTimePicker { hour,minute->
-            SharedVariables.hourCheckAssitance=hour
-            SharedVariables.minuteCheckAssitance=minute
+            SharedVariables.hourDailyCheckAssitance=hour
+            SharedVariables.minuteDailyCheckAssitance=minute
+
+            isChangedAlarmCheckAssistance=true
+            cmdSaveConfig?.isEnabled=true
             cmdDateAlarmCheckAssistance?.text = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
         }
 

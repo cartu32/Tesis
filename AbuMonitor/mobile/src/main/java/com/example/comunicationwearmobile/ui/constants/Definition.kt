@@ -15,14 +15,24 @@ object Definition {
      ********************************************************
      */
 
-    const val DEFAULT_HOUR_DAILY_ACTIVATION_GEOF        = 18
-    const val DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF      = 20
+    //constantes que indican la hora por defualt de activacion de las geofence
+    //del dia de mañana y la desactivacion de las de hoy
+    const val DEFAULT_HOUR_DAILY_ACTIVATION_GEOF        = 23
+    const val DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF      = 55
 
     const val ACTION_ALARM_DAILY_ACTIVATION_GEOF      = "ACTION_ALARM_DAILY_ACTIVATION_GEOF"
 
     const val INTENT_ALARM_ALARM_ID            = "INTENT_ALARAM_ALARM_ID"
     const val INTENT_ALARM_HOUR                = "INTENT_ALARM_HOUR"
     const val INTENT_ALARM_MINUTE              = "INTENT_ALARM_MINUTE"
+
+    //constantes que indican la hora por defualt del checkeo de asistencia
+    //a las citas del dia actual, o sea hoy
+
+    const val DEFAULT_HOUR_DAILY_CHECK_ASSISTANCE       = 21
+    const val DEFAULT_MINUTE_DAILY_CHECK_ASSISTANCE     = 30
+
+    const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
 
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"

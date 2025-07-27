@@ -25,6 +25,7 @@ class AbuMonitorApplicationMobile : Application() {
       }
 
 
+
     private fun initilizerDB() {
         val dbInitializer = dbInitializer()
 
@@ -35,6 +36,31 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
+        initializeAlarmActivateGeofence()
+        intializeAlarmCheckAssistance()
+    }
+
+    private fun intializeAlarmCheckAssistance() {
+        val alarmHelper = AlarmHelper()
+
+        with(SharedVariables) {
+            //Como es la primera vez que se ejecuta la app seteo las alarmas por default
+            hourDailyCheckAssitance   = Definition.DEFAULT_HOUR_DAILY_CHECK_ASSISTANCE
+            minuteDailyCheckAssitance = Definition.DEFAULT_MINUTE_DAILY_CHECK_ASSISTANCE
+
+            //inicio la alarma que checkear las asistencia a las citas del dia actual
+            alarmIdActivateGeofence =
+                alarmHelper.setDailyAlarm(
+                    this@AbuMonitorApplicationMobile,
+                    hourDailyCheckAssitance,
+                    minuteDailyCheckAssitance,
+                    Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
+                    AlarmDailyActivateGeofReceiver::class.java
+                )
+        }
+    }
+
+    private fun initializeAlarmActivateGeofence() {
         val alarmHelper = AlarmHelper()
 
         with(SharedVariables) {
@@ -44,7 +70,7 @@ class AbuMonitorApplicationMobile : Application() {
 
             //inicio la alarma que va activar y desactivar
             //las areas de geofence del dia actual
-            alarmIdActivateGeofence =
+            alarmIdCheckAssitance =
                 alarmHelper.setDailyAlarm(
                     this@AbuMonitorApplicationMobile,
                     hourDailyActivateGeofence,

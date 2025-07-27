@@ -31,6 +31,12 @@ interface DaoScheduledAssistance {
     @Query("SELECT * FROM scheduled_assistance WHERE id_area = :idArea")
     fun getAppointmetByIdArea(idArea: Long): EntityScheduledAssistance
 
+    @Query("""
+           SELECT * FROM scheduled_assistance
+           WHERE status = 0 AND date_appointment = :date
+    """)
+    fun getAppointmentThatDidntAssistenceToday(date: Long): List<EntityScheduledAssistance>
+
     @Update
     suspend fun updateScheduledAssistance(assistance: EntityScheduledAssistance):Int
 }

@@ -91,4 +91,10 @@ class RepositoryScheduleAssistance(context: Context) {
             daoAssistance.updateScheduledAssistance(assistance)
         }
     }
+
+    suspend fun getAppointmentThatDidntAssistenceToday(date:Long):List<EntityScheduledAssistance> {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getAppointmentThatDidntAssistenceToday(date)
+        }
+    }
 }
