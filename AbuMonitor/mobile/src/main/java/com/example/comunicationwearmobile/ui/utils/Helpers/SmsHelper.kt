@@ -13,60 +13,32 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
 class SmsHelper {
 
-    fun sendSMSFallDetection(context: Context, message: ByteArray){
-        val repositoryContact= RepositoryContact(context)
+    fun sendSMSFallDetection(context: Context, msg: ByteArray){
+        val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(msg)
 
-        val listContact=repositoryContact.getAllContactList()
-        val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(message)
-
-        val message = """
+        val rawMessage = """
                 ${msgFallDetection.title}
                 ${msgFallDetection.message}
                 ${msgFallDetection.fechaHora}
                 """.trimIndent()
 
-        for(contact in listContact){
-            Log.d(Definition.TAG_DEBUG,"enviando sms de caidas al contacto: ${contact.name}")
-            sendSMSFallToContact(context, message, contact.telephone)
+        val message = limpiarTextoParaSMS(rawMessage)
 
-        }
-
+        sendSMSToAllContact(context,message)
     }
 
-    fun sendSMSFallToContact(context: Context, message: String, phoneNumber: String) {
-        try {
-            if (phoneNumber.isNotBlank()) {
-                val smsManager = context.getSystemService(SmsManager::class.java)
-                smsManager.sendTextMessage(
-                    phoneNumber,
-                    null,
-                    message,
-                    null,
-                    null
-                )
-                Log.d(Definition.TAG_DEBUG, "SMS enviado exitosamente.")
-            } else {
-                Log.w(Definition.TAG_DEBUG, "Número de teléfono no disponible o vacío.")
-            }
-        } catch (e: Exception) {
-          Log.e(Definition.TAG_DEBUG, "Error al enviar el SMS: ${e.message}", e)
-        }
+    fun sendSMSPlainText(context: Context, message: String) {
+        sendSMSToAllContact(context,message)
     }
-
     fun sendSMSNotifyGeofence(
         context: Context,
         msg: SharedData.MsgNotification,
         geofLatitude: String,
         geofLongitude: String
     ) {
-        val repositoryContact= RepositoryContact(context)
-        val listContact=repositoryContact.getAllContactList()
-
         val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
 
         val rawMessage = """
@@ -77,6 +49,15 @@ class SmsHelper {
             """.trimIndent()
 
         val message = limpiarTextoParaSMS(rawMessage)
+
+        sendSMSToAllContact(context,message)
+    }
+
+    fun sendSMSToAllContact(context: Context, message: String) {
+
+        val repositoryContact= RepositoryContact(context)
+        val listContact=repositoryContact.getAllContactList()
+
 
         for(contact in listContact){
             Log.d(Definition.TAG_DEBUG,"enviando sms geofence al contacto: ${contact.name}")

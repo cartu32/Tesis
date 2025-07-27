@@ -116,16 +116,18 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
     }
 
     suspend fun checkAssistanceScheduled() {
+        val smsHelper=SmsHelper()
         val dateToday = Tools.getDateTodayInMillis()
         val listAppointWithoutAssisntace = repositoryScheduleAssistance
             ?.getAppointmentThatDidntAssistenceToday(dateToday)
 
         if (listAppointWithoutAssisntace != null && listAppointWithoutAssisntace.isNotEmpty()) {
+            //se genera un resumen de las citas a la que no asistio la persona en el dia de la fecha
             val msg=generateMessageInTable(listAppointWithoutAssisntace)
-
             Log.d(Definition.TAG_DEBUG, msg)
 
-
+            //Envio SMS notificando el problema
+            smsHelper.sendSMSPlainText(context,msg)
         }
     }
 
