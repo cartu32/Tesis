@@ -106,7 +106,7 @@ class ConfigActivity: AppCompatActivity() {
 
                 Log.d(Definition.TAG_DEBUG, "Alarma de chekear asistencia cancelada")
 
-                alarmIdActivateGeofence =
+                alarmIdCheckAssitance =
                     alarmHelper.setDailyAlarm(
                         this@ConfigActivity,
                         hourDailyCheckAssitance,

@@ -18,7 +18,7 @@ object Definition {
     //constantes que indican la hora por defualt de activacion de las geofence
     //del dia de mañana y la desactivacion de las de hoy
     const val DEFAULT_HOUR_DAILY_ACTIVATION_GEOF        = 23
-    const val DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF      = 55
+    const val DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF      = 55 // se deja un margen de 5 minutos por las duda que se retrase la alarma
 
     const val ACTION_ALARM_DAILY_ACTIVATION_GEOF      = "ACTION_ALARM_DAILY_ACTIVATION_GEOF"
 
