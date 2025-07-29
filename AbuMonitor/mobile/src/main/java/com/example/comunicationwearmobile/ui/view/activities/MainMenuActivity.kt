@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.view.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -16,10 +17,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.view.activities.areas_geofence.MapsDefineAreasActivity
@@ -32,6 +35,14 @@ import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelMainActivity
 
 
 class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.LoginListener {
+
+
+    private val cmdDefineAreas by lazy { findViewById<Button>(R.id.cmdDefineAreas) }
+    private val cmdViewAreas by lazy { findViewById<Button>(R.id.cmdViewAreas) }
+    private val cmdViewAppointment by lazy { findViewById<Button>(R.id.cmdViewAppoitnment) }
+    private val cmdViewContacts by lazy { findViewById<Button>(R.id.cmdViewContacts) }
+    private var itemAdmin:MenuItem?=null
+    private var itemConfig:MenuItem?=null
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
@@ -75,6 +86,7 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
+
 
     }
 
@@ -126,18 +138,14 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
     }
 
     private fun initializeComponentsView() {
-        //Esta es otra forma de asociar los listeners de los botones,
-        //sin necesidad de crear objetos botones
-        val buttons = mapOf(
-            R.id.cmdDefineAreas to ::openMapsActivity ,
-            R.id.cmdDefineRoutes to ::openMapsElderlyTrackActivity ,
-            R.id.cmdDefineAssistance to ::openCalendarAssistance ,
-            R.id.cmdDefineContacts to ::showUnderConstruction
-        )
 
-        buttons.forEach { (id , action) ->
-            findViewById<Button>(id).setOnClickListener { action() }
-        }
+        cmdDefineAreas.setOnClickListener {openMapsActivity()}
+        cmdViewAreas.setOnClickListener {openMapsElderlyTrackActivity()}
+        cmdViewAppointment.setOnClickListener {openCalendarAssistance()}
+        cmdViewContacts.setOnClickListener {showContacts()}
+
+
+        cmdDefineAreas.isVisible=false
 
         Log.d(Definition.TAG_DEBUG,"Inicializa Componentes View")
     }
@@ -213,7 +221,7 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
     private fun openCalendarAssistance(){
         startActivity(Intent(this , AssistanceCalendarActivity::class.java))
     }
-    private fun showUnderConstruction() {
+    private fun showContacts() {
         Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
         startActivity(Intent(this , ContactsActivity::class.java))
 
@@ -222,14 +230,30 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_option, menu)
+
+        itemAdmin   = menu?.findItem(R.id.opt_cambiar_modo_usuario)
+        itemConfig  = menu?.findItem(R.id.opt_configuracion)
+
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.opt_cambiar_modo_usuario -> {
-                LoginDialogFragmentDialogFragment().show(supportFragmentManager, "loginDialog")
-                true
+                if(SharedVariables.user!=SharedVariables.USER_ADMIN)
+                    {
+                        LoginDialogFragmentDialogFragment().show(
+                            supportFragmentManager,
+                            "loginDialog"
+                        )
+                        setVisibleComponents(SharedVariables.user)
+                        true
+                    }else{
+                        SharedVariables.user=""
+                        Toast.makeText(this,"Cambiando a  Modo Usuario",Toast.LENGTH_SHORT).show()
+                        setVisibleComponents(SharedVariables.user)
+                        true
+                }
             }
             R.id.opt_configuracion -> {
                 val intent=Intent(this, ConfigActivity::class.java)
@@ -240,21 +264,42 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onLogin(username: String, password: String) {
-        Toast.makeText(this, "Usuario: $username\nContraseña: $password", Toast.LENGTH_SHORT).show()
+        //guardo el usuario en la variable global
+        SharedVariables.user=username
+        //seteo el usuaerio en la vista
+        setVisibleComponents(username)
+    }
+
+    private fun setVisibleComponents(username: String) {
+
+        if(username==SharedVariables.USER_ADMIN){
+
+            cmdDefineAreas.isVisible=true
+            cmdViewContacts.text= getString(R.string.cmd_define_contacts)
+            cmdViewAppointment.text= getString(R.string.cmd_define_assistance)
+            cmdViewAreas.text= getString(R.string.cmd_view_areas_geofences)
+            itemAdmin?.title=getString(R.string.item_exit_mode_admin)
+            itemConfig?.isVisible=true
+
+            Toast.makeText(this,"Cambiando a  Modo Administrador",Toast.LENGTH_SHORT).show()
+        }else{
+            cmdDefineAreas.isVisible=false
+            cmdViewContacts.text= getString(R.string.cmd_view_contacts)
+            cmdViewAppointment.text= getString(R.string.cmd_view_assistance)
+            itemAdmin?.title=getString(R.string.item_enter_mode_admin)
+            itemConfig?.isVisible=false
+
+        }
+
     }
 
     private fun freeListeners() {
-        val buttons = listOf(
-            R.id.cmdDefineAreas,
-            R.id.cmdDefineRoutes,
-            R.id.cmdDefineAssistance,
-            R.id.cmdDefineContacts
-        )
-
-        buttons.forEach { id ->
-            findViewById<Button>(id).setOnClickListener(null)
-        }
+        cmdDefineAreas.setOnClickListener(null)
+        cmdViewContacts.setOnClickListener(null)
+        cmdViewAreas.setOnClickListener(null)
+        cmdViewAppointment.setOnClickListener(null)
     }
 
     private fun freeViewmodel(){

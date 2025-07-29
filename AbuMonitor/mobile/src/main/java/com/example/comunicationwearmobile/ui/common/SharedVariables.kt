@@ -8,4 +8,8 @@ object SharedVariables {
     var minuteDailyActivateGeofence = 0
     var hourDailyCheckAssitance = 0
     var minuteDailyCheckAssitance = 0
+
+    const val USER_ADMIN = "admin"
+    var user=""
+    var password=""
 }

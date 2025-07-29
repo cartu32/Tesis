@@ -1,10 +1,14 @@
 <resources>
     <!--String del main Activity-->
     <string name="app_name">AbuMonitor</string>
-    <string name="cmd_define_areas">Definir Areas</string>
-    <string name="cmd_define_assistance">Definir Asistencias</string>
+
+    <string name="cmd_view_areas_geofences">Ver Areas Geofences</string>
+    <string name="cmd_view_assistance">Ver Citas de asistencia</string>
+    <string name="cmd_view_contacts">Ver Contactos</string>
+
+    <string name="cmd_define_assistance">Definir Citas de asistencia</string>
     <string name="cmd_define_contacts">Definir Contactos</string>
-    <string name="cmd_define_routes">Ver Areas Geofences</string>
+    <string name="cmd_define_areas">Definir Areas Geofences</string>
 
     <!--String del fragment de definir Areas.-->
     <string name="cmd_configurar_geofences"> Configurar Geofences</string>
@@ -36,6 +40,8 @@
     <string name="hora_de_alarma_para_activar_geofence">Hora para activar geofence del dia siguiente</string>
     <string name="configurar_hora_de_alarma">Configurar hora de alarma</string>
     <string name="hora_de_alarma_para_verificar_asistencia">Hora para verificar asistencia del dia actual</string>
+    <string name="item_enter_mode_admin">Entrar modo administrador</string>
+    <string name="item_exit_mode_admin">Salir modo administrador</string>
 
 
     <string-array name="spinner_events">

@@ -128,6 +128,8 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
 
             //Envio SMS notificando el problema
             smsHelper.sendSMSPlainText(context,msg)
+        }else{
+            Log.d(Definition.TAG_DEBUG, "No hay citas sin asistencia para hoy")
         }
     }
 

@@ -8,5 +8,6 @@
     <item
         android:id="@+id/opt_configuracion"
         android:title="@string/configuracion"
+        android:visible="false"
         app:showAsAction="never" />
 </menu>
