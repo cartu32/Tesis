@@ -67,7 +67,11 @@ fun PageContent( msgAlert: SharedData.MsgNotification, alertsViewModel: AlertsVi
     CustomColumn {
         Text(text = msgAlert.title, color = Color.Red, fontSize = 15.sp)
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text = msgAlert.message)
+        Text(
+            text = msgAlert.message,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(10.dp))
         CustomRow {
             Text(text = msgAlert.date)

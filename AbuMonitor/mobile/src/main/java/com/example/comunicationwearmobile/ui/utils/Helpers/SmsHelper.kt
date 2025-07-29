@@ -20,10 +20,13 @@ class SmsHelper {
         val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(msg)
 
         val rawMessage = """
-                ${msgFallDetection.title}
-                ${msgFallDetection.message}
-                ${msgFallDetection.fechaHora}
-                """.trimIndent()
+                        🚨${msgFallDetection.title.uppercase()}
+                                    
+                        ${msgFallDetection.message}
+                                    
+                        📅 ${msgFallDetection.fechaHora}
+                      
+                        """.trimIndent()
 
         val message = limpiarTextoParaSMS(rawMessage)
 
@@ -42,12 +45,16 @@ class SmsHelper {
         val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
 
         val rawMessage = """
-                ${msg.title}
-                ${msg.message}
-                ${msg.date}  ${msg.hour}
-                ${googelmapsURL}
-            """.trimIndent()
+                        ⚠️${msg.title.uppercase()}
+                        
+                        ${msg.message}
+                        
+                        📅 ${msg.date} ⏰ ${msg.hour}
 
+                        📍 Ubicación:
+                        $googelmapsURL
+                        
+                        """.trimIndent()
         val message = limpiarTextoParaSMS(rawMessage)
 
         sendSMSToAllContact(context,message)
