@@ -42,7 +42,8 @@
     <string name="hora_de_alarma_para_verificar_asistencia">Hora para verificar asistencia del dia actual</string>
     <string name="item_enter_mode_admin">Entrar modo administrador</string>
     <string name="item_exit_mode_admin">Salir modo administrador</string>
-
+    <string name="cmd_add_event">Agregar evento</string>
+    <string name="empty_text">""</string>
 
     <string-array name="spinner_events">
         <item>Seleccione los eventos</item>

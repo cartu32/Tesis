@@ -17,10 +17,10 @@
         app:mcv_headerTextAppearance="@style/CalendarHeaderText" />
 
     <Button
-        android:id="@+id/addButton"
+        android:id="@+id/cmdAddEvent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agregar evento" />
+        android:text="@string/cmd_add_event" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

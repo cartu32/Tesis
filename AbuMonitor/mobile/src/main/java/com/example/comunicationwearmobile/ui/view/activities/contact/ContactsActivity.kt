@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.data.model.EntityContact
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.view.adapter.ContactTelAdapter
 import com.example.comunicationwearmobile.ui.view.adapter.SavedContactAdapter
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelContacts
@@ -75,12 +76,16 @@ class ContactsActivity : AppCompatActivity() {
 
     private fun configAdapters(){
         phoneContactsAdapter = ContactTelAdapter(phoneContacts) { name, phone ->
-            viewModel.saveContact(name, phone)
-            Toast.makeText(this, "$name guardado", Toast.LENGTH_SHORT).show()
+            if (SharedVariables.user == SharedVariables.USER_ADMIN) {
+                viewModel.saveContact(name, phone)
+                Toast.makeText(this, "$name guardado", Toast.LENGTH_SHORT).show()
+            }
         }
 
         savedContactsAdapter = SavedContactAdapter(emptyList()) { contact ->
-            showAlertDialog(contact)
+            if (SharedVariables.user == SharedVariables.USER_ADMIN) {
+                showAlertDialog(contact)
+            }
         }
 
         recyclerPhone?.adapter = phoneContactsAdapter

@@ -12,8 +12,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceDetailViewModel
 
@@ -42,11 +44,20 @@ class AssistanceDetailActivity : AppCompatActivity() {
         configActionBar()
         initViewModel()
         configObserver()
+        configComponents()
 
         cmdDelete?.setOnClickListener {cmdDeleteListener() }
         cmdViewLocation?.setOnClickListener { cmdViewLocationListener()}
 
         viewModel.loadAssistanceDetail(assistanceId)
+    }
+
+    private fun configComponents() {
+        if(SharedVariables.user== SharedVariables.USER_ADMIN){
+            cmdDelete?.isVisible=true
+        }else{
+            cmdDelete?.isVisible=false
+        }
     }
 
     private fun configActionBar() {

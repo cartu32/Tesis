@@ -13,11 +13,13 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.view.adapter.AssistanceAdapter
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceViewModelFactory
@@ -34,7 +36,7 @@ import java.util.Calendar
 class AssistanceCalendarActivity : AppCompatActivity() {
 
     private lateinit var calendarView: MaterialCalendarView
-    private lateinit var addButton: Button
+    private lateinit var cmdAddEvent: Button
     private lateinit var recyclerView: RecyclerView
     private val viewModel: ViewModelCalendarAssistance by viewModels { AssistanceViewModelFactory(application) }
     private var allEvents: List<EntityScheduledAssistance> = emptyList()
@@ -46,7 +48,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         setContentView(R.layout.activity_assistance_calendar)
 
         calendarView = findViewById(R.id.calendarView)
-        addButton = findViewById(R.id.addButton)
+        cmdAddEvent = findViewById(R.id.cmdAddEvent)
         recyclerView = findViewById(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -61,7 +63,19 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         configListdapter()
         configListeners()
         configObserver(currentMonth)
+        configComponents()
         updateMonthDecorators(currentMonth)
+    }
+
+    private fun configComponents() {
+        if(SharedVariables.user==SharedVariables.USER_ADMIN){
+            cmdAddEvent.isEnabled=true
+            cmdAddEvent.text=getString(R.string.cmd_add_event)
+        }else{
+            cmdAddEvent.isEnabled=false
+            cmdAddEvent.text=getString(R.string.empty_text)
+        }
+
     }
 
     private fun configActionBar() {
@@ -118,7 +132,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         }
 
 
-        addButton.setOnClickListener {
+        cmdAddEvent.setOnClickListener {
             viewModel.selectedDateMillis.value?.let { millis ->
                 if(getCountItemsRecicleView()>=Definition.COUNT_MAX_DATE_FOR_DAY){
                     Toast.makeText(this,"Se llego al maximo de citas para registrar en esta fecha",Toast.LENGTH_SHORT).show()
