@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.fragment.configAssistanceAddFragment
@@ -16,6 +17,7 @@ class MapsAddAssistance: BaseMapActivity(), OnDataSentListenerMapAct {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initComponents()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -31,6 +33,12 @@ class MapsAddAssistance: BaseMapActivity(), OnDataSentListenerMapAct {
         showConfigGeofenceFragment(latLng)
 
         Log.d(Definition.TAG_DEBUG,"Locacion Lat:${latLng.latitude} Longitude${latLng.longitude}")
+    }
+
+    override fun initComponents() {
+        super.initComponents()
+
+        txtLeyends?.text = getString(R.string.leyend_date_zone)
     }
 
     private fun showConfigGeofenceFragment(latLng: LatLng) {

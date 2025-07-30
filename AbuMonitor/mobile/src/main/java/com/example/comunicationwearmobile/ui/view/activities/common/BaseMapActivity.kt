@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -43,8 +44,9 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     var mMap: GoogleMap? = null
     private val RC_HANDLE_GMS = 9001
 
-    private var txtAddress:EditText?=null
-    private var btnSearch:Button?=null
+    var txtAddress:EditText?=null
+    var btnSearch:Button?=null
+    var txtLeyends: TextView?=null
 
     private lateinit var geocoder: Geocoder
 
@@ -68,6 +70,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     open fun initComponents(){
         txtAddress=findViewById<EditText>(R.id.txtAdress)
         btnSearch=findViewById<Button>(R.id.cmdSearch)
+        txtLeyends=findViewById<TextView>(R.id.txtLeyends)
 
         btnSearch?.setOnClickListener{listenerClickCmdSerach()}
     }

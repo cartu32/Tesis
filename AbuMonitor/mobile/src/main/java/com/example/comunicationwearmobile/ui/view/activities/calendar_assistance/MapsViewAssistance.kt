@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -14,7 +15,7 @@ class MapsViewAssistance : BaseMapActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        initComponents()
     }
 
 
@@ -39,6 +40,12 @@ class MapsViewAssistance : BaseMapActivity() {
         } else {
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun initComponents() {
+        super.initComponents()
+
+        txtLeyends?.text = getString(R.string.leyend_date_zone)
     }
 
     override fun onDestroy() {

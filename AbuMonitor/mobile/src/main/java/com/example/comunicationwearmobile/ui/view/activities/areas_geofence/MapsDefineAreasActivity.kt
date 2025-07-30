@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
@@ -34,6 +35,7 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         // Inicializar el helper
         mapsHelper = MapsActivityHelper(this, ViewModelProvider(this))
         mapsHelper.initializeViewModel()
@@ -45,6 +47,16 @@ class MapsDefineAreasActivity : BaseMapActivity(), OnDataSentListenerMapAct {
             setIdDrawnArea = { id -> drawAreaGeofHelper?.setIdDrawnArea(id) },
             showToast = { msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }
         )
+        initComponents()
+    }
+
+    override fun initComponents() {
+        super.initComponents()
+
+        val leyend1 = getString(R.string.leyends_security_zone)
+        val leyend2 = getString(R.string.leyend_normal_area)
+        txtLeyends?.text = getString(R.string.leyends_combined, leyend1, leyend2)
+
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGeofenceActivity
@@ -50,6 +51,8 @@ class MapsElderlyTrackActivity : BaseMapActivity() {
         initializeViewModel()
         configOberserverLivedata()
         configActivityResult()
+
+        initComponents()
     }
 
 
@@ -63,6 +66,14 @@ class MapsElderlyTrackActivity : BaseMapActivity() {
         configObserverClickInCircle()
     }
 
+    override fun initComponents() {
+        super.initComponents()
+
+        val leyend1 = getString(R.string.leyends_security_zone)
+        val leyend2 = getString(R.string.leyend_normal_area)
+        txtLeyends?.text = getString(R.string.leyends_combined, leyend1, leyend2)
+
+    }
     private fun configObserverClickInCircle() {
         // Observamos una sola vez
         mapsHelper.viewmodelMapsActivity?.areaGeofenceForId?.observe(this) { dato ->
