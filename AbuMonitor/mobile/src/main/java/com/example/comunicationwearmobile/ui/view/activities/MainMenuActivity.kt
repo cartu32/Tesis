@@ -4,8 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -161,11 +163,33 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
             if (isRequired == true) askPermissionForBackgroundUsage()
         }
 
+        viewmodelMainActivity?.requestExactAlarmPermission?.observe(this){request->
+            if(request==false)
+                requestAlarmPermission()
+            else
+                Log.d(Definition.TAG_DEBUG,"Se tienen permisos de la alarma")
+        }
+
         viewmodelMainActivity?.allPermissionGranted?.observe(this) { isRequired ->
             //Si se otorgaron todos los permisos, entonces se inicia el service
             startGeofenceService()
         }
         Log.d(Definition.TAG_DEBUG,"Inicializa Obersever")
+    }
+
+    private fun requestAlarmPermission() {
+        AlertDialog.Builder(this)
+            .setTitle("Permiso necesario")
+            .setMessage("La app debe programar alarmas a hora exacta para tus citas.")
+            .setPositiveButton("Configurar") { _, _ ->
+                startActivity(
+                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                )
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun checkPermissions() {
@@ -307,7 +331,7 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         viewmodelMainActivity?.permissionsToRequest?.removeObservers(this)
         viewmodelMainActivity?.backgroundPermissionRequired?.removeObservers(this)
         viewmodelMainActivity?.allPermissionGranted?.removeObservers(this)
-
+        viewmodelMainActivity?.requestExactAlarmPermission?.removeObservers(this)
         // Notificar al ViewModel que la actividad se destruyó
         viewmodelMainActivity?.onDestroyed()
         viewmodelMainActivity=null

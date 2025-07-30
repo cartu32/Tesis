@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
@@ -34,6 +35,9 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     private val _allPermissionGranted = MutableLiveData<Boolean?>()
     val allPermissionGranted: LiveData<Boolean?> = _allPermissionGranted
 
+    private val _requestExactAlarmPermission = MutableLiveData<Boolean?>()
+    val requestExactAlarmPermission: LiveData<Boolean?> = _requestExactAlarmPermission
+
         init {
         // Lanzamos una coroutine asincrónica en el viewModelScope
         viewModelScope.launch(Dispatchers.IO) {
@@ -55,6 +59,18 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
 
         val missingPermissions=checkGeneralPermissions(context)
         checkFineLocation(context,missingPermissions)
+        checkAlarmPermisson(context)
+    }
+
+    private fun checkAlarmPermisson(context: Context?) {
+        val alarmManager =context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (!alarmManager.canScheduleExactAlarms()) {
+            Log.d(Definition.TAG_DEBUG, "No se tiene permisos de alarma")
+            _requestExactAlarmPermission.value=false
+        }else{
+            Log.d(Definition.TAG_DEBUG, "tiene permisos de alarma")
+            _requestExactAlarmPermission.value=true
+        }
 
     }
 

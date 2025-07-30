@@ -177,7 +177,7 @@ object Definition {
         Manifest.permission.WAKE_LOCK,
         Manifest.permission.READ_CONTACTS,
       //  Manifest.permission.USE_EXACT_ALARM,
-        Manifest.permission.SCHEDULE_EXACT_ALARM,
+        //Manifest.permission.SCHEDULE_EXACT_ALARM,
 
         //backoground location se pide en el viewmodel despues
         //de comprobar de que los permisos generales fueron otorgados
