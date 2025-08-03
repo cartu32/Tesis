@@ -1,0 +1,15 @@
+package com.example.comunicationwearmobile.ui.common
+
+object SharedVariables {
+    var alarmIdActivateGeofence = 0
+    var alarmIdCheckAssitance   = 0
+
+    var hourDailyActivateGeofence = 0
+    var minuteDailyActivateGeofence = 0
+    var hourDailyCheckAssitance = 0
+    var minuteDailyCheckAssitance = 0
+
+    const val USER_ADMIN = "admin"
+    var user=""
+    var password=""
+}

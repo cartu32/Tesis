@@ -1,0 +1,68 @@
+<resources>
+    <!--String del main Activity-->
+    <string name="app_name">AbuMonitor</string>
+
+    <string name="cmd_view_areas_geofences">Ver Areas Geofences</string>
+    <string name="cmd_view_assistance">Ver Citas de asistencia</string>
+    <string name="cmd_view_contacts">Ver Contactos</string>
+
+    <string name="cmd_define_assistance">Definir Citas de asistencia</string>
+    <string name="cmd_define_contacts">Definir Contactos</string>
+    <string name="cmd_define_areas">Definir Areas Geofences</string>
+
+    <!--String del fragment de definir Areas.-->
+    <string name="cmd_configurar_geofences"> Configurar Geofences</string>
+    <string name="cmd_guardar_geofences"> Guardar</string>
+    <string name="cmd_cancelar_geofences"> Cancelar</string>
+    <string name="lbl_texto_distancia">Distancia(Mts)</string>
+    <string name="lbl_metros">0</string>
+    <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
+    <string name="zona_segura">Zona Segura</string>
+    <string name="tiempo_de_permanencia">Tiempo de permanencia(min)</string>
+    <string name="prioridad">Prioridad:</string>
+    <string name="evento">Evento:</string>
+    <string name="propiedades">Propiedades</string>
+    <string name="Hour_min_secure_zone">Hora minima</string>
+    <string name="Hour_max_secure_zone">Hora Maxima</string>
+    <string name="HourSecurityZone">Rango horario normal en Zona Segura</string>
+    <string name="contactos_guardados_en_la_base_de_datos">Contactos seleccionados a los que se les enviara las alertas</string>
+    <string name="contactos_del_tel_fono">Contactos del teléfono</string>
+    <string name="buscar_contacto">Buscar contacto...</string>
+    <string name="seleccionar_area_geofence">Indicar ubicacion de la zona</string>
+    <string name="hora_de_la_cita">Hora de la cita</string>
+    <string name="fecha">Fecha</string>
+    <string name="t_tulo">Título</string>
+    <string name="descripci_n">Descripción</string>
+    <string name="borrar_cita">Eliminar Cita</string>
+    <string name="view_location">Ver ubicacion</string>
+    <string name="configuracion">Configuracion</string>
+    <string name="cambiar_modo_usuario">Entrar modo administrador</string>
+    <string name="hora_de_alarma_para_activar_geofence">Hora para activar geofence del dia siguiente</string>
+    <string name="configurar_hora_de_alarma">Configurar hora de alarma</string>
+    <string name="hora_de_alarma_para_verificar_asistencia">Hora para verificar asistencia del dia actual</string>
+    <string name="item_enter_mode_admin">Entrar modo administrador</string>
+    <string name="item_exit_mode_admin">Salir modo administrador</string>
+    <string name="cmd_add_event">Agregar evento</string>
+    <string name="empty_text">""</string>
+    <string name="leyends_security_zone">🟦 Azul: Área normal </string>
+    <string name="leyend_normal_area">🟩 Verde: Zona segura </string>
+    <string name="leyend_date_zone">🟨 Amarillo: Zona de la cita</string>
+    <string name="leyends">Leyendas..</string>
+    <string name="leyends_combined">%1$s\n%2$s</string>
+    <string name="vista_previa_del_mapa">Vista previa del mapa</string>
+
+
+    <string-array name="spinner_events">
+        <item>Seleccione los eventos</item>
+        <item>Entrar</item>
+        <item>Salir</item>
+        <item>Permanecer</item>
+    </string-array>
+
+    <string-array name="spinner_priority">
+        <item>Baja</item>
+        <item>Media</item>
+        <item>Alta</item>
+    </string-array>
+
+</resources>
