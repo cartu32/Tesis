@@ -8,4 +8,12 @@
     <style name="CalendarHeaderText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@android:color/holo_blue_dark</item>
     </style>
+    <style name="Shape.RoundedLg">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="Shape">
+        <item name="android:background">@drawable/bg_rounded</item>
+        <item name="android:padding">12dp</item>
+    </style>
 </resources> 

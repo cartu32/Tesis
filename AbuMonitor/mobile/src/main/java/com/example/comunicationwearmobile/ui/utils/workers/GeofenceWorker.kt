@@ -287,9 +287,9 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Geofence!"
             message = when (transition) {
-                Geofence.GEOFENCE_TRANSITION_ENTER -> "El abuelo ha entrado en la zona $description "
-                Geofence.GEOFENCE_TRANSITION_EXIT -> "El abuelo ha salido de la zona $description "
-                Geofence.GEOFENCE_TRANSITION_DWELL -> "El abuelo pasó más de $dwellTime min. en la zona $description "
+                Geofence.GEOFENCE_TRANSITION_ENTER -> "Usted ha entrado en la zona $description "
+                Geofence.GEOFENCE_TRANSITION_EXIT -> "Usted ha salido de la zona $description "
+                Geofence.GEOFENCE_TRANSITION_DWELL -> "Usted estuvo más de $dwellTime min. en la zona $description "
                 else -> "Evento desconocido en zona $description"
             }
         }

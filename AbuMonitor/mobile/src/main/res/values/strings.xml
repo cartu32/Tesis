@@ -17,7 +17,7 @@
     <string name="lbl_texto_distancia">Distancia(Mts)</string>
     <string name="lbl_metros">0</string>
     <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
-    <string name="zona_segura">Zona Segura</string>
+    <string name="zona_segura">Es Zona Segura</string>
     <string name="tiempo_de_permanencia">Tiempo de permanencia(min)</string>
     <string name="prioridad">Prioridad:</string>
     <string name="evento">Evento:</string>
@@ -50,10 +50,11 @@
     <string name="leyends">Leyendas..</string>
     <string name="leyends_combined">%1$s\n%2$s</string>
     <string name="vista_previa_del_mapa">Vista previa del mapa</string>
+    <string name="datos_de_zona_segura">Datos de Zona Segura</string>
 
 
     <string-array name="spinner_events">
-        <item>Seleccione los eventos</item>
+        <item>Elija los eventos</item>
         <item>Entrar</item>
         <item>Salir</item>
         <item>Permanecer</item>

@@ -43,14 +43,18 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private var chkSecurityZone: CheckBox ?=null
     private var cmdSavGeofence:Button ?=null
     private var cmdCancelGeofence:Button ?=null
+    private var titleGroupSecurityZone:TextView?=null
 
     private var spEventsAdapter:SpinnerMultipleAdapter?=null
     private var spPriorityAdapter:SpinnerSimpleAdapter?=null
     private var listSpEvents:ArrayList<StateSpinner> = ArrayList()
 
+
     private var groupSecurityZone:TableLayout ?= null
     private var txtMinHourSecureZone:TextView ?= null
     private var txtMaxHourSecureZone:TextView ?= null
+    private var lblMinHour:TextView?=null
+    private var lblMaxHour:TextView?=null
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,15 +94,22 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         chkSecurityZone?.isClickable = false
         cmdSavGeofence?.setVisibility(View.INVISIBLE)
 
-        if (chkSecurityZone?.isChecked == true){
-            groupSecurityZone?.visibility = View.VISIBLE
+        if(chkSecurityZone?.isChecked == true){
+            lblMinHour?.visibility=View.VISIBLE
+            lblMaxHour?.visibility=View.VISIBLE
+            txtMinHourSecureZone?.visibility=View.VISIBLE
+            txtMaxHourSecureZone?.visibility=View.VISIBLE
+
             groupSecurityZone?.isEnabled=false
             txtMinHourSecureZone?.isEnabled=false
             txtMaxHourSecureZone?.isEnabled=false
         }
-        else
-            groupSecurityZone?.visibility = View.INVISIBLE
-
+        else {
+            lblMinHour?.visibility = View.INVISIBLE
+            lblMaxHour?.visibility = View.INVISIBLE
+            txtMinHourSecureZone?.visibility = View.INVISIBLE
+            txtMaxHourSecureZone?.visibility = View.INVISIBLE
+        }
     }
 
     private fun getJoinAreaGeofence(): JoinAreaGeofence? {
@@ -152,17 +163,18 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         txtDwellTime=findViewById<EditText>(R.id.txtDwellTime)
         chkSecurityZone=findViewById<CheckBox>(R.id.chkSecurityZone)
         txtDescription=findViewById<EditText>(R.id.txtDescription)
+        titleGroupSecurityZone=findViewById(R.id.groupbox_title2)
 
         cmdSavGeofence = findViewById<Button>(R.id.cmdSaveGeofences)
         cmdCancelGeofence = findViewById<Button>(R.id.cmdCancelGeofence)
 
         groupSecurityZone = findViewById<TableLayout>(R.id.groupSecurityZone)
-        txtMinHourSecureZone = findViewById(R.id.txtMinHourSecureZone)
-        txtMaxHourSecureZone = findViewById(R.id.txtMaxHourSecureZone)
+        txtMinHourSecureZone = findViewById<EditText>(R.id.txtMinHourSecureZone)
+        txtMaxHourSecureZone = findViewById<EditText>(R.id.txtMaxHourSecureZone)
+        lblMinHour = findViewById<TextView>(R.id.lblMinHour)
+        lblMaxHour = findViewById<TextView>(R.id.lblMaxHour)
 
         initilizeSpinnerSpEvents()
-
-
 
         inititlizeSpinnerSpPriority()
 
@@ -174,7 +186,9 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
         txtMaxHourSecureZone?.setOnClickListener(){listenerMaxHourSecurityZone()}
         txtDescription?.setScroller(Scroller(this))
         txtDescription?.isVerticalScrollBarEnabled = true
-        groupSecurityZone?.visibility =View.INVISIBLE
+      //  groupSecurityZone?.visibility =View.INVISIBLE
+      //  titleGroupSecurityZone?.visibility=View.INVISIBLE
+        changevisiblityGroup()
         txtDescription?.movementMethod = ScrollingMovementMethod()
 
 
@@ -208,10 +222,17 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
 
     private fun changevisiblityGroup() {
         if (chkSecurityZone?.isChecked == true) {
-            groupSecurityZone?.visibility = View.VISIBLE
+            lblMinHour?.visibility=View.VISIBLE
+            lblMaxHour?.visibility=View.VISIBLE
+            txtMinHourSecureZone?.visibility=View.VISIBLE
+            txtMaxHourSecureZone?.visibility=View.VISIBLE
         } else {
-            groupSecurityZone?.visibility = View.INVISIBLE
-         }
+            lblMinHour?.visibility=View.INVISIBLE
+            lblMaxHour?.visibility=View.INVISIBLE
+            txtMinHourSecureZone?.visibility=View.INVISIBLE
+            txtMaxHourSecureZone?.visibility=View.INVISIBLE
+
+        }
     }
 
 
