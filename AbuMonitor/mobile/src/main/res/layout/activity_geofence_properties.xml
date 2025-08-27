@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="6dp"
         android:text="@string/propiedades"
@@ -46,22 +46,12 @@
             android:layout_weight="1"
             android:layout_marginStart="20dp"
             android:gravity="center_vertical"
-            android:padding="4dp"
+            android:padding="0dp"
             android:text="@string/evento"
             android:textColor="@color/black"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/txtPriority"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="50dp"
-            android:gravity="center_vertical"
-            android:padding="4dp"
-            android:text="@string/prioridad"
-            android:textColor="@color/black"
-            android:textSize="20sp" />
+
         </TableRow>
         <!-- Fila 2: Prioridad -->
         <TableRow
@@ -75,7 +65,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 android:layout_weight="3"
                 android:background="@drawable/sp_border"
@@ -83,6 +73,21 @@
                 android:padding="5dp"
                 android:popupBackground="@color/black" />
 
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:id="@+id/txtPriority"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="20dp"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:text="@string/prioridad"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+        </TableRow>
+        <TableRow>
             <Spinner
                 android:id="@+id/spPriority"
                 android:layout_width="0dp"
@@ -94,13 +99,13 @@
                 android:contentDescription="@string/prioridad"
                 android:padding="8dp"
                 android:popupBackground="@color/black" />
-        </TableRow>
 
+        </TableRow>
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp">
 
             <TextView
                 android:layout_width="0dp"
@@ -155,7 +160,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="0dp"
         android:text="@string/datos_de_zona_segura"
@@ -215,7 +220,7 @@
                 android:layout_marginEnd="20dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:padding="1dp"
+                android:padding="0dp"
                 android:text="@string/Hour_min_secure_zone"
                 android:textColor="@color/black"
                 android:textSize="20sp" />
@@ -228,7 +233,7 @@
                 android:layout_marginEnd="20dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:padding="3dp"
+                android:padding="0dp"
                 android:text="@string/Hour_max_secure_zone"
                 android:textColor="@color/black"
                 android:textSize="20sp" />
@@ -238,8 +243,8 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp">
 
             <TextView
                 android:id="@+id/txtMinHourSecureZone"
@@ -325,7 +330,7 @@
                 android:background="@drawable/editext_enabled"
                 android:gravity="top|start"
                 android:inputType="textMultiLine"
-                android:minLines="2"
+                android:minLines="1"
                 android:maxLines="2"
                 android:overScrollMode="always"
                 android:padding="8dp"

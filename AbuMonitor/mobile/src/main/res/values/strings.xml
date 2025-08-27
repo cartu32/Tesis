@@ -54,7 +54,7 @@
 
 
     <string-array name="spinner_events">
-        <item>Elija los eventos</item>
+        <item>Seleccione los eventos</item>
         <item>Entrar</item>
         <item>Salir</item>
         <item>Permanecer</item>
