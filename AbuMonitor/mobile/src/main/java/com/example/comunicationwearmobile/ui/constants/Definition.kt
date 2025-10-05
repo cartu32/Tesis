@@ -15,24 +15,26 @@ object Definition {
      ********************************************************
      */
 
-    //constantes que indican la hora por defualt de activacion de las geofence
-    //del dia de mañana y la desactivacion de las de hoy
-    const val DEFAULT_HOUR_DAILY_ACTIVATION_GEOF        = 23
-    const val DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF      = 55 // se deja un margen de 5 minutos por las duda que se retrase la alarma
-
-    const val ACTION_ALARM_DAILY_ACTIVATION_GEOF      = "ACTION_ALARM_DAILY_ACTIVATION_GEOF"
+    const val ACTION_ALARM_FOR_CHECKS     = "ACTION_ALARM_FOR_CHECKS"
 
     const val INTENT_ALARM_ALARM_ID            = "INTENT_ALARAM_ALARM_ID"
     const val INTENT_ALARM_HOUR                = "INTENT_ALARM_HOUR"
     const val INTENT_ALARM_MINUTE              = "INTENT_ALARM_MINUTE"
 
-    //constantes que indican la hora por defualt del checkeo de asistencia
-    //a las citas del dia actual, o sea hoy
+    //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
+    //ademas de activar y desactivar las areas de geofence del dia de hoy
 
-    const val DEFAULT_HOUR_DAILY_CHECK_ASSISTANCE       = 21
-    const val DEFAULT_MINUTE_DAILY_CHECK_ASSISTANCE     = 30
+    const val DEFAULT_HOUR_ALARM_BETWEEN_CHECKS       = 0
+    const val DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS     = 2
 
     const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
+
+    //constante que se retorna cuando hay un error al programar una alarma
+    const val ERROR_IN_SET_ALARM    = -1
+
+    //constante del id que identifica la alarma de checkeo de asistencia y
+    //de activacion de geofence
+    const val ALARM_ID_BETWEEN_CHECKS   = 1
 
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"

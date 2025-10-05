@@ -11,30 +11,14 @@
         android:layout_width="match_parent"
         android:textSize="20sp"
         android:layout_height="wrap_content"
-        android:text="@string/hora_de_alarma_para_activar_geofence"/>
+        android:text="@string/hora_de_alarma_verficiacion_configuracion"/>
 
     <Button
-        android:id="@+id/cmdDateAlarmActivateGeof"
+        android:id="@+id/cmdTimeAlarmForCkecks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-
-        android:text="@string/configurar_hora_de_alarma" />
-
-    <TextView
-        android:id="@+id/txtDateAlarmCheckAssistance"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="@string/hora_de_alarma_para_verificar_asistencia"/>
-
-    <Button
-        android:id="@+id/cmdDateAlarmCheckAssistance"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-
-        android:text="@string/configurar_hora_de_alarma" />
+        android:text="(horas:minutos)"
+        android:textSize="20sp" />
 
     <TableRow
         android:layout_width="match_parent"

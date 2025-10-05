@@ -6,116 +6,160 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.utils.Tools
 import java.util.Calendar
 class AlarmHelper {
 
-    companion object {
-        private var alarmIdCounter: Int = 0
-    }
-
     /**
-     * Crea una alarma diaria exacta.
-     * @return el ID único de la alarma, útil para cancelarla después.
+     * Programa una alarma exacta en una hora del día (próxima ocurrencia).
+     * Usa reloj de pared (RTC).
      */
-    fun setDailyAlarm(
+    fun setAlarmAtSpecificTime(
         context: Context,
+        alarmId: Int,
         hour: Int,
         minute: Int,
-        mAction: String,
+        action: String,
         receiverClass: Class<out BroadcastReceiver>
-    ): Int {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    ): Boolean{
+        try {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
-        val alarmId = ++alarmIdCounter // ID único para esta alarma
+            if (alarmManager==null)
+                return false
 
-        val intent = Intent(context, receiverClass).apply {
-            action = mAction
-            putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
-            putExtra(Definition.INTENT_ALARM_HOUR, hour)
-            putExtra(Definition.INTENT_ALARM_MINUTE, minute)
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            alarmId, // ahora usamos un ID único
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-
-            if (timeInMillis <= System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
+            val intent = Intent(context, receiverClass).apply {
+                this.action = action
+                putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
+                putExtra(Definition.INTENT_ALARM_HOUR, hour)
+                putExtra(Definition.INTENT_ALARM_MINUTE, minute)
             }
+
+            val pi = PendingIntent.getBroadcast(
+                context,
+                alarmId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // Instante absoluto (epoch ms) para HOY a (hour:minute), o mañana si ya pasó
+            val triggerAtMillisRtc = Tools.getHourInMillis(hour, minute)
+
+            configExactAlarm(
+                triggerAtMillis = triggerAtMillisRtc,
+                type = AlarmManager.RTC_WAKEUP,
+                pendingIntent = pi,
+                alarmManager = alarmManager,
+                context = context
+            )
+        } catch (e: Exception) {
+            Log.e(Definition.TAG_DEBUG, "Error al programar alarma (RTC): ${e.message}")
+            return  false
         }
-
-        configExactAlarm(calendar, pendingIntent, alarmManager)
-
-        return alarmId
+        return true
     }
 
     /**
-     * Cancela una alarma previamente creada usando el mismo alarmId.
+     * Programa una alarma exacta para “dentro de” (h, m) usando reloj relativo.
+     *
      */
-    fun cancelAlarm(context: Context, alarmId: Int, mAction: String, receiverClass: Class<out BroadcastReceiver>) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    fun setAlarmAfterOfTime(
+        context: Context,
+        alarmId: Int,
+        hours: Int,
+        minutes: Int,
+        action: String,
+        receiverClass: Class<out BroadcastReceiver>
+    ): Boolean {
+        try {
+            val alarmManager =context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
-        val intent = Intent(context, receiverClass).apply {
-            action = mAction
+            if (alarmManager==null)
+                return false
+
+            val intent = Intent(context, receiverClass).apply {
+                this.action = action
+                putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
+                putExtra(Definition.INTENT_ALARM_HOUR, hours)
+                putExtra(Definition.INTENT_ALARM_MINUTE, minutes)
+            }
+
+            val pi = PendingIntent.getBroadcast(
+                context,
+                alarmId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // Delay en ms (duración), convertido a instante relativo
+            val delayMs = Tools.getTimeInMillis(hours, minutes) // e.j. h*3600000 + m*60000
+            val triggerAtElapsed = SystemClock.elapsedRealtime() + delayMs
+
+            configExactAlarm(
+                triggerAtMillis = triggerAtElapsed,
+                type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                pendingIntent = pi,
+                alarmManager = alarmManager,
+                context = context
+            )
+        } catch (e: Exception) {
+            Log.e(Definition.TAG_DEBUG, "Error al programar alarma (ELAPSED): ${e.message}")
+            return false
         }
+        return true
+    }
 
-        val pendingIntent = PendingIntent.getBroadcast(
+    /**
+     * Cancela una alarma previamente creada.
+     * Importante: action, requestCode (alarmId) y componente deben coincidir.
+     */
+    fun cancelAlarm(
+        context: Context,
+        alarmId: Int,
+        action: String,
+        receiverClass: Class<out BroadcastReceiver>
+    ) {
+        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, receiverClass).apply { this.action = action }
+        val pi = PendingIntent.getBroadcast(
             context,
-            alarmId, // debe coincidir con el usado en setDailyAlarm
+            alarmId,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        alarmManager.cancel(pendingIntent)
+        am.cancel(pi)
     }
 
+    /**
+     * Configura una alarma exacta, manejando el permiso en Android 12+.
+     */
     private fun configExactAlarm(
-        calendar: Calendar,
+        triggerAtMillis: Long,
+        type: Int,
         pendingIntent: PendingIntent,
-        alarmManager: AlarmManager
-    ) {
-        try {
+        alarmManager: AlarmManager,
+        context: Context
+    ): Boolean {
+       try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        calendar.timeInMillis,
-                        pendingIntent
-                    )
+                    alarmManager.setExactAndAllowWhileIdle(type, triggerAtMillis, pendingIntent)
                 } else {
-                    alarmManager.set(
-                        AlarmManager.RTC_WAKEUP,
-                        calendar.timeInMillis,
-                        pendingIntent
-                    )
-                    Log.w(Definition.TAG_DEBUG, "No tiene permiso para alarmas exactas. Se usa alarma inexacta.")
+                    // Fallback: inexacta (podría demorarse por batching)
+                    alarmManager.set(type, triggerAtMillis, pendingIntent)
+                    Log.w(Definition.TAG_DEBUG, "Sin permiso de alarmas exactas. Usando inexacta")
                 }
             } else {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
+                alarmManager.setExactAndAllowWhileIdle(type, triggerAtMillis, pendingIntent)
             }
-        } catch (e: SecurityException) {
-            Log.e("AlarmHelper", "Error al programar alarma exacta: ${e.message}")
-            alarmManager.set(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
+        } catch (se: SecurityException) {
+            Log.e(Definition.TAG_DEBUG, "SECURITY: ${se.message}")
+            return false
         }
+        return true
     }
 }
+

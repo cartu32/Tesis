@@ -179,4 +179,26 @@ object Tools {
 
         return calendar.timeInMillis
     }
+
+    fun getHourInMillis(hour: Int, minute: Int): Long {
+
+        val timeInMillis = System.currentTimeMillis()
+        val calendar = Calendar.getInstance()
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        if (timeInMillis <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+        return calendar.timeInMillis
+    }
+
+    fun getTimeInMillis(hour: Int, minute: Int): Long {
+        val hourInMs = hour * 60 * 60 * 1000L
+        val minutosInMs = minute * 60 * 1000L
+        return hourInMs + minutosInMs
+    }
 }

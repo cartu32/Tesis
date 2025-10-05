@@ -16,4 +16,7 @@
         <item name="android:background">@drawable/bg_rounded</item>
         <item name="android:padding">12dp</item>
     </style>
+    <style name="TimePickerTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:timePickerMode">spinner</item>
+    </style>
 </resources> 

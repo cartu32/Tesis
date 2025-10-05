@@ -2,11 +2,13 @@ package com.example.abumonitor
 
 
 import android.app.Application
+import android.util.Log
+import android.widget.Toast
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyActivateGeofReceiver
+import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,50 +38,36 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
-        initializeAlarmActivateGeofence()
-        intializeAlarmCheckAssistance()
+        intializeAlarmForChecks()
     }
 
-    private fun intializeAlarmCheckAssistance() {
+    private fun intializeAlarmForChecks() {
         val alarmHelper = AlarmHelper()
 
         with(SharedVariables) {
             //Como es la primera vez que se ejecuta la app seteo las alarmas por default
-            hourDailyCheckAssitance   = Definition.DEFAULT_HOUR_DAILY_CHECK_ASSISTANCE
-            minuteDailyCheckAssitance = Definition.DEFAULT_MINUTE_DAILY_CHECK_ASSISTANCE
+            hourAlarmBetweenCheck   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
+            minuteAlramBetweenCheck = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
 
-            //inicio la alarma que checkear las asistencia a las citas del dia actual
-            alarmIdActivateGeofence =
-                alarmHelper.setDailyAlarm(
-                    this@AbuMonitorApplicationMobile,
-                    hourDailyCheckAssitance,
-                    minuteDailyCheckAssitance,
-                    Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
-                    AlarmDailyActivateGeofReceiver::class.java
-                )
+
+            val resultSetAlarm= alarmHelper.setAlarmAfterOfTime(
+                this@AbuMonitorApplicationMobile,
+                Definition.ALARM_ID_BETWEEN_CHECKS,
+                hourAlarmBetweenCheck,
+                minuteAlramBetweenCheck,
+                Definition.ACTION_ALARM_FOR_CHECKS,
+                AlarmDailyForChecksBroadcastReceiver::class.java
+            )
+
+            if(resultSetAlarm) {
+                Log.d(Definition.TAG_DEBUG, "Alarma de checkeo configurada correctamente")
+                Toast.makeText(this@AbuMonitorApplicationMobile, "Alarma de  checkeo configurada correctamente", Toast.LENGTH_SHORT).show()
+            }else{
+                Toast.makeText(this@AbuMonitorApplicationMobile,"No se pudo configurar la alarma", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    private fun initializeAlarmActivateGeofence() {
-        val alarmHelper = AlarmHelper()
-
-        with(SharedVariables) {
-            //Como es la primera vez que se ejecuta la app seteo las alarmas por default
-            hourDailyActivateGeofence = Definition.DEFAULT_HOUR_DAILY_ACTIVATION_GEOF
-            minuteDailyActivateGeofence =Definition.DEFAULT_MINUTE_DAILY_ACTIVATION_GEOF
-
-            //inicio la alarma que va activar y desactivar
-            //las areas de geofence del dia actual
-            alarmIdCheckAssitance =
-                alarmHelper.setDailyAlarm(
-                    this@AbuMonitorApplicationMobile,
-                    hourDailyActivateGeofence,
-                    minuteDailyActivateGeofence,
-                    Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF,
-                    AlarmDailyActivateGeofReceiver::class.java
-                )
-        }
-    }
     private fun configLeakCanary() {
         // Configuración adicional si es necesario
         //   LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
