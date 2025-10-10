@@ -29,6 +29,10 @@ object Definition {
 
     const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
 
+    //constante que indica la cuanto tiempo se debe mantener activa la geofence para una cita
+    //por defecto se mantiene activa por 4 horas
+    const val DEFAULT_TIME_DESACTIVATION_APPOINTMENT = 4
+
     //constante que se retorna cuando hay un error al programar una alarma
     const val ERROR_IN_SET_ALARM    = -1
 

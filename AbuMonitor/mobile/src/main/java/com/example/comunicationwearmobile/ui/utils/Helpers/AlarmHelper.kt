@@ -52,8 +52,7 @@ class AlarmHelper {
                 triggerAtMillis = triggerAtMillisRtc,
                 type = AlarmManager.RTC_WAKEUP,
                 pendingIntent = pi,
-                alarmManager = alarmManager,
-                context = context
+                alarmManager = alarmManager
             )
         } catch (e: Exception) {
             Log.e(Definition.TAG_DEBUG, "Error al programar alarma (RTC): ${e.message}")
@@ -102,8 +101,7 @@ class AlarmHelper {
                 triggerAtMillis = triggerAtElapsed,
                 type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 pendingIntent = pi,
-                alarmManager = alarmManager,
-                context = context
+                alarmManager = alarmManager
             )
         } catch (e: Exception) {
             Log.e(Definition.TAG_DEBUG, "Error al programar alarma (ELAPSED): ${e.message}")
@@ -140,8 +138,7 @@ class AlarmHelper {
         triggerAtMillis: Long,
         type: Int,
         pendingIntent: PendingIntent,
-        alarmManager: AlarmManager,
-        context: Context
+        alarmManager: AlarmManager
     ): Boolean {
        try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

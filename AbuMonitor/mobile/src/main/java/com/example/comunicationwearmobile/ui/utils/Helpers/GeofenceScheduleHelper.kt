@@ -142,7 +142,7 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
             appendLine("Descripción         Hora")
             appendLine("-------------------------")
             for (appointment in listAppointWithoutAssisntace) {
-                val time = Tools.getMillisToHourMinutes(appointment.hour_appointment)
+                val time = Tools.getFormatHour(appointment.date_hour_appointment)
                 val desc = appointment.description.padEnd(20) // ajustá este valor según el largo máximo esperado
                 appendLine("$desc $time")
             }

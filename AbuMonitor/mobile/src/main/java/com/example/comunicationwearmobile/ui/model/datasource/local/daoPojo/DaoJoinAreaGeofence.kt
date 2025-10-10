@@ -27,7 +27,7 @@ interface DaoJoinAreaGeofence {
         INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
         INNER JOIN Type_Area ta ON ag.id_type_area = ta.id_type_area
         INNER JOIN Priority p ON ag.id_priority = p.id_priority
-        WHERE sa.date_appointment = :tomorrowDate
+        WHERE sa.date_hour_appointment = :tomorrowDate
         GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,p.id_priority,ta.id_type_area
     """)
     suspend fun getAreasWithAppointmentsOfTomorrow(tomorrowDate: Long): List<AreaGeofenceWithAppointment>
@@ -36,7 +36,7 @@ interface DaoJoinAreaGeofence {
     @Query("""
          SELECT sa.id_area
          FROM Scheduled_Assistance sa
-         WHERE sa.date_appointment = :todayDate
+         WHERE sa.date_hour_appointment = :todayDate
     """)
     suspend fun getAreasWithAppointmentsOfToday(todayDate: Long): List<Long>
 }

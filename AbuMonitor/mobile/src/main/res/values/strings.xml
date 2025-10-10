@@ -51,6 +51,7 @@
     <string name="leyends_combined">%1$s\n%2$s</string>
     <string name="vista_previa_del_mapa">Vista previa del mapa</string>
     <string name="datos_de_zona_segura">Datos de Zona Segura</string>
+    <string name="duracion_cita">Tiempo de activacion de cita(horas)</string>
 
 
     <string-array name="spinner_events">

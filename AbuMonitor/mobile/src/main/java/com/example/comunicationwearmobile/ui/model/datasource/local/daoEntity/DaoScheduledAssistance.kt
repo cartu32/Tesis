@@ -25,7 +25,7 @@ interface DaoScheduledAssistance {
     @Delete
     fun deleteAssistance(scheduledAssistance: EntityScheduledAssistance)
 
-    @Query("SELECT * FROM scheduled_assistance WHERE date_appointment = :date")
+    @Query("SELECT * FROM scheduled_assistance WHERE date_hour_appointment = :date")
     fun getAppointmetByDate(date: Long): LiveData<List<EntityScheduledAssistance>>
 
     @Query("SELECT * FROM scheduled_assistance WHERE id_area = :idArea")
@@ -33,7 +33,7 @@ interface DaoScheduledAssistance {
 
     @Query("""
            SELECT * FROM scheduled_assistance
-           WHERE status = 0 AND date_appointment = :date
+           WHERE went_appointment = 0 AND date_hour_appointment = :date
     """)
     fun getAppointmentThatDidntAssistenceToday(date: Long): List<EntityScheduledAssistance>
 

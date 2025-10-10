@@ -128,6 +128,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
         // Manejo de la fecha seleccionada a través del ViewModel
         calendarView.setOnDateChangedListener { _, date, _ ->
+
             viewModel.selectedDateMillis.value = getDateMillis(date)
         }
 
@@ -153,7 +154,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
     fun updateMonthDecorators(month: Int) {
         calendarView.removeDecorators()
         val datesWithEvents = allEvents.map {
-            val localDate = Instant.ofEpochMilli(it.date_appointment.toLong())
+            val localDate = Instant.ofEpochMilli(it.date_hour_appointment.toLong())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
             CalendarDay.from(localDate)
@@ -170,7 +171,9 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         val cal = Calendar.getInstance()
         cal.set(date.year, date.month - 1, date.day, 0, 0, 0)
         cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
+
+        val onlydateinMillis= Tools.extractDayOfDateInMillis(cal.timeInMillis)
+        return onlydateinMillis
     }
 
 

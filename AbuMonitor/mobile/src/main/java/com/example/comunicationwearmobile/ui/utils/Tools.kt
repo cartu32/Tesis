@@ -76,13 +76,14 @@ object Tools {
         return format.format(date)
     }
 
-    fun formatHour(millis: Long): String {
+    fun getFormatHour(millis: Long): String {
         val cal = Calendar.getInstance()
         cal.timeInMillis = millis
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val min = cal.get(Calendar.MINUTE)
-        return String.format("%02d:%02d", hour, min)
+        return String.format(Locale.getDefault(), "%02d:%02d", hour, min)
     }
+
 
     fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
         //Recibo los datos desde la activty PropertiesGeofence Activty
@@ -124,9 +125,9 @@ object Tools {
         return inputDate.isAfter(today) || inputDate.isEqual(today)
     }
 
-    fun isTimeAndDateGreaterThanCurrentDate(dateMillis: Long,timeMillis: Long): Boolean {
-        if(isToday(dateMillis)){
-            if(isTimeGreaterThanCurrentTime(timeMillis)){
+    fun isTimeAndDateGreaterThanCurrentDate(dateHourAppoint: Long): Boolean {
+        if(isToday(dateHourAppoint)){
+            if(isTimeGreaterThanCurrentTime(dateHourAppoint)){
                 Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta bien:")
                 return true
             }
@@ -200,5 +201,32 @@ object Tools {
         val hourInMs = hour * 60 * 60 * 1000L
         val minutosInMs = minute * 60 * 1000L
         return hourInMs + minutosInMs
+    }
+
+
+    fun extractDayOfDateInMillis(fullMillis: Long):Long{
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = fullMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val onlyDayMillis = cal.timeInMillis
+        return onlyDayMillis
+    }
+
+    fun extractHourOfDateInMillis(fullMillis: Long):Long {
+
+        val cal = Calendar.getInstance().apply { timeInMillis = fullMillis }
+
+        val millisHourOfDay =
+            (cal.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000L) +
+                    (cal.get(Calendar.MINUTE) * 60 * 1000L) +
+                    (cal.get(Calendar.SECOND) * 1000L) +
+                    cal.get(Calendar.MILLISECOND)
+
+        return millisHourOfDay
     }
 }

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Tools
+import java.text.SimpleDateFormat
 import java.util.*
 
 class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit) :
@@ -37,11 +38,13 @@ class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit
         private var currentEvent: EntityScheduledAssistance? = null
 
         fun bind(assistance: EntityScheduledAssistance) {
-            val date = Tools.getMillisToDate(assistance.date_appointment)
-            val hour = Tools.formatHour(assistance.hour_appointment)
+            val date = Date(assistance.date_hour_appointment)
+            val format = SimpleDateFormat("dd/MM/yyyy - HH:mm:ss", Locale.getDefault())
+
             currentEvent = assistance
+
             title.text = assistance.description
-            time.text = "${date} - ${hour}"
+            time.text = format.format(date)
             itemView.setOnClickListener { onClick(assistance) }
         }
 

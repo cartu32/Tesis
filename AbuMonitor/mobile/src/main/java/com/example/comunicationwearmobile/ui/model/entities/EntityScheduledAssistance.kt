@@ -21,11 +21,12 @@ import kotlinx.parcelize.Parcelize
     @PrimaryKey(autoGenerate = true)
     var id_assistance: Int = 0,
     var title: String = "",
-    var date_appointment:Long=0, //dia en que tiene la cita
-    var hour_appointment:Long=0, //hora en que tiene la cita
-    var hour_enter_assistance:Long=0,  //hora en que realmente asisto a la cita
-    var hour_exit_assistance:Long=0,  //hora en que realmente salio de la cita
     var description:String="",
-    var status:Boolean=false,
+    var went_appointment:Boolean=false, //indica si fue a la cita
+    var is_activated_geof:Boolean=false, //indica si esta activada la geofence de la cita
+    var date_hour_appointment:Long=0, //dia y hora en que tiene la cita
+    var date_hour_enter_assistance:Long=0, //dia y hora en que realmente asisto a la cita
+    var date_hour_exit_assistance:Long=0,  //dia y hora en que realmente salio de la cita
+    var time_duration_activation_appointment:Long=0, //tiempo que se mantiene activa el area de geof de la cita
     var id_area: Long = 0,
     ): Parcelable

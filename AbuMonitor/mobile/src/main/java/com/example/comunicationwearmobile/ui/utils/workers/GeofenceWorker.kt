@@ -101,24 +101,24 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
 
         with(entityAssistance){
             //pregunto si la persona ya asistio a la cita
-            if(status){
+            if(went_appointment){
                 Log.d(Definition.TAG_DEBUG,"Ya asistio a la cita")
                 return
             }
 
             //pregunto si la fecha de la cita es para el dia de hoy
-            if(!Tools.isToday(date_appointment)){
+            if(!Tools.isToday(date_hour_appointment)){
                 Log.e(Definition.TAG_DEBUG,"Error en la fecha de la cita")
                 return
             }
 
             //si es para el dia hoy, pregunto si esta la persona dentro del horario de la cita
-            if(!Tools.isTimeEnterAssistanceCorrect(hour_appointment)){
+            if(!Tools.isTimeEnterAssistanceCorrect(date_hour_appointment)){
                 Log.d(Definition.TAG_DEBUG,"Se descarta la entrada porque no esta dentro del horario de la cita")
                 return
             }
 
-            hour_enter_assistance=System.currentTimeMillis()
+            date_hour_enter_assistance=System.currentTimeMillis()
 
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 
@@ -139,19 +139,19 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
 
         with(entityAssistance) {
             //pregunto si la persona ya asistio a la cita
-            if (status) {
+            if (went_appointment) {
                 Log.d(Definition.TAG_DEBUG, "Ya asistio a la cita")
                 return
             }
             //si la persona todavia no ingreso en el horario que debia ingresar se descarta el evento
-            if(hour_enter_assistance==0L){
+            if(date_hour_enter_assistance==0L){
                 Log.d(Definition.TAG_DEBUG,"La persona todavia no ingreso a la zona de asistencia en el horario agendado")
                 return
             }
 
             val hourExit=System.currentTimeMillis()
             //conveirto el tiempo que estuvo en la zona de asistencia a minutos
-            val timeInAssitanceZone = (hourExit - hour_enter_assistance)/minuteInMillis
+            val timeInAssitanceZone = (hourExit - date_hour_enter_assistance)/minuteInMillis
 
             //si la persona menos de un minuto en la zona de asistencia descartamos el evento
             if(timeInAssitanceZone<Definition.TIME_MIN_IN_ASSISTANCE_ZONE){
@@ -163,8 +163,8 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             Log.d(Definition.TAG_DEBUG,"La persona asistio a la cita, estuvo mas de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos en la zona de asistencia")
 
             //guardo en la base de datos la hora de salida de la cita e indico que asistio a la cita
-            hour_exit_assistance=hourExit
-            status=true
+            date_hour_exit_assistance=hourExit
+            went_appointment=true
 
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 

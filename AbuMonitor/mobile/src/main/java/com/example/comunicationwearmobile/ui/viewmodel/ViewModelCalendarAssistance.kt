@@ -97,7 +97,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
 
         //si se pudo insertar la nueva cita de asistencia en la bd, se activa el geofence
         //me fijo si corresponde a la fecha a partir de mañana. Osea que no sea hoy(la fecha actual)
-        if(!Tools.isToday(assistance.date_appointment)){
+        if(!Tools.isToday(assistance.date_hour_appointment)){
             Log.d(Definition.TAG_DEBUG,"No se activo el geofence para la cita porque no es de hoy")
             return idNewAssistance
         }
