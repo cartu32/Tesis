@@ -229,4 +229,12 @@ object Tools {
 
         return millisHourOfDay
     }
+
+    fun getStartNextDay(funMillis:Long):Long{
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = funMillis
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        return calendar.timeInMillis
+    }
+
 }

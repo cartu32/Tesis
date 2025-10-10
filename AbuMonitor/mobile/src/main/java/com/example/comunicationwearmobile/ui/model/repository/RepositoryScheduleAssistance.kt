@@ -55,10 +55,16 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
+    //Metodo que retorna las citas de la fecha pasada por parametro
+    // desde el comienzo del dia (a las 0:00)
+    // hasta el final de dia (inicio del proximo dia a las 0:00)
     fun getEventsByDate(date: Long): LiveData<List<EntityScheduledAssistance>> {
-        return daoAssistance.getAppointmetByDate(date)
+        val startDayDate = Tools.extractDayOfDateInMillis(date)
+        val endDayDate   = Tools.getStartNextDay(startDayDate)
 
+        return daoAssistance.getAppointmetByDate(startDayDate, endDayDate)
     }
+
 
     suspend fun getAssistanceWithAreaId(idArea: Long): EntityScheduledAssistance {
         return withContext(Dispatchers.IO){

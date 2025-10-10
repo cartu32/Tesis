@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
@@ -48,9 +49,11 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     2) eventsBySelectedDate: en donde la viewmodel actualiza la lista de eventos segun los datos obtenidos de la base de datos
     */
     val eventsBySelectedDate: LiveData<List<EntityScheduledAssistance>> =
-        selectedDateMillis.switchMap { date ->
-            repoAssistance.getEventsByDate(date)
-        }
+        selectedDateMillis
+            .distinctUntilChanged()
+            .switchMap { date ->
+                repoAssistance.getEventsByDate(date)
+            }
 
     fun getAllEvents(): LiveData<List<EntityScheduledAssistance>> =
         repoAssistance.getAllScheduleAssitance()
