@@ -53,7 +53,7 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
             appendLine("Descripción         Hora")
             appendLine("-------------------------")
             for (appointment in listAppointWithoutAssisntace) {
-                val time = Tools.getFormatHourOfFull(appointment.date_hour_appointment)
+                val time = Tools.getMillisToHourMinutes(appointment.date_hour_appointment)
                 val desc = appointment.description.padEnd(20) // ajustá este valor según el largo máximo esperado
                 appendLine("$desc $time")
             }
@@ -70,10 +70,10 @@ class GeofenceScheduleHelper(mContext:Context, scope: CoroutineScope?) {
 
 
     suspend private fun activateGeofenceNextScheduled() {
-        var listAreasInsideDateInterval:List<AreaGeofenceWithAppointment>?=null
+       /* var listAreasInsideDateInterval:List<AreaGeofenceWithAppointment>?=null
 
         //activo todas las geofences programadas dentro del intervalo de la alarma
-       /* listAreasTomorrow=repositoryScheduleAssistance?.getAreasForTomorrow()
+        listAreasTomorrow=repositoryScheduleAssistance?.getAreasForTomorrow()
 
         Log.d(Definition.TAG_DEBUG,"listAreasTomorrow: $listAreasTomorrow")
 */

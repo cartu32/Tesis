@@ -107,7 +107,7 @@ class AssistanceDetailActivity : AppCompatActivity() {
             assistance?.let {
                 title?.text = it.title
                 desc?.text = it.description
-                time?.text = "${Tools.getMillisToDate(it.date_hour_appointment)} - ${Tools.getFormatHourOfFull(it.date_hour_appointment)}"
+                time?.text = "${Tools.getMillisToHourMinutes(it.date_hour_appointment)} - ${Tools.getMillisToHourMinutes(it.date_hour_appointment)}"
                 id_area_geof = it.id_area
             }
         }
