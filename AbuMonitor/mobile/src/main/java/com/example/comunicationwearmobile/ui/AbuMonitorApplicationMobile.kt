@@ -5,9 +5,10 @@ import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,34 +39,59 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
-        intializeAlarmForChecks()
-    }
-
-    private fun intializeAlarmForChecks() {
+        val repository = RepositoryScheduleAlarmSPref.getInstance(this)
         val alarmHelper = AlarmHelper()
 
-/*        with(SharedVariables) {
-            //Como es la primera vez que se ejecuta la app seteo las alarmas por default
-            hourAlarmBetweenCheck   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
-            minuteAlramBetweenCheck = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
+        // Valores por defecto
+        var hourAlarmBetweenCheck   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
+        var minuteAlramBetweenCheck = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
 
+        val timeBetweenChecks = repository.getTimeBetweenChecksSync()
 
-            val resultSetAlarm= alarmHelper.setAlarmAfterOfTime(
-                this@AbuMonitorApplicationMobile,
-                Definition.ALARM_ID_BETWEEN_CHECKS,
-                hourAlarmBetweenCheck,
-                minuteAlramBetweenCheck,
-                Definition.ACTION_ALARM_FOR_CHECKS,
-                AlarmDailyForChecksBroadcastReceiver::class.java
-            )
+        if (timeBetweenChecks != Definition.NO_STORED_VALUE) {
+            val (h, m) = Tools.getHourMinOfParcial(timeBetweenChecks)
+            hourAlarmBetweenCheck   = h
+            minuteAlramBetweenCheck = m
+        } else {
+            Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
 
-            if(resultSetAlarm) {
-                Log.d(Definition.TAG_DEBUG, "Alarma de checkeo configurada correctamente")
-                Toast.makeText(this@AbuMonitorApplicationMobile, "Alarma de  checkeo configurada correctamente", Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(this@AbuMonitorApplicationMobile,"No se pudo configurar la alarma", Toast.LENGTH_SHORT).show()
-            }
-        }*/
+            val timeParcialMillis=Tools.getTimeInMillis(hourAlarmBetweenCheck, minuteAlramBetweenCheck)
+            repository.saveTimeBetweenChecksSync(timeParcialMillis)
+        }
+
+        cancelAlarmPrevious(alarmHelper)
+        initAlarm(hourAlarmBetweenCheck, minuteAlramBetweenCheck,alarmHelper)
+
+    }
+
+    private fun cancelAlarmPrevious(alarmHelper: AlarmHelper) {
+        alarmHelper.cancelAlarm(
+            this,
+            Definition.ALARM_ID_BETWEEN_CHECKS,
+            Definition.ACTION_ALARM_FOR_CHECKS,
+            AlarmDailyForChecksBroadcastReceiver::class.java
+        )
+    }
+
+    private fun initAlarm(hour: Int, minute: Int,alarmHelper: AlarmHelper){
+
+        val resultSetAlarm = alarmHelper.setAlarmAfterOfTime(
+            this,
+            Definition.ALARM_ID_BETWEEN_CHECKS,
+            hour,
+            minute,
+            Definition.ACTION_ALARM_FOR_CHECKS,
+            AlarmDailyForChecksBroadcastReceiver::class.java
+        )
+
+        if (resultSetAlarm) {
+            Log.d(Definition.TAG_DEBUG, "Alarma de checkeo configurada correctamente")
+            Toast.makeText(this, "Alarma de checkeo configurada correctamente", Toast.LENGTH_SHORT).show()
+        } else {
+            Log.e(Definition.TAG_DEBUG, "No se pudo configurar la alarma")
+            Toast.makeText(this, "No se pudo configurar la alarma", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     private fun configLeakCanary() {

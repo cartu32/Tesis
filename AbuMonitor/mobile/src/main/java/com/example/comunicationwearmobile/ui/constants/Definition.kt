@@ -25,7 +25,7 @@ object Definition {
     //ademas de activar y desactivar las areas de geofence del dia de hoy
 
     const val DEFAULT_HOUR_ALARM_BETWEEN_CHECKS       = 0
-    const val DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS     = 2
+    const val DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS     = 3
 
     const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
     const val ACTION_ALARM_DAILY_CHECKS                = "ACTION_ALARM_DAILY_CHECKS"
@@ -40,6 +40,9 @@ object Definition {
     //constante del id que identifica la alarma de checkeo de asistencia y
     //de activacion de geofence
     const val ALARM_ID_BETWEEN_CHECKS   = 1
+
+    //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
+    val NO_STORED_VALUE: Long =-1L
 
     //TAG para hacer los logs
     const val TAG_DEBUG    = "ABUMONITOR_DEBUG"

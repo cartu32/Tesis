@@ -1,6 +1,7 @@
 package com.example.comunicationwearmobile.ui.model.repository
 
 import android.content.Context
+import com.example.abumonitor.constants.Definition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -34,14 +35,25 @@ class RepositoryScheduleAlarmSPref (context: Context){
             }
         }
     }
-
+    //Versión asincronica para leerlo mas tarde
     suspend fun getTimeBetweenChecks(): Long {
         return withContext(Dispatchers.IO) {
             fileMutex.withLock {
 
-               prefs.getLong(TIME_BETWEEN_CHECKS, -1L)
+               prefs.getLong(TIME_BETWEEN_CHECKS, Definition.NO_STORED_VALUE)
 
             }
         }
+    }
+
+    //Versión síncrona para inicialización temprana
+    fun getTimeBetweenChecksSync(): Long {
+        return prefs.getLong(TIME_BETWEEN_CHECKS, Definition.NO_STORED_VALUE)
+    }
+
+    fun saveTimeBetweenChecksSync(hour:Long){
+        val editor = prefs.edit()
+        editor.putLong(TIME_BETWEEN_CHECKS, hour)
+        editor.apply()
     }
 }

@@ -126,5 +126,17 @@ class ConfigActivity : AppCompatActivity() {
             .show()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        vm.onFinishConsumed()
+        vm.hour.removeObservers(this)
+        vm.minute.removeObservers(this)
+        vm.isChanged.removeObservers(this)
+        vm.isSaving.removeObservers(this)
+        vm.timeText.removeObservers(this)
+        vm.saveEnabled.removeObservers(this)
+        vm.toastMessage.removeObservers(this)
+        vm.finishEvent.removeObservers(this)
+    }
 }
 

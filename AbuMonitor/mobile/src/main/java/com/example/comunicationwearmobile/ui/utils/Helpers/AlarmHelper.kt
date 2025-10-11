@@ -119,16 +119,28 @@ class AlarmHelper {
         alarmId: Int,
         action: String,
         receiverClass: Class<out BroadcastReceiver>
-    ) {
+    ): Boolean {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, receiverClass).apply { this.action = action }
-        val pi = PendingIntent.getBroadcast(
+
+        // Verifica si existe la alarma
+        val existingPi = PendingIntent.getBroadcast(
             context,
             alarmId,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
-        am.cancel(pi)
+
+        return if (existingPi != null) {
+            // Si existe, la cancelamos
+            am.cancel(existingPi)
+            existingPi.cancel() // cancela también el PendingIntent
+            Log.d(Definition.TAG_DEBUG, "Alarma cancelada correctamente (ID=$alarmId, action=$action)")
+            true
+        } else {
+            Log.w(Definition.TAG_DEBUG, "No se encontró una alarma activa (ID=$alarmId, action=$action)")
+            false
+        }
     }
 
     /**

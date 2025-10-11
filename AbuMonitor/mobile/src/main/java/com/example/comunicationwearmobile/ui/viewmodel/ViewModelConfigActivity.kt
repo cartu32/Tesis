@@ -80,6 +80,13 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                         repo.saveTimeBetweenChecks(Tools.getTimeInMillis(h, m))
                     }
                 }
+                //cancelo la alarma previa
+                AlarmHelper().cancelAlarm(
+                    getApplication(),
+                    Definition.ALARM_ID_BETWEEN_CHECKS,
+                    Definition.ACTION_ALARM_FOR_CHECKS,
+                    AlarmDailyForChecksBroadcastReceiver::class.java
+                )
 
                 // Programar alarma
                 val ok = AlarmHelper().setAlarmAfterOfTime(
