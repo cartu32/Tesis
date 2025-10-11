@@ -7,9 +7,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.common.SharedVariables
-import com.example.comunicationwearmobile.ui.common.SharedVariables.hourAlarmBetweenCheck
-import com.example.comunicationwearmobile.ui.common.SharedVariables.minuteAlramBetweenCheck
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
@@ -41,7 +38,7 @@ class AlarmDailyForChecksBroadcastReceiver: BroadcastReceiver() {
         var hour    =0
         var minutes =0
 
-        when(action){
+/*        when(action){
             Definition.ACTION_ALARM_FOR_CHECKS->{
                 hour=hourAlarmBetweenCheck
                 minutes=minuteAlramBetweenCheck
@@ -64,7 +61,7 @@ class AlarmDailyForChecksBroadcastReceiver: BroadcastReceiver() {
         }else{
             Log.d(Definition.TAG_DEBUG, "No se pudo volver a reconfigurar la alarma de checkeo")
         }
-
+*/
     }
 
 }

@@ -44,7 +44,7 @@ class AbuMonitorApplicationMobile : Application() {
     private fun intializeAlarmForChecks() {
         val alarmHelper = AlarmHelper()
 
-        with(SharedVariables) {
+/*        with(SharedVariables) {
             //Como es la primera vez que se ejecuta la app seteo las alarmas por default
             hourAlarmBetweenCheck   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
             minuteAlramBetweenCheck = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
@@ -65,7 +65,7 @@ class AbuMonitorApplicationMobile : Application() {
             }else{
                 Toast.makeText(this@AbuMonitorApplicationMobile,"No se pudo configurar la alarma", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
     }
 
     private fun configLeakCanary() {

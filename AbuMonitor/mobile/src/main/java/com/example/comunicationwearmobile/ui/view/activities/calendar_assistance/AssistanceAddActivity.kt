@@ -130,7 +130,7 @@ class AssistanceAddActivity : AppCompatActivity() {
             dateHourAppointment=dateAppontimentMillis+onlyHourApponinment
 
             //muestro la hora seleccionada
-            cmdHourAppointment?.text = Tools.getFormatHour(millis)
+            cmdHourAppointment?.text = Tools.getFormatHourOfFull(millis)
         }
     }
 

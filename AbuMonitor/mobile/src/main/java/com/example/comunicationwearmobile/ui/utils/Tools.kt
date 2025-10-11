@@ -49,19 +49,30 @@ object Tools {
     }
 
 
-    fun getDate(dateTime: LocalDate):String{
-        val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")
-        val formatterDate=dateTime.format(formatter)
-
+    /**
+     * Convierte un objeto LocalDate en una cadena con formato "dd/MM/yyyy".
+     *
+     * @param dateTime fecha que se desea formatear.
+     * @return una cadena representando la fecha en formato día/mes/año.
+     */
+    fun getDate(dateTime: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val formatterDate = dateTime.format(formatter)
         return formatterDate
     }
 
-    fun getHour(dateTime: LocalTime):String{
-        val formatter= DateTimeFormatter.ofPattern("HH:mm")
-        val formatterDate=dateTime.format(formatter)
-
+    /**
+     * Convierte un objeto LocalTime en una cadena con formato "HH:mm".
+     *
+     * @param dateTime hora que se desea formatear.
+     * @return una cadena representando la hora en formato 24 horas (horas:minutos).
+     */
+    fun getHour(dateTime: LocalTime): String {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        val formatterDate = dateTime.format(formatter)
         return formatterDate
     }
+
 
     fun getMillisToDate(millis :Long):String{
         val date = Date(millis)
@@ -76,14 +87,20 @@ object Tools {
         return format.format(date)
     }
 
-    fun getFormatHour(millis: Long): String {
+    fun getFormatHourOfFull(fullMillis: Long): String {
         val cal = Calendar.getInstance()
-        cal.timeInMillis = millis
+        cal.timeInMillis = fullMillis
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val min = cal.get(Calendar.MINUTE)
         return String.format(Locale.getDefault(), "%02d:%02d", hour, min)
     }
 
+    fun getHourMinOfParcial(parcialMillis: Long): Pair<Int, Int> {
+        val totalMinutes = parcialMillis / (60 * 1000)
+        val hour = (totalMinutes / 60).toInt()
+        val min = (totalMinutes % 60).toInt()
+        return Pair(hour, min)
+    }
 
     fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
         //Recibo los datos desde la activty PropertiesGeofence Activty
@@ -94,26 +111,6 @@ object Tools {
             data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
         }
         return dataNewAreaGeof
-    }
-
-    fun calculateTomorrowMidnight(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
-        return calendar.timeInMillis
-    }
-
-    fun calculateTodayMidnight(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.DAY_OF_YEAR, 0)
-        return calendar.timeInMillis
     }
 
     fun isGreaterThanToday(timestamp: Long): Boolean {

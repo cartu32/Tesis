@@ -14,7 +14,6 @@ class RepositoryScheduleAssistance(context: Context) {
 
     private val database = AbuMonitorDatabase.getDatabase(context)
     private val daoAssistance = database.entityScheduledAssistanceDao()
-    private val daoJoinAreaGeofence=database.joinAreaGeofenceDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryScheduleAssistance? = null
@@ -72,26 +71,6 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
-
-    suspend fun getAreasForTomorrow(): List<AreaGeofenceWithAppointment> {
-        //se calcula la fecha de mañana en milisegundos
-        val tomorrowDate = Tools.calculateTomorrowMidnight()
-
-        //se obtienen las areas de geofence de mañana
-        return withContext(Dispatchers.IO){
-            daoJoinAreaGeofence.getAreasWithAppointmentsOfTomorrow(tomorrowDate)
-        }
-    }
-
-    suspend fun getAreasForToday(): List<Long> {
-        //se calcula la fecha de hoy en milisegundos
-        val todayDate = Tools.calculateTodayMidnight()
-
-        //se obtienen las areas de geofence de hoy
-        return withContext(Dispatchers.IO){
-            daoJoinAreaGeofence.getAreasWithAppointmentsOfToday(todayDate)
-        }
-    }
     suspend fun updateScheduleAssistance(assistance: EntityScheduledAssistance): Int {
         return withContext(Dispatchers.IO){
             daoAssistance.updateScheduledAssistance(assistance)
