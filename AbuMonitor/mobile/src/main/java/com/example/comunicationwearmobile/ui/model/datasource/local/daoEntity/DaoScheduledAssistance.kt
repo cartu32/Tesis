@@ -7,8 +7,8 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
 
 @Dao
 interface DaoScheduledAssistance {
@@ -41,4 +41,45 @@ interface DaoScheduledAssistance {
 
     @Update
     suspend fun updateScheduledAssistance(assistance: EntityScheduledAssistance):Int
+
+    @Query("""
+        SELECT 
+            ag.id_area,
+            ag.latitude,
+            ag.longitude,
+            ag.meters,
+            p.id_priority,
+            ta.id_type_area,
+            GROUP_CONCAT(ae.id_event) AS list_id_event
+        FROM Area_Geofence ag
+        INNER JOIN Scheduled_Assistance sa ON ag.id_area = sa.id_area
+        INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
+        INNER JOIN Type_Area ta ON ag.id_type_area = ta.id_type_area
+        INNER JOIN Priority p ON ag.id_priority = p.id_priority
+        WHERE sa.date_hour_appointment >= :dateTimeAlarmInitial AND
+              sa.date_hour_appointment< :dateTimeAlarmNext              
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,p.id_priority,ta.id_type_area
+    """)
+    fun getAreasInsideDateInterval(
+        dateTimeAlarmInitial: Long,
+        dateTimeAlarmNext: Long
+    ):List<AreaGeofenceWithAppointment>
+
+    @Query("""
+        update scheduled_assistance 
+        SET  is_activated_geof=:valueIsActivatedGeof
+        WHERE id_area = :idArea
+    """)
+    fun updateIsActivatedGeofence(idArea: Long,valueIsActivatedGeof:Boolean):Int
+
+
+    @Query("""
+        SELECT sa.id_area
+        FROM scheduled_assistance sa
+        WHERE sa.is_activated_geof = true
+          AND sa.date_hour_appointment + sa.time_duration_activation_appointment >= :dateTimeAlarmInitial
+          AND sa.date_hour_appointment + sa.time_duration_activation_appointment < :dateTimeAlarmNext
+    """)
+    fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<Int>
+
 }

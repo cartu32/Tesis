@@ -82,4 +82,23 @@ class RepositoryScheduleAssistance(context: Context) {
             daoAssistance.getAppointmentThatDidntAssistenceToday(date)
         }
     }
+
+    suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithAppointment> {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getAreasInsideDateInterval(dateTimeAlarmInitial,dateTimeAlarmNext)
+        }
+    }
+
+    suspend fun updateIsActivatedGeofence(idArea: Long,valueIsActivatedGeof:Boolean):Int{
+        return withContext(Dispatchers.IO){
+            daoAssistance.updateIsActivatedGeofence(idArea, valueIsActivatedGeof)
+        }
+    }
+
+    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long):List<Int>{
+        return withContext(Dispatchers.IO){
+            daoAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial,dateTimeAlarmNext)
+        }
+
+    }
 }

@@ -93,14 +93,14 @@ class GeofencesServices: Service() {
         }
 
     }
-    suspend fun handleIntent(intent: Intent?)  {
-        val geofenceHelper=GeofenceScheduleHelper(this, serviceScope)
+    private suspend fun handleIntent(intent: Intent?)  {
+        val geofenceHelper=GeofenceScheduleHelper(this)
 
         when(intent?.action){
             //Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF-> geofenceHelper.activateGeofenceScheduled()
-            Definition.ACTION_ALARM_DAILY_CHECKS-> geofenceHelper.checkAssistanceScheduled()
+    //          Definition.ACTION_ALARM_DAILY_CHECKS-> geofenceHelper.checkAssistanceScheduled()
 
-            Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE-> geofenceHelper.activateAndDesactivateGeofenceScheduled()
+            Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.activateAndDesactivateGeofenceScheduled()
         }
     }
 

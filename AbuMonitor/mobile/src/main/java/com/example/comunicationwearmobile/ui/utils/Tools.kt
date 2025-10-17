@@ -50,7 +50,7 @@ object Tools {
      * @param millis instante de referencia en milisegundos.
      * @return el mismo día pero a las 00:00:00.000.
      */
-    private fun dayStart(millis: Long): Long = Calendar.getInstance().run {
+     fun getDayStart(millis: Long): Long = Calendar.getInstance().run {
         timeInMillis = millis
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -65,8 +65,8 @@ object Tools {
      * @param millis instante base en milisegundos.
      * @return el instante correspondiente a las 00:00 del día siguiente.
      */
-    private fun startOfNextDayFromMillis(millis: Long): Long =
-        dayStart(millis) + 24 * 60 * 60 * 1000L
+     fun startOfNextDayFromMillis(millis: Long): Long =
+        getDayStart(millis) + 24 * 60 * 60 * 1000L
 
 
     // ==========================================================
@@ -99,6 +99,17 @@ object Tools {
     // ==========================================================
     //  FORMATEO Y CONVERSIÓN DE FECHAS / HORAS
     // ==========================================================
+
+    /**
+     * Convierte los minutos a milisegundos.
+     *
+     * @param parcialMillis cantidad de minutos a convertir
+     * @return el tiempo convertido en milisegundos.
+     */
+
+    fun convertMinutesToMillis(time: Long): Long {
+        return time * 60 * 1000
+    }
 
     /**
      * Convierte un [LocalDate] a formato `"dd/MM/yyyy"`.
@@ -156,7 +167,7 @@ object Tools {
      * @param fullMillis instante completo en milisegundos.
      * @return el mismo día a las 00:00 en milisegundos.
      */
-    fun extractDayOfDateInMillis(fullMillis: Long): Long = dayStart(fullMillis)
+    fun extractDayOfDateInMillis(fullMillis: Long): Long = getDayStart(fullMillis)
 
     /**
      * Obtiene sólo la parte horaria (offset desde la medianoche).
@@ -165,7 +176,7 @@ object Tools {
      * @return cantidad de milisegundos transcurridos desde las 00:00 de ese día.
      */
     fun extractHourOfDateInMillis(fullMillis: Long): Long =
-        fullMillis - dayStart(fullMillis)
+        fullMillis - getDayStart(fullMillis)
 
     /**
      * Calcula el inicio del día siguiente a partir de un instante.
@@ -185,7 +196,7 @@ object Tools {
      *
      * @return tiempo en milisegundos del inicio del día actual.
      */
-    fun getDateTodayInMillis(): Long = dayStart(System.currentTimeMillis())
+    fun getDateTodayInMillis(): Long = getDayStart(System.currentTimeMillis())
 
     /**
      * Construye un instante para hoy a la hora y minuto especificados.

@@ -165,7 +165,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             //guardo en la base de datos la hora de salida de la cita e indico que asistio a la cita
             date_hour_exit_assistance=hourExit
             went_appointment=true
-
+            is_activated_geof =false
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 
             if(respUpdate==1){

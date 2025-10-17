@@ -107,7 +107,7 @@ class AssistanceAddActivity : AppCompatActivity() {
                     title = txtTitle?.text.toString(),
                     description = txtDescription?.text.toString(),
                     date_hour_appointment = dateHourAppointment,
-                    time_duration_activation_appointment = txtDesactivationDate?.text.toString().toLong(),
+                    time_duration_activation_appointment = Tools.convertMinutesToMillis(txtDesactivationDate?.text.toString().toLong()),
                 )
 
                 if (meters != null) {
