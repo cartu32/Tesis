@@ -77,11 +77,6 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
-    suspend fun getAppointmentThatDidntAssistenceToday(date:Long):List<EntityScheduledAssistance> {
-        return withContext(Dispatchers.IO){
-            daoAssistance.getAppointmentThatDidntAssistenceToday(date)
-        }
-    }
 
     suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithAppointment> {
         return withContext(Dispatchers.IO){
@@ -95,7 +90,7 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
-    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long):List<Int>{
+    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long):List<EntityScheduledAssistance>{
         return withContext(Dispatchers.IO){
             daoAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial,dateTimeAlarmNext)
         }

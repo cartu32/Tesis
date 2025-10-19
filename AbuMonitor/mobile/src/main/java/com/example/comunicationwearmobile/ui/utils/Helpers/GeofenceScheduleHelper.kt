@@ -25,42 +25,6 @@ class GeofenceScheduleHelper(mContext:Context) {
         repositoryScheduleAlarmSPref= RepositoryScheduleAlarmSPref.getInstance(context)
     }
 
-    suspend fun checkAssistanceScheduled() {
-        val smsHelper=SmsHelper()
-        val dateToday = Tools.getDateTodayInMillis()
-        val listAppointWithoutAssisntace = repositoryScheduleAssistance.getAppointmentThatDidntAssistenceToday(dateToday)
-
-        if (listAppointWithoutAssisntace.isNotEmpty()) {
-            //se genera un resumen de las citas a la que no asistio la persona en el dia de la fecha
-            val msg=generateMessageInTable(listAppointWithoutAssisntace)
-            Log.d(Definition.TAG_DEBUG, msg)
-
-            //Envio SMS notificando el problema
-            smsHelper.sendSMSPlainText(context,msg)
-        }else{
-            Log.d(Definition.TAG_DEBUG, "No hay citas sin asistencia para hoy")
-        }
-    }
-
-    private fun generateMessageInTable(listAppointWithoutAssisntace: List<EntityScheduledAssistance>): String {
-
-        val message = buildString {
-            appendLine("Citas sin asistencia para hoy:")
-            appendLine("")
-            appendLine("-------------------------")
-            appendLine("Descripción         Hora")
-            appendLine("-------------------------")
-            for (appointment in listAppointWithoutAssisntace) {
-                val time = Tools.getMillisToHourMinutes(appointment.date_hour_appointment)
-                val desc = appointment.description.padEnd(20) // ajustá este valor según el largo máximo esperado
-                appendLine("$desc $time")
-            }
-        }
-        return message
-
-
-    }
-
     suspend fun activateAndDesactivateGeofenceScheduled(){
         var timeBetweenAlarm:Long=0
         var dateTimeAlarmInitial:Long=0
@@ -175,14 +139,15 @@ class GeofenceScheduleHelper(mContext:Context) {
         notificationHelper=NotificationHelper.getInstance(context)
 
         if(allGeofencesActivated){
-            notificationHelper?.showNotificationIndependent(context,"Abumonitor","Se activaron las areas programadas para mañana")
+            notificationHelper?.showNotificationIndependent(context,"Abumonitor","Se activaron las areas programadas para este horario")
         }else{
             Log.d(Definition.TAG_DEBUG,"No se activo ninguna area de greofence de asistencia programada")
         }
     }
 
     private suspend fun desactivateGeofencePreviousAlarm(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): Boolean {
-        var listAreasActivated:List<Int>?=null
+        var listAreasActivated:List<EntityScheduledAssistance>?= null
+        var listInassitenceAppoinment= mutableListOf<EntityScheduledAssistance>()
         var resultDesactivate:Boolean=true
 
         listAreasActivated=repositoryScheduleAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial,dateTimeAlarmNext)
@@ -193,19 +158,66 @@ class GeofenceScheduleHelper(mContext:Context) {
             return resultDesactivate
         }
 
-        for (idArea in listAreasActivated) {
+        for (area in listAreasActivated) {
 
-            repositoryGeofActivate.desactivateGeofence(context,idArea.toString())
+            with(area) {
+                //desactivo primero el area de geofence de la cita
+                repositoryGeofActivate.desactivateGeofence(context, id_area.toString())
 
-            if(repositoryScheduleAssistance.updateIsActivatedGeofence(idArea.toLong(),false)!=0){
-               Log.d(Definition.TAG_DEBUG,"Se desactivo correctamente la geofence id: $idArea")
+                //compruebo si la cita fue o no asistida
+                if(!went_appointment) {
+                    //si no aistió lo agrego a un listado
+                    Log.d(Definition.TAG_DEBUG, "Cita sin asistencia id: $id_area")
+                    listInassitenceAppoinment.add(area)
+                }
+
+                //al final indico en la base de datos que la geofence no esta activa
+                if (repositoryScheduleAssistance.updateIsActivatedGeofence(id_area.toLong(), false) != 0) {
+                    Log.d(Definition.TAG_DEBUG, "Se desactivo correctamente la geofence id: $id_area")
+                } else {
+                    resultDesactivate = false
+                    Log.d(Definition.TAG_DEBUG, "No se pudo desactivar la geofence id: $id_area")
+                }
+
             }
-            else{
-                resultDesactivate=false
-                Log.d(Definition.TAG_DEBUG,"No se pudo desactivar la geofence id: $idArea")
-            }
-
         }
+        //despues de desactivar las area,
+        // otifico a los familiares todas las citas a las que no asistio
+        if (listInassitenceAppoinment.isNotEmpty())
+            reportInassistanceScheduled(listInassitenceAppoinment)
+
         return resultDesactivate
     }
+
+
+    suspend fun reportInassistanceScheduled(listAppointWithoutAssisntace:List<EntityScheduledAssistance>) {
+        val smsHelper=SmsHelper()
+
+        //se genera un resumen de las citas a la que no asistio la persona en el dia de la fecha
+        val msg=generateMessageInTable(listAppointWithoutAssisntace)
+        Log.d(Definition.TAG_DEBUG, msg)
+
+        //Envio SMS notificando el problema
+        smsHelper.sendSMSPlainText(context,msg)
+    }
+
+    private fun generateMessageInTable(listAppointWithoutAssisntace: List<EntityScheduledAssistance>): String {
+
+        val message = buildString {
+            appendLine("Citas sin asistencia:")
+            appendLine("")
+            appendLine("--------------------------------")
+            appendLine("Descripción         Hora de cita")
+            appendLine("--------------------------------")
+            for (appointment in listAppointWithoutAssisntace) {
+                val time = Tools.getMillisToHourMinutes(appointment.date_hour_appointment)
+                val desc = appointment.description.padEnd(23) // ajustá este valor según el largo máximo esperado
+                appendLine("$desc $time")
+            }
+        }
+        return message
+
+
+    }
+
 }
