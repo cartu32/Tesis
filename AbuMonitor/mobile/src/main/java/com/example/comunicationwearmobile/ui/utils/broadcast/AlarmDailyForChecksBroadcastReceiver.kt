@@ -34,7 +34,14 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
         }
 
         val repository = RepositoryScheduleAlarmSPref.getInstance(context)
+        //obtengo cada cuanto tiempo se debe hacer el checkeo
         val timeBetweenChecks = repository.getTimeBetweenChecksSync()
+        //calculo la hora de la proxima alarma
+        val aux=System.currentTimeMillis()+timeBetweenChecks
+        val millisNextAlarm=Tools.extractHourOfDateInMillis(aux)
+
+        //guardo en el sharedpreference la hora de la proxima alarma
+        repository.saveTimeNextAlarmSync(millisNextAlarm)
 
         if (timeBetweenChecks == Definition.NO_STORED_VALUE) {
             Log.w(Definition.TAG_DEBUG, "Sin intervalo válido para reprogramar.")

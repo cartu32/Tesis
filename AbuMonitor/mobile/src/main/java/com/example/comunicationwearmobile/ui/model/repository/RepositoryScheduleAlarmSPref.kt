@@ -77,4 +77,10 @@ class RepositoryScheduleAlarmSPref (context: Context){
         editor.putLong(TIME_BETWEEN_CHECKS, hour)
         editor.apply()
     }
+
+    fun saveTimeNextAlarmSync(hour:Long){
+        val editor = prefs.edit()
+        editor.putLong(TIME_NEXT_ALARM, hour)
+        editor.apply()
+    }
 }

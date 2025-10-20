@@ -1,18 +1,19 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
-import androidx.core.graphics.component1
-import androidx.core.graphics.component2
-import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Locale
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -88,6 +89,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 val hb = hourBetweenCheck
                 val mb = minuteBetweenCheck
 
+                //calclulo el horario de la proxima alarma
                 val millisBetweenCheck=Tools.getTimeInMillis(hb, mb)
                 val aux=System.currentTimeMillis()+millisBetweenCheck
 
@@ -96,6 +98,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
                 // Persistir solo si hubo cambios
                 if (_isChanged.value == true) {
+
                     withContext(Dispatchers.IO) {
                         repo.saveTimeBetweenChecks(millisBetweenCheck)
                         repo.saveTimeNextAlarm(millisNextAlarm)
