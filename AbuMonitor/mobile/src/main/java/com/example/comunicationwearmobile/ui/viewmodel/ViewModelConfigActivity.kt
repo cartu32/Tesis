@@ -1,6 +1,8 @@
 package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
+import androidx.core.graphics.component1
+import androidx.core.graphics.component2
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,14 +16,14 @@ import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecks
 
 class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
+    // UI directa (sin Mediator): la actualizamos nosotros
     private val repo by lazy { RepositoryScheduleAlarmSPref.getInstance(app) }
 
-    // Estado base
-    private val _hour = MutableLiveData(0)
-    val hour: LiveData<Int> = _hour
+    private var hourBetweenCheck:Int=0
+    private var minuteBetweenCheck:Int=0
 
-    private val _minute = MutableLiveData(0)
-    val minute: LiveData<Int> = _minute
+    private var hourNextAlarm:Int=0
+    private var minuteNextalarm:Int=0
 
     private val _isChanged = MutableLiveData(false)
     val isChanged: LiveData<Boolean> = _isChanged
@@ -30,8 +32,11 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     val isSaving: LiveData<Boolean> = _isSaving
 
     // UI directa (sin Mediator): la actualizamos nosotros
-    private val _timeText = MutableLiveData("--:--")
-    val timeText: LiveData<String> = _timeText
+    private val _timeTextCheck = MutableLiveData("--:--")
+    val timeTextCheck: LiveData<String> = _timeTextCheck
+
+    private val _timeTextNextAlarm = MutableLiveData("--:--")
+    val timeTextNextAlarm: LiveData<String> = _timeTextNextAlarm
 
     private val _saveEnabled = MutableLiveData(false)
     val saveEnabled: LiveData<Boolean> = _saveEnabled
@@ -47,20 +52,29 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     fun loadTimeBetweenChecks() {
         viewModelScope.launch {
-            val millis = withContext(Dispatchers.IO) { repo.getTimeBetweenChecks() }
-            val (h, m) = Tools.getHourMinOfParcial(millis)
-            _hour.value = h
-            _minute.value = m
-            updateTimeText(h, m)
+            val millisBetweenCheck = withContext(Dispatchers.IO) { repo.getTimeBetweenChecks() }
+            val millisNextAlarm = withContext(Dispatchers.IO) { repo.getTimeNextAlarm() }
+
+            val (hb, mb) = Tools.getHourMinOfParcial(millisBetweenCheck)
+            val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
+
+            hourBetweenCheck = hb
+            minuteBetweenCheck = mb
+            hourNextAlarm = hn
+            minuteNextalarm = mn
+
+            updateTimeTextCheck(hourBetweenCheck, minuteBetweenCheck)
+            updateTimeNextAlarm(hourNextAlarm, minuteNextalarm)
             _isChanged.value = false
             computeSaveEnabled()
         }
     }
 
+
     fun onTimePicked(h: Int, m: Int) {
-        _hour.value = h
-        _minute.value = m
-        updateTimeText(h, m)
+        hourBetweenCheck = h
+        minuteBetweenCheck = m
+        updateTimeTextCheck(h, m)
         _isChanged.value = true
         computeSaveEnabled()
     }
@@ -71,13 +85,20 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
             _isSaving.value = true
             computeSaveEnabled()
             try {
-                val h = _hour.value ?: 0
-                val m = _minute.value ?: 0
+                val hb = hourBetweenCheck
+                val mb = minuteBetweenCheck
+
+                val millisBetweenCheck=Tools.getTimeInMillis(hb, mb)
+                val aux=System.currentTimeMillis()+millisBetweenCheck
+
+                val millisNextAlarm=Tools.extractHourOfDateInMillis(aux)
+                val (hn,mn)=Tools.getHourMinOfParcial(millisNextAlarm)
 
                 // Persistir solo si hubo cambios
                 if (_isChanged.value == true) {
                     withContext(Dispatchers.IO) {
-                        repo.saveTimeBetweenChecks(Tools.getTimeInMillis(h, m))
+                        repo.saveTimeBetweenChecks(millisBetweenCheck)
+                        repo.saveTimeNextAlarm(millisNextAlarm)
                     }
                 }
                 //cancelo la alarma previa
@@ -92,13 +113,14 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 val ok = AlarmHelper().setAlarmAfterOfTime(
                     getApplication(),
                     Definition.ALARM_ID_BETWEEN_CHECKS,
-                    h,
-                    m,
+                    hb,
+                    mb,
                     Definition.ACTION_ALARM_FOR_CHECKS,
                     AlarmDailyForChecksBroadcastReceiver::class.java
                 )
 
                 if (ok) {
+                    updateTimeNextAlarm(hn,mn)
                     _toastMessage.value = "Alarma de checkeo configurada correctamente"
                     _finishEvent.value = true
                 } else {
@@ -118,10 +140,13 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // ------------------ Helpers ------------------
 
-    private fun updateTimeText(h: Int, m: Int) {
-        _timeText.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+    private fun updateTimeTextCheck(h: Int, m: Int) {
+        _timeTextCheck.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
     }
 
+    private fun updateTimeNextAlarm(h: Int, m: Int) {
+        _timeTextNextAlarm.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+    }
     private fun computeSaveEnabled() {
         _saveEnabled.value = (_isChanged.value == true) && (_isSaving.value != true)
     }

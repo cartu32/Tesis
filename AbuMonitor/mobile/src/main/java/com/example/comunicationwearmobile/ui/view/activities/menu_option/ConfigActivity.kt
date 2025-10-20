@@ -8,6 +8,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.NumberPicker
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +22,7 @@ class ConfigActivity : AppCompatActivity() {
     private var cmdSaveConfig: Button? = null
     private var cmdCancelConfig: Button? = null
     private var cmdTimeAlarmBetweenChecks: Button? = null
+    private var txtTimeNextAlarm:TextView?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +33,7 @@ class ConfigActivity : AppCompatActivity() {
         cmdSaveConfig = findViewById(R.id.cmdSaveConfig)
         cmdCancelConfig = findViewById(R.id.cmdCancelConfig)
         cmdTimeAlarmBetweenChecks = findViewById(R.id.cmdTimeAlarmForCkecks)
+        txtTimeNextAlarm  = findViewById(R.id.txtTimeNextAlarm)
 
         configObservers()
         initConfiguration()
@@ -63,9 +66,13 @@ class ConfigActivity : AppCompatActivity() {
     private fun configObservers() {
 
         // Observers
-        vm.timeText.observe(this) { text ->
+        vm.timeTextCheck.observe(this) { text ->
             cmdTimeAlarmBetweenChecks?.text = text
         }
+        vm.timeTextNextAlarm.observe(this) { text ->
+            txtTimeNextAlarm?.text = text
+        }
+
         vm.saveEnabled.observe(this) { enabled ->
             cmdSaveConfig?.isEnabled = enabled
         }
@@ -129,11 +136,10 @@ class ConfigActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         vm.onFinishConsumed()
-        vm.hour.removeObservers(this)
-        vm.minute.removeObservers(this)
         vm.isChanged.removeObservers(this)
         vm.isSaving.removeObservers(this)
-        vm.timeText.removeObservers(this)
+        vm.timeTextCheck.removeObservers(this)
+        vm.timeTextNextAlarm.removeObservers(this)
         vm.saveEnabled.removeObservers(this)
         vm.toastMessage.removeObservers(this)
         vm.finishEvent.removeObservers(this)

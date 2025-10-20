@@ -17,8 +17,22 @@
         android:id="@+id/cmdTimeAlarmForCkecks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="(horas:minutos)"
+        android:text="@string/horas_minutos"
         android:textSize="20sp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30sp"
+        android:textSize="20sp"
+        android:text="@string/hora_proxima_alarma_verficiacion_configuracion">
+    </TextView>
+    <TextView
+        android:id="@+id/txtTimeNextAlarm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5sp"
+        android:textSize="20sp"
+        />
 
     <TableRow
         android:layout_width="match_parent"

@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 
 class RepositoryScheduleAlarmSPref (context: Context){
     private val TIME_BETWEEN_CHECKS = "TIME_BETWEEN_CHECKS"
+    private val TIME_NEXT_ALARM = "TIME_NEXT_ALARM"
 
     private val prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
 
@@ -41,6 +42,26 @@ class RepositoryScheduleAlarmSPref (context: Context){
             fileMutex.withLock {
 
                prefs.getLong(TIME_BETWEEN_CHECKS, Definition.NO_STORED_VALUE)
+
+            }
+        }
+    }
+
+    suspend fun saveTimeNextAlarm(hour:Long){
+        withContext(Dispatchers.IO) {
+            fileMutex.withLock {
+                val editor = prefs.edit()
+                editor.putLong(TIME_NEXT_ALARM, hour)
+                editor.apply()
+            }
+        }
+    }
+
+    suspend fun getTimeNextAlarm(): Long {
+        return withContext(Dispatchers.IO) {
+            fileMutex.withLock {
+
+                prefs.getLong(TIME_NEXT_ALARM, Definition.NO_STORED_VALUE)
 
             }
         }
