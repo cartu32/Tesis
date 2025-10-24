@@ -17,6 +17,7 @@ import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
     private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
+    private val repositoryScheduleAlarmSPref=RepositoryScheduleAlarmSPref.getInstance(application.applicationContext)
 
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
@@ -71,7 +73,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         }
     }
 
-    //este metodo realiza toda la insercion de datos en la base de datos
+    //este metodo realiza toda la insercion de datos en la base de datos y su activacion
     private suspend fun handleInsertionDateAssistance(
         context: Context,
         assistance: EntityScheduledAssistance,
@@ -79,40 +81,84 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         longitude: String,
         meters: Int
     ): Long {
+
+        //creo la cita en la bd y su area de geof asociada
+        val (idNewAssistance, dataAreaGeofAux) = insertAssistanceAndArea(assistance, latitude, longitude, meters)
+
+        if (idNewAssistance < 0 || dataAreaGeofAux == null) {
+            return Definition.ERROR_INSERT_BD_GEOF
+        }
+        //activo el area de geof asociada a la cita
+        val resultActivation=handleGeofenceActivation(context, assistance, dataAreaGeofAux, idNewAssistance)
+
+        return resultActivation
+    }
+
+
+    // metodo que inserta en la bd la nueva cita de asistencia y su area de geofence
+    private suspend fun insertAssistanceAndArea(
+        assistance: EntityScheduledAssistance,
+        latitude: String,
+        longitude: String,
+        meters: Int
+    ): Pair<Long, DataAreaGeofAux?> {
         //creo e inserto una nueva area de geofence en la bd
         val dataAreaGeofAux = createAreaGeof(latitude, longitude, meters)
         val idNewArea = insertArea(dataAreaGeofAux)
 
         //si no se pudo insertar la nueva area en la bd
-        if(idNewArea<0) {
-            return Definition.ERROR_INSERT_BD_GEOF
+        if (idNewArea < 0) {
+            return Pair(Definition.ERROR_INSERT_BD_GEOF, null)
         }
+
         //si se pudo insertar la nueva area en la bd, se inserta la nueva cita de asistencia
         dataAreaGeofAux.entityAreaGeofence.id_area = idNewArea
-        assistance.id_area=idNewArea
+        assistance.id_area = idNewArea
+
         val idNewAssistance = insertAssistance(assistance)
 
         //si no se pudo insertar la nueva cita de asistencia en la bd
-        if(idNewAssistance<0) {
+        if (idNewAssistance < 0) {
             rollbackArea(idNewArea)
-            return Definition.ERROR_INSERT_BD_GEOF
+            return Pair(Definition.ERROR_INSERT_BD_GEOF, null)
         }
 
-        //si se pudo insertar la nueva cita de asistencia en la bd, se activa el geofence
-        //me fijo si corresponde a la fecha a partir de mañana. Osea que no sea hoy(la fecha actual)
-      /*  if(!Tools.isToday(assistance.date_hour_appointment)){
-            Log.d(Definition.TAG_DEBUG,"No se activo el geofence para la cita porque no es de hoy")
+        return Pair(idNewAssistance, dataAreaGeofAux)
+    }
+
+    //  Metodo que se fija si se debe activar el area creada asociada a la nueva cita y en caso
+    //  de que deba hacerlo la activa.
+    private suspend fun handleGeofenceActivation(
+        context: Context,
+        assistance: EntityScheduledAssistance,
+        dataAreaGeofAux: DataAreaGeofAux,
+        idNewAssistance: Long
+    ): Long {
+
+        //obtengo el horario de la proxima alarma relativo al dia actual(no tiene la fecha)
+        val timeNextAlarmRelative = repositoryScheduleAlarmSPref.getTimeNextAlarm()
+        //calculo el horario de la proxima alarma en milisegundos(sumandole la fecha)
+        val timeNextAlarm=Tools.getDateTodayInMillis()+timeNextAlarmRelative
+        //obtengo la fecha actual
+        val currentTime = System.currentTimeMillis()
+
+
+        // Verifico si la cita está dentro del rango horario de la alarma actual
+        if (assistance.date_hour_appointment !in currentTime..timeNextAlarm) {
+            Log.d(Definition.TAG_DEBUG, "No se activó el geofence porque todavía no es la hora")
             return idNewAssistance
         }
-        //
-         val geofenceActivated = activateGeofence(context, dataAreaGeofAux)
-        //si no se pudo activar el geofence
+
+        val geofenceActivated = activateGeofence(context, dataAreaGeofAux)
+
         if (!geofenceActivated) {
-            rollbackArea(idNewArea)
+            rollbackArea(dataAreaGeofAux.entityAreaGeofence.id_area)
             return Definition.ERROR_ACTIVATE_GEOF
         }
-        Log.d(Definition.TAG_DEBUG,"Se activo el geofence para la cita para hoy")
-*/
+
+        repoAssistance.updateIsActivatedGeofence(idNewAssistance, true)
+        Log.d(Definition.TAG_DEBUG, "Se activó el geofence programado")
+
         return idNewAssistance
     }
 

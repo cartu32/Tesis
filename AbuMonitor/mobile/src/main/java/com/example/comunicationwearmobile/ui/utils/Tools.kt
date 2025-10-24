@@ -59,14 +59,6 @@ object Tools {
         timeInMillis
     }
 
-    /**
-     * Obtiene el inicio del día siguiente a partir de una fecha dada.
-     *
-     * @param millis instante base en milisegundos.
-     * @return el instante correspondiente a las 00:00 del día siguiente.
-     */
-     fun startOfNextDayFromMillis(millis: Long): Long =
-        getDayStart(millis) + 24 * 60 * 60 * 1000L
 
 
     // ==========================================================
@@ -184,7 +176,8 @@ object Tools {
      * @param funMillis instante base en milisegundos.
      * @return instante del día siguiente a las 00:00.
      */
-    fun getStartNextDay(funMillis: Long): Long = startOfNextDayFromMillis(funMillis)
+    fun getStartNextDay(funMillis: Long): Long =
+        getDayStart(funMillis) + 24 * 60 * 60 * 1000L
 
 
     // ==========================================================
