@@ -17,7 +17,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val appContext = context.applicationContext
-
+        Log.d(Definition.TAG_DEBUG,"onReceive GeofenceBroadcastReceiver")
         if (intent.action == Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
 

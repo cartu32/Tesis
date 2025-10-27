@@ -160,6 +160,15 @@ object Definition {
     const val ERROR_INSERT_CONTACT:Long      = -4
 
     /********************************************************
+     *****Constantes de checkeo de API Google Services*******
+     ********************************************************
+     */
+
+    const val ERROR_PLAY_SERVICES_MISSING_OR_OUTDATED = 1
+    const val ERROR_API_UNAVAILABLE                   = 2
+    const val API_OK                                  = 3
+
+    /********************************************************
      ************ constantes para mensajes a wearable********
      ********************************************************
      */

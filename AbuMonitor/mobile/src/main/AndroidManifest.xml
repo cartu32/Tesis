@@ -30,6 +30,12 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <queries>
+        <!-- Wear OS estándar -->
+        <package android:name="com.google.android.wearable.app" />
+        <!-- (Opcional) variante China, por si algún dispositivo la usa -->
+        <package android:name="com.google.android.wearable.app.cn" />
+    </queries>
 
     <application
         android:name="com.example.abumonitor.AbuMonitorApplicationMobile"

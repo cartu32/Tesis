@@ -3,6 +3,7 @@ package com.example.comunicationwearmobile.ui.view.activities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -88,10 +89,25 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         initializeComponentsView()
         observeLiveData()
         checkPermissions()
-
+        checkGooglePlayServices()
 
     }
 
+    private fun checkGooglePlayServices() {
+        val result=viewmodelMainActivity?.checkWearableApiAvailable(this)
+
+        when(result) {
+            Definition.ERROR_PLAY_SERVICES_MISSING_OR_OUTDATED -> {
+                Toast.makeText(this, "Error Google Play Services no está disponible o actualizado.", Toast.LENGTH_LONG).show()
+            }
+            Definition.ERROR_API_UNAVAILABLE->{
+                showInstallWearOsDialog(this)
+            }
+            else->{
+                Log.d(Definition.TAG_DEBUG,"Google Play Services disponible")
+            }
+        }
+    }
     private fun initNotificationManager() {
         //se inicializa el notification manager helper
         notificationManagerHelper= NotificationHelper.getInstance(this.applicationContext)
@@ -295,6 +311,34 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         //seteo el usuaerio en la vista
         setVisibleComponents(username)
     }
+
+    private fun openPlayStoreForApp(context: Context, packageName: String) {
+        val appUri = Uri.parse("market://details?id=$packageName")
+        val webUri = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+
+        val playIntent = Intent(Intent.ACTION_VIEW, appUri)
+        try {
+            context.startActivity(playIntent)
+        } catch (_: Exception) {
+            try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
+            } catch (_: Exception) {
+                Toast.makeText(context, "No se pudo abrir Play Store ni el navegador.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    fun showInstallWearOsDialog(activity: androidx.fragment.app.FragmentActivity) {
+        AlertDialog.Builder(activity)
+            .setTitle("Instalar Wear OS")
+            .setMessage("Es necesario instalar la app Wear OS para poder comunicarse con el reloj.\n\nSe abrirá Google Play para instalarla. ¿Querés continuar?")
+            .setPositiveButton("Abrir Play") { _, _ ->
+                openPlayStoreForApp(activity, "com.google.android.wearable.app")
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
 
     private fun setVisibleComponents(username: String) {
 
