@@ -156,7 +156,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
             return Definition.ERROR_ACTIVATE_GEOF
         }
 
-        if(repoAssistance.updateIsActivatedGeofence(idNewAssistance, true)!=0)
+        if(repoAssistance.updateIsActivatedGeofence(dataAreaGeofAux.entityAreaGeofence.id_area, true)!=0)
           Log.d(Definition.TAG_DEBUG, "Se agrego y activó el geofence programado")
         else
           Log.d(Definition.TAG_DEBUG, "Se agrego, pero no se activó el geofence programado")
