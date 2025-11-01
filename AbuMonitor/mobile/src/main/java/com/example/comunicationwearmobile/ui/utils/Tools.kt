@@ -136,6 +136,14 @@ object Tools {
     fun getMillisToHourMinutes(millis: Long): String = formatMillis(millis, "HH:mm")
 
     /**
+     * Convierte un valor en milisegundos a una cadena `"dd/MM/yyyy HH:mm"`.
+     *
+     * @param millis tiempo en milisegundos desde epoch.
+     * @return cadena con la fecha y hora completa
+     */
+    fun getMillisToCompleteDate(millis: Long): String = formatMillis(millis, "dd/MM/yyyy HH:mm")
+
+    /**
      * Convierte un desplazamiento dentro del día (en milisegundos) a una pareja hora:minuto.
      *
      * @param parcialMillis milisegundos desde las 00:00 (0 a 86.399.999).

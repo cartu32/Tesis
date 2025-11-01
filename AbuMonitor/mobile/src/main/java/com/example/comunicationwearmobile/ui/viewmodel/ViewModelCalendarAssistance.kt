@@ -32,6 +32,9 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
 
+    private val _isCorrectDurationAppointment = MutableLiveData<Boolean>()
+    val isCorrectDurationAppointment: LiveData<Boolean> get() = _isCorrectDurationAppointment
+
     // MutableLiveData para la fecha seleccionada
     val selectedDateMillis = MutableLiveData<Long>()
 
@@ -196,6 +199,26 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
                 Definition.GEOFENCE_EVENT_ID_EXIT
             )
             secZoneTimeRange = null
+        }
+    }
+
+    fun checkTimeAppointmentLessThanTimeAlarm(dateInitAppointment: Long, minuteDurationAppointment: Long) {
+        viewModelScope.launch {
+            var timeDurationAppointment:Long=0
+            var dateFinishAppointment:Long=0
+
+            val timeBetweenChecks=repositoryScheduleAlarmSPref.getTimeBetweenChecks()
+
+            dateFinishAppointment=dateInitAppointment+minuteDurationAppointment
+            timeDurationAppointment=dateFinishAppointment-dateInitAppointment
+
+            if(timeDurationAppointment>timeBetweenChecks){
+                Log.d(Definition.TAG_DEBUG,"La duracion de la cita es correcta")
+                _isCorrectDurationAppointment.postValue(true)
+            }else{
+                Log.d(Definition.TAG_DEBUG,"La duracion de la cita debe ser mayor a la duracion de la alarma")
+                _isCorrectDurationAppointment.postValue(false)
+            }
         }
     }
 }

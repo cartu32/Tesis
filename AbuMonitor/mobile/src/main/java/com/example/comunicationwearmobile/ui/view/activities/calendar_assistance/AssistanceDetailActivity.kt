@@ -20,9 +20,10 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceDetailViewModel
 
 class AssistanceDetailActivity : AppCompatActivity() {
-    private var title:TextView?=null
-    private var desc:TextView?=null
-    private var time:TextView?=null
+    private var txtTitle:TextView?=null
+    private var txtDesc:TextView?=null
+    private var txtInitDateAppointment:TextView?=null
+    private var txtFinishDateAppointment:TextView?=null
     private var cmdDelete:Button?=null
     private var cmdViewLocation:Button?=null
 
@@ -35,9 +36,10 @@ class AssistanceDetailActivity : AppCompatActivity() {
 
         val assistanceId = intent.getIntExtra("assistance_id", -1)
 
-        title = findViewById<TextView>(R.id.detailTitle)
-        desc = findViewById<TextView>(R.id.detailDesc)
-        time = findViewById<TextView>(R.id.detailTime)
+        txtTitle = findViewById<TextView>(R.id.txtDetailTitle)
+        txtDesc = findViewById<TextView>(R.id.txtDetailDesc)
+        txtInitDateAppointment = findViewById<TextView>(R.id.txtInitDateAppointment)
+        txtFinishDateAppointment = findViewById<TextView>(R.id.txtFinishDateAppointment)
         cmdDelete = findViewById<Button>(R.id.cmdDeleteDate)
         cmdViewLocation = findViewById<Button>(R.id.cmdViewLocation)
 
@@ -105,9 +107,13 @@ class AssistanceDetailActivity : AppCompatActivity() {
     private fun configObserverAssistanceDetail() {
         viewModel.assistanceDetail.observe(this) { assistance ->
             assistance?.let {
-                title?.text = it.title
-                desc?.text = it.description
-                time?.text = "${Tools.getMillisToHourMinutes(it.date_hour_appointment)} - ${Tools.getMillisToHourMinutes(it.date_hour_appointment)}"
+                val finishActivationAppointment=it.date_hour_appointment+it.time_duration_activation_appointment
+
+                txtTitle?.text = it.title
+                txtDesc?.text = it.description
+
+                txtInitDateAppointment?.text = "${Tools.getMillisToDate(it.date_hour_appointment)} - ${Tools.getMillisToHourMinutes(it.date_hour_appointment)}"
+                txtFinishDateAppointment?.text = "${Tools.getMillisToDate(finishActivationAppointment)} - ${Tools.getMillisToHourMinutes(finishActivationAppointment)}"
                 id_area_geof = it.id_area
             }
         }

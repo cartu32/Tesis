@@ -92,6 +92,17 @@ class AssistanceAddActivity : AppCompatActivity() {
             }
 
         }
+
+        viewModel.isCorrectDurationAppointment.observe(this){result->
+            if(result){
+                //  Toast.makeText(this,"La duracion de la cita es correcta",Toast.LENGTH_SHORT).show()
+                var intent = Intent(this, MapsAddAssistance::class.java)
+                resultLauncher?.launch(intent)
+            }else{
+                Toast.makeText(this,"La duracion de la cita debe ser mayor a la duracion de la alarma",Toast.LENGTH_SHORT).show()
+            }
+
+        }
     }
 
     private fun configResultLauncher() {
@@ -153,9 +164,10 @@ class AssistanceAddActivity : AppCompatActivity() {
                 .show()
             return
         }
+        val timeDurationAppointment = Tools.convertMinutesToMillis(txtDesactivationDate?.text.toString().toLong())
+        viewModel.checkTimeAppointmentLessThanTimeAlarm(dateHourAppointment,timeDurationAppointment)
 
-        var intent = Intent(this, MapsAddAssistance::class.java)
-        resultLauncher?.launch(intent)
+
     }
 
     private fun showTimePicker(onTimeSet: (Long) -> Unit) {
@@ -176,5 +188,6 @@ class AssistanceAddActivity : AppCompatActivity() {
         super.onDestroy()
 
         viewModel.idNewAssistance.removeObservers(this)
+        viewModel.isCorrectDurationAppointment.removeObservers(this)
     }
 } 

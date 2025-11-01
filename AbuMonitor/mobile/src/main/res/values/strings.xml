@@ -51,7 +51,7 @@
     <string name="leyends_combined">%1$s\n%2$s</string>
     <string name="vista_previa_del_mapa">Vista previa del mapa</string>
     <string name="datos_de_zona_segura">Datos de Zona Segura</string>
-    <string name="duracion_cita">Tiempo de activacion de cita(horas)</string>
+    <string name="duracion_cita">Duración aprox. de la cita(minutos)</string>
     <string name="hora_proxima_alarma_verficiacion_configuracion">Horario proxima alarma de chequeo:</string>
     <string name="horas_minutos">(horas:minutos)</string>
 
