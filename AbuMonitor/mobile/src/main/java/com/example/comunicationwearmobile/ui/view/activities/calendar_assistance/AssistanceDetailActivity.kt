@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -24,6 +25,8 @@ class AssistanceDetailActivity : AppCompatActivity() {
     private var txtDesc:TextView?=null
     private var txtInitDateAppointment:TextView?=null
     private var txtFinishDateAppointment:TextView?=null
+    private var lblFinishAppointment:TextView?=null
+    private var imgFinishAppointment: ImageView?=null
     private var cmdDelete:Button?=null
     private var cmdViewLocation:Button?=null
 
@@ -36,10 +39,12 @@ class AssistanceDetailActivity : AppCompatActivity() {
 
         val assistanceId = intent.getIntExtra("assistance_id", -1)
 
-        txtTitle = findViewById<TextView>(R.id.txtDetailTitle)
-        txtDesc = findViewById<TextView>(R.id.txtDetailDesc)
+        txtTitle = findViewById<TextView>(R.id.txtTitle)
+        txtDesc = findViewById<TextView>(R.id.txtDescription)
         txtInitDateAppointment = findViewById<TextView>(R.id.txtInitDateAppointment)
         txtFinishDateAppointment = findViewById<TextView>(R.id.txtFinishDateAppointment)
+        lblFinishAppointment = findViewById<TextView>(R.id.lblFinishAppointment)
+        imgFinishAppointment = findViewById<ImageView>(R.id.imgFinishAppointment)
         cmdDelete = findViewById<Button>(R.id.cmdDeleteDate)
         cmdViewLocation = findViewById<Button>(R.id.cmdViewLocation)
 
@@ -57,8 +62,14 @@ class AssistanceDetailActivity : AppCompatActivity() {
     private fun configComponents() {
         if(SharedVariables.user== SharedVariables.USER_ADMIN){
             cmdDelete?.isVisible=true
+            txtFinishDateAppointment?.isVisible=true
+            lblFinishAppointment?.isVisible=true
+            imgFinishAppointment?.isVisible=true
         }else{
             cmdDelete?.isVisible=false
+            txtFinishDateAppointment?.isVisible=false
+            lblFinishAppointment?.isVisible=false
+            imgFinishAppointment?.isVisible=false
         }
     }
 

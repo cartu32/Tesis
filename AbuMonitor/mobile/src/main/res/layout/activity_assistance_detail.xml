@@ -1,51 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/txtDetailTitle"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <TextView
-        android:id="@+id/txtInitDateAppointment"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/txtFinishDateAppointment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp" />
-    <TextView
-        android:id="@+id/txtDetailDesc"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <View
+    <!-- Label con icono para Título -->
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#AAAAAA"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
 
+        <ImageView
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:src="@drawable/ic_event"
+            android:contentDescription="@string/t_tulo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/t_tulo"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:textColor="@color/black" />
+
+    <!-- Label con icono para Descripción -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:src="@drawable/ic_description"
+            android:contentDescription="@string/descripci_n" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/descripci_n"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/txtDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:textColor="@color/black"
+        android:enabled="false"/>
+
+    <!-- Label con icono para Fecha -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:src="@drawable/ic_calenadar_24"
+            android:contentDescription="@string/fecha" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fechaHoraCita"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp"/>
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/txtInitDateAppointment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:textColor="@color/black" />
+
+
+    <!-- Label con icono para Fecha -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:id="@+id/imgFinishAppointment"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:contentDescription="@string/fecha"
+            android:src="@drawable/ic_chronometer" />
+
+        <TextView
+            android:id="@+id/lblFinishAppointment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:text="@string/fin_cita"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/txtFinishDateAppointment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:inputType="number"
+        android:textColor="@color/black"
+        tools:ignore="TextFields" />
+
+    <!-- Botones -->
     <Button
         android:id="@+id/cmdViewLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/view_location" />
+        android:layout_marginTop="16dp"
+        android:text="@string/view_location"
+        android:textSize="20sp" />
+
 
     <Button
         android:id="@+id/cmdDeleteDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/borrar_cita" />
-
+        android:layout_marginTop="8dp"
+        android:text="@string/borrar_cita"
+        android:textSize="20sp" />
 
 </LinearLayout>
