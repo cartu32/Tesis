@@ -135,8 +135,12 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
         cmdAddEvent.setOnClickListener {
             viewModel.selectedDateMillis.value?.let { millis ->
-                if(getCountItemsRecicleView()>=Definition.COUNT_MAX_DATE_FOR_DAY){
-                    Toast.makeText(this,"Se llego al maximo de citas para registrar en esta fecha",Toast.LENGTH_SHORT).show()
+                val count = getCountItemsRecicleView()
+                val max = Definition.COUNT_MAX_DATE_FOR_DAY
+                Log.d("DEBUG", "count=$count, max=$max")
+
+                if (count >= max) {
+                    Toast.makeText(this, "Se llegó al máximo de citas...", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 if(!Tools.isGreaterThanToday(millis)){
