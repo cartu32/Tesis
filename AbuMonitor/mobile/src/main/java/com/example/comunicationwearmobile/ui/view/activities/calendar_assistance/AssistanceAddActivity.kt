@@ -62,16 +62,11 @@ class AssistanceAddActivity : AppCompatActivity() {
         cmdHourAppointment?.setOnClickListener { onClickListenerCmdHourAppointment() }
         cmdCreateAreaGeof?.setOnClickListener { onClickListenerCmdSave() }
 
-        initComponents()
         configResultLauncher()
         configObservers()
         configActionBar()
     }
 
-    private fun initComponents() {
-        val texto = String.format(Locale.getDefault(), "%d", Definition.DEFAULT_TIME_DESACTIVATION_APPOINTMENT)
-        txtDesactivationDate?.setText(texto)
-    }
 
     private fun configActionBar() {
         val actionBar = supportActionBar
@@ -83,23 +78,28 @@ class AssistanceAddActivity : AppCompatActivity() {
     }
 
     private fun configObservers() {
+        observerIdNewAssitance()
+        oberverLoadDurationAppointmentDefault()
+    }
+
+    private fun oberverLoadDurationAppointmentDefault() {
+        viewModel.getTimeDurationAppointmentSaved()
+
+        viewModel.timeDurationAppointment.observe(this){value->
+            val texto = String.format(Locale.getDefault(), "%d", value)
+            txtDesactivationDate?.setText(texto)
+
+        }
+    }
+
+    private fun observerIdNewAssitance() {
+
         viewModel.idNewAssistance.observe(this) {idNewAssitance ->
             if(idNewAssitance!=-1L){
                 Toast.makeText(this,"Se guardo correctamente la cita",Toast.LENGTH_SHORT).show()
                 finish()
             }else{
                 Toast.makeText(this,"ERROR No se pudo guardar correctamente la cita",Toast.LENGTH_SHORT).show()
-            }
-
-        }
-
-        viewModel.isCorrectDurationAppointment.observe(this){result->
-            if(result){
-                //  Toast.makeText(this,"La duracion de la cita es correcta",Toast.LENGTH_SHORT).show()
-                var intent = Intent(this, MapsAddAssistance::class.java)
-                resultLauncher?.launch(intent)
-            }else{
-                Toast.makeText(this,"La duracion de la cita debe ser mayor a la duracion de la alarma",Toast.LENGTH_SHORT).show()
             }
 
         }
@@ -164,9 +164,17 @@ class AssistanceAddActivity : AppCompatActivity() {
                 .show()
             return
         }
-        val timeDurationAppointment = Tools.convertMinutesToMillis(txtDesactivationDate?.text.toString().toLong())
-        viewModel.checkTimeAppointmentLessThanTimeAlarm(dateHourAppointment,timeDurationAppointment)
 
+        val timeDurationAppointment = txtDesactivationDate?.text.toString().toLong()
+        val (result,timeSaved)=viewModel.checkTimeAppointmentLessThanTimeAlarm(timeDurationAppointment)
+
+        if(!result){
+            Toast.makeText(this,"La duracion la cita debe ser mayor o igual a $timeSaved minutos",Toast.LENGTH_LONG).show()
+            return
+        }
+
+        var intent = Intent(this, MapsAddAssistance::class.java)
+        resultLauncher?.launch(intent)
 
     }
 
@@ -188,6 +196,6 @@ class AssistanceAddActivity : AppCompatActivity() {
         super.onDestroy()
 
         viewModel.idNewAssistance.removeObservers(this)
-        viewModel.isCorrectDurationAppointment.removeObservers(this)
+        viewModel.timeDurationAppointment.removeObservers(this)
     }
 } 

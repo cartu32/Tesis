@@ -20,7 +20,9 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActi
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
@@ -32,11 +34,13 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
 
-    private val _isCorrectDurationAppointment = MutableLiveData<Boolean>()
-    val isCorrectDurationAppointment: LiveData<Boolean> get() = _isCorrectDurationAppointment
+    private val _timeDurationAppointment = MutableLiveData<Long>()
+    val timeDurationAppointment: LiveData<Long> get() = _timeDurationAppointment
 
     // MutableLiveData para la fecha seleccionada
     val selectedDateMillis = MutableLiveData<Long>()
+
+    private var timeBetweenChecksSaved: Long = 0
 
     /*aca se uso un switchMap para observar los cambios en la fecha seleccionada
     en la view. Esto se hizo para que cada vez que se hace click en una fecha,
@@ -70,9 +74,12 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         longitude: String,
         meters: Int
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val result = handleInsertionDateAssistance(context, assistance, latitude, longitude, meters)
-            _idNewAssistance.postValue(result)
+
+            withContext(Dispatchers.Main) {
+                _idNewAssistance.postValue(result)
+            }
         }
     }
 
@@ -202,24 +209,25 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         }
     }
 
-    fun checkTimeAppointmentLessThanTimeAlarm(dateInitAppointment: Long, minuteDurationAppointment: Long) {
-        viewModelScope.launch {
-            var timeDurationAppointment:Long=0
-            var dateFinishAppointment:Long=0
+    fun getTimeDurationAppointmentSaved() {
+        viewModelScope.launch(Dispatchers.IO) {
+            var timeBetweenChecks = repositoryScheduleAlarmSPref.getTimeBetweenChecks()
+			//incremento el doble de tiempo + 1 minutos de lo que esta configurada la alarma
+			// por ejemplo si se ejecuta cada 3 miuntos entonces pongo como inicio 6+1 o sea 7 minutos
+            timeBetweenChecks = (timeBetweenChecks * 2) + 60000
+            //convierto el tiempo en minutos
+            timeBetweenChecksSaved = Tools.convertMillisToMinutes(timeBetweenChecks)
 
-            val timeBetweenChecks=repositoryScheduleAlarmSPref.getTimeBetweenChecks()
-
-            dateFinishAppointment=dateInitAppointment+minuteDurationAppointment
-            timeDurationAppointment=dateFinishAppointment-dateInitAppointment
-
-            if(timeDurationAppointment>timeBetweenChecks){
-                Log.d(Definition.TAG_DEBUG,"La duracion de la cita es correcta")
-                _isCorrectDurationAppointment.postValue(true)
-            }else{
-                Log.d(Definition.TAG_DEBUG,"La duracion de la cita debe ser mayor a la duracion de la alarma")
-                _isCorrectDurationAppointment.postValue(false)
+            withContext(Dispatchers.Main) {
+                _timeDurationAppointment.postValue(timeBetweenChecksSaved)
             }
         }
+    }
+    fun checkTimeAppointmentLessThanTimeAlarm(timeEnteredByUser:Long):Pair<Boolean,Long> {
+        if (timeEnteredByUser>=timeBetweenChecksSaved)
+            return Pair (true,0)
+        else
+            return Pair (false,timeBetweenChecksSaved)
     }
 }
 

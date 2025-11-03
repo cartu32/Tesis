@@ -172,7 +172,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
                 //notifico al contacto de que el abuelo asistio a la cita
                 val msg = SharedData.MsgNotification().apply {
                     typeNotification = SharedData.TypeNotification.Alert
-                    title = "¡Notificacion de Asistencia!"
+                    title = "Notificacion de Asistencia!"
                     message = "El abuelo ha asistido a la cita de $description"
                     hour = Tools.getHour(LocalTime.now())
                     date = Tools.getDate(LocalDate.now())
@@ -289,7 +289,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             message = when (transition) {
                 Geofence.GEOFENCE_TRANSITION_ENTER -> "Usted ha entrado en la zona $description "
                 Geofence.GEOFENCE_TRANSITION_EXIT -> "Usted ha salido de la zona $description "
-                Geofence.GEOFENCE_TRANSITION_DWELL -> "Usted estuvo más de $dwellTime min. en la zona $description "
+                Geofence.GEOFENCE_TRANSITION_DWELL -> "Usted estuvo mas de $dwellTime min. en la zona $description "
                 else -> "Evento desconocido en zona $description"
             }
         }

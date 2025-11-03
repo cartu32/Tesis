@@ -104,6 +104,17 @@ object Tools {
     }
 
     /**
+     * Convierte los  milisegundos a minutos
+     *
+     * @param parcialMillis cantidad de milisegundo  a convertir
+     * @return el tiempo convertido en minutos.
+     */
+
+    fun convertMillisToMinutes(time: Long): Long {
+        return time /(60 * 1000)
+    }
+
+    /**
      * Convierte un [LocalDate] a formato `"dd/MM/yyyy"`.
      *
      * @param dateTime objeto de tipo [LocalDate].
