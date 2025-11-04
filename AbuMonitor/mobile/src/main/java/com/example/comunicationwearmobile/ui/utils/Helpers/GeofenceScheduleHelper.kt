@@ -12,6 +12,8 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositorySchedule
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
 
+data class TimeWindow(val start: Long, val end: Long)
+
 class GeofenceScheduleHelper(mContext:Context) {
 
     private val context=mContext.applicationContext
@@ -25,26 +27,36 @@ class GeofenceScheduleHelper(mContext:Context) {
         repositoryScheduleAlarmSPref= RepositoryScheduleAlarmSPref.getInstance(context)
     }
 
+
+    private fun previousWindow(now: Long, interval: Long) =
+        TimeWindow(now - interval, now)
+
+    private fun currentWindow(now: Long, interval: Long) =
+        TimeWindow(now, now + interval)
+
     suspend fun activateAndDesactivateGeofenceScheduled(){
         var timeBetweenAlarm:Long=0
-        var dateTimeAlarmInitial:Long=0
-        var dateTimeAlarmNext:Long=0
         var resultActivate=false
 
         //obtengo cual es el intervalo de tiempo en que se va a ejecutar la alarma
         timeBetweenAlarm=repositoryScheduleAlarmSPref.getTimeBetweenChecks()
         Log.d(Definition.TAG_DEBUG,"timeBetweenAlarm: $timeBetweenAlarm")
 
-        //se toma como tiempo inicial el momento en que ocurre la alarma de checkeos
-        dateTimeAlarmInitial= System.currentTimeMillis()
-        //calculo cual es la proxima hora en que se va a ejecutar la alaram
-        dateTimeAlarmNext=dateTimeAlarmInitial+timeBetweenAlarm
+        val now = System.currentTimeMillis()
+        //obtengo la ventana de la alarma previa
+        val prev = previousWindow(now, timeBetweenAlarm)
+        //obtengo la ventana de la alarma actual
+        val curr = currentWindow(now, timeBetweenAlarm)
+
+        Log.d(Definition.TAG_DEBUG,"tiempo alarma actual: ${Tools.getMillisToHourMinutes(now)}")
+        Log.d(Definition.TAG_DEBUG,"intervalo desactivacion: ${Tools.getMillisToHourMinutes(prev.start)} - ${Tools.getMillisToHourMinutes(prev.end)}")
+        Log.d(Definition.TAG_DEBUG,"intervalo activacion: ${Tools.getMillisToHourMinutes(curr.start)} - ${Tools.getMillisToHourMinutes(curr.end)}")
 
         //primero desactivo las geofences que fueron programadas por la alarma anterior
-        if(desactivateGeofencePreviousAlarm(dateTimeAlarmInitial,dateTimeAlarmNext)) {
+        if(desactivateGeofencePreviousAlarm(prev.start,prev.end)) {
             //luego activo las geofences que dentro del interrvalo horario correspondiente
             // a la alarma actual
-            if(activateGeofenceOfCurrentAlarm(dateTimeAlarmInitial, dateTimeAlarmNext)){
+            if(activateGeofenceOfCurrentAlarm(curr.start, curr.end)){
                 resultActivate=true
             }
         }
@@ -152,6 +164,8 @@ class GeofenceScheduleHelper(mContext:Context) {
 
         listAreasActivated=repositoryScheduleAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial,dateTimeAlarmNext)
 
+
+
         if (listAreasActivated.isEmpty()) {
             Log.d(Definition.TAG_DEBUG, "No hay areas de geofence programadas para la alarma actual")
 
@@ -164,6 +178,8 @@ class GeofenceScheduleHelper(mContext:Context) {
                 //desactivo primero el area de geofence de la cita
                 repositoryGeofActivate.desactivateGeofence(context, id_area.toString())
 
+                Log.d(Definition.TAG_DEBUG,"**udpaete tiempo prev ${Tools.getMillisToHourMinutes(dateTimeAlarmInitial)} - ${Tools.getMillisToHourMinutes(dateTimeAlarmNext)}")
+                Log.d(Definition.TAG_DEBUG, "**update grabadsa ${Tools.getMillisToHourMinutes(date_hour_appointment + time_duration_activation_appointment)}")
                 //compruebo si la cita fue o no asistida
                 if(!went_appointment) {
                     //si no aistió lo agrego a un listado
