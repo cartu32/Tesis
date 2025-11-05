@@ -46,6 +46,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             geofLongitude= areaGeof?.areaGeofence?.longitude.toString()
             geofLatitude=areaGeof?.areaGeofence?.latitude.toString()
 
+            Log.d(Definition.TAG_DEBUG,"transicion: $transition")
             when(areaGeof?.areaGeofence?.id_type_area){
                 Definition.TYPE_AREA_ID_NORMAL ->analizeNormalZone(context, areaGeof, transition)
                 Definition.TYPE_AREA_ID_SECURITY_ZONE ->analizeSecurityZone(context, areaGeof, transition)

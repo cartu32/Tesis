@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-29T22:36:11.289133900Z">
+        <DropdownSelection timestamp="2025-11-04T19:27:47.884800500Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=ZY22DZTJ43" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\cartu\.android\avd\Wear_OS_Large_Round_API_36_Android_15.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="mobile">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-11-02T23:55:47.148377Z">
+        <DropdownSelection timestamp="2025-11-04T19:38:18.252705200Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\cartu\.android\avd\Medium_Phone.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=ZY22DZTJ43" />
             </handle>
           </Target>
         </DropdownSelection>

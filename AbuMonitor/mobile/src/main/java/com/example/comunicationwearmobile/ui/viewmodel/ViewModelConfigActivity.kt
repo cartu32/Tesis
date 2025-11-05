@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // UI directa (sin Mediator): la actualizamos nosotros
     private val repo by lazy { RepositoryScheduleAlarmSPref.getInstance(app) }
-
+    private var geofenceScheduleHelper=GeofenceScheduleHelper(app.applicationContext)
     private var hourBetweenCheck:Int=0
     private var minuteBetweenCheck:Int=0
 
@@ -123,6 +124,11 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 )
 
                 if (ok) {
+                    //activo y desactivo las areas de geofence alamcenadas en
+                    // en la bd que deben acivarse dentro del nuevo intervalo de alamra
+                    geofenceScheduleHelper.activateAndDesactivateGeofenceScheduled()
+
+                    //actualizo en la view el horario de la proxima alarma
                     updateTimeNextAlarm(hn,mn)
                     _toastMessage.value = "Alarma de checkeo configurada correctamente"
                     _finishEvent.value = true

@@ -11,6 +11,8 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActi
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class TimeWindow(val start: Long, val end: Long)
 
@@ -20,6 +22,12 @@ class GeofenceScheduleHelper(mContext:Context) {
     private var repositoryScheduleAssistance:RepositoryScheduleAssistance
     private var repositoryGeofActivate: RepositoryGeofActivate
     private var repositoryScheduleAlarmSPref: RepositoryScheduleAlarmSPref
+
+    //Como puede haber varias instancias de GeofenSchedulerHelper, creo un mutex comun
+    //a todas ellas.
+    companion object {
+        private val mutex = Mutex()
+    }
 
     init {
         repositoryScheduleAssistance=RepositoryScheduleAssistance.getInstance(context)
@@ -34,7 +42,11 @@ class GeofenceScheduleHelper(mContext:Context) {
     private fun currentWindow(now: Long, interval: Long) =
         TimeWindow(now, now + interval)
 
-    suspend fun activateAndDesactivateGeofenceScheduled(){
+    //aplico un mutex a este metodo para que una solamente una sola corutina pueda ejecutar
+    //la activacion y desactivacion por vez, ya que esta funcion puede ser llamada al activarse alarma
+    // o tambien se llama desde el menu configuracion. Entonces se puede llamar por diferentes corutinas
+    //al mismo tiempo aplico un mutex para evitar problemas de concurrencia.
+    suspend fun activateAndDesactivateGeofenceScheduled()= mutex.withLock{
         var timeBetweenAlarm:Long=0
         var resultActivate=false
 
