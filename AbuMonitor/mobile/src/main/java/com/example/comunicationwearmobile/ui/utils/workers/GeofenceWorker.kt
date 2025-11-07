@@ -58,14 +58,14 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
     } ?: Result.failure()
 
 
-    private fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
+    private suspend  fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
         val msg = areaGeof?.areaGeofence?.let {
             createMsg(transition, it.description, it.dwell_time)
         } ?: return
         determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
     }
 
-    private fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
+    private suspend fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
 
         when (transition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
@@ -191,7 +191,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
 
     }
 
-    private fun processEnterSecurityZone(context: Context, description: String) {
+    private suspend  fun processEnterSecurityZone(context: Context, description: String) {
         val msg = SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
@@ -214,7 +214,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
     *   b) Si salió dentro del horario seguro → se notifica salida dentro del horario.
     ********************************************************************/
 
-    private fun processExitSecurityZone(context: Context, description: String, minHour: String?, maxHour: String?) {
+    private suspend fun processExitSecurityZone(context: Context, description: String, minHour: String?, maxHour: String?) {
         val prefs = RepositorySecurityZoneSPref.getInstance(context)
         val entryHour = prefs.getEnteredHour()
         val exitHour = System.currentTimeMillis()
@@ -297,21 +297,21 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
         return completeMsg
     }
 
-    private fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
+    private suspend fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
         val smsManagerCustom=SmsHelper()
 
         smsManagerCustom.sendSMSNotifyGeofence(context, msg,geofLatitude,geofLongitude)
 
     }
 
-    private fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
+    private suspend fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
         val notificationHelper = NotificationHelper.getInstance(context)
         val id = notificationHelper?.showNotificationGeneral(msg)
         notifyUserPriorityBaja(context, msg)
         return id
     }
 
-    private fun notifyUserPriorityAlta(context: Context, msg: SharedData.MsgNotification) {
+    private suspend fun notifyUserPriorityAlta(context: Context, msg: SharedData.MsgNotification) {
         val idMsg = notifyUserPriorityMedia(context, msg)
         if (idMsg != null) {
             msg.idMsgMobile = idMsg
@@ -323,7 +323,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
         }
     }
 
-    private fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
+    private suspend fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
         when (idPriority) {
             Definition.PRIORITY_ID_LOW -> notifyUserPriorityBaja(context, msg)
             Definition.PRIORITY_ID_MEDIUM -> notifyUserPriorityMedia(context, msg)

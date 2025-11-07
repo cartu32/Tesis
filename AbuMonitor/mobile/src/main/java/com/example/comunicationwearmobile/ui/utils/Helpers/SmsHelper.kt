@@ -6,105 +6,135 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import java.util.Locale
 
 class SmsHelper {
 
-    fun sendSMSFallDetection(context: Context, msg: ByteArray){
+    companion object {
+        const val ACTION_SENT = "com.example.abumonitor.SMS_SENT"
+        const val ACTION_DELIVERED = "com.example.abumonitor.SMS_DELIVERED"
+    }
+
+    // -------------------- API pública --------------------
+
+    fun sendSMSFallDetection(context: Context, msg: ByteArray) {
         val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(msg)
 
         val rawMessage = """
-                        🚨${msgFallDetection.title.uppercase()}
-                                    
-                        ${msgFallDetection.message}
-                                    
-                        📅 ${msgFallDetection.fechaHora}
-                      
-                        """.trimIndent()
+            🚨${msgFallDetection.title.uppercase(Locale.getDefault())}
+
+            ${msgFallDetection.message}
+
+            📅 ${msgFallDetection.fechaHora}
+        """.trimIndent()
 
         val message = limpiarTextoParaSMS(rawMessage)
-
-        sendSMSToAllContact(context,message)
+        sendSMSToAllContact(context, message)
     }
 
     fun sendSMSPlainText(context: Context, message: String) {
-        sendSMSToAllContact(context,message)
+        sendSMSToAllContact(context, limpiarTextoParaSMS(message))
     }
+
     fun sendSMSNotifyGeofence(
         context: Context,
         msg: SharedData.MsgNotification,
         geofLatitude: String,
         geofLongitude: String
     ) {
-        val googelmapsURL =" https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
+        val googleMapsUrl = "https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
 
         val rawMessage = """
-                        ⚠️${msg.title.uppercase()}
-                        
-                        ${msg.message}
-                        
-                        📅 ${msg.date} ⏰ ${msg.hour}
+            ${msg.title.uppercase(Locale.getDefault())}
+            ${msg.message}
+            ${msg.date} ${msg.hour}
 
-                        📍 Ubicación:
-                        $googelmapsURL
-                        
-                        """.trimIndent()
+            Ubicación:
+            $googleMapsUrl
+        """.trimIndent()
+
         val message = limpiarTextoParaSMS(rawMessage)
-
-        sendSMSToAllContact(context,message)
+        sendSMSToAllContact(context, message)
     }
 
     fun sendSMSToAllContact(context: Context, message: String) {
+        val repositoryContact = RepositoryContact(context)
+        val listContact = repositoryContact.getAllContactList()
 
-        val repositoryContact= RepositoryContact(context)
-        val listContact=repositoryContact.getAllContactList()
-
-
-        for(contact in listContact){
-            Log.d(Definition.TAG_DEBUG,"enviando sms geofence al contacto: ${contact.name}")
-            sendSMSNotifyGeofenceToContact(context, message, contact.telephone)
+        for (contact in listContact) {
+            Log.d(Definition.TAG_DEBUG, "Enviando SMS al contacto: ${contact.name}")
+            sendSMSToContact(context, message, contact.telephone)
 
         }
     }
 
-    fun sendSMSNotifyGeofenceToContact(context: Context, message: String,telephoneNumber:String) {
+    fun sendSMSToContact(context: Context, message: String, telephoneNumber: String) {
+        // Un solo par de PendingIntent reutilizado (uno por parte)
+        val sentIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            Intent(ACTION_SENT),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val deliveredIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            Intent(ACTION_DELIVERED),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val smsManager = getSmsManager(context)
+
+        val parts: ArrayList<String> = smsManager.divideMessage(message)
+        val sentIntents = ArrayList<PendingIntent>(parts.size).apply {
+            repeat(parts.size) { add(sentIntent) }
+        }
+        val deliveredIntents = ArrayList<PendingIntent>(parts.size).apply {
+            repeat(parts.size) { add(deliveredIntent) }
+        }
+
+        Log.d(Definition.TAG_DEBUG, "Mensaje a enviar: $message")
+        Log.d(Definition.TAG_DEBUG, "Caracteres: ${message.length}, partes: ${parts.size}")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            sendSmsAndroid35Plus(
+                telephoneNumber,
+                smsManager,
+                message,
+                parts,
+                sentIntents,
+                deliveredIntents
+            )
+        } else {
+            sendSmsPreAndroid35(
+                telephoneNumber,
+                smsManager,
+                parts,
+                sentIntents,
+                deliveredIntents
+            )
+        }
+    }
+
+    // -------------------- Implementación por versión --------------------
+
+    private fun sendSmsPreAndroid35(
+        telephoneNumber: String,
+        smsManager: SmsManager,
+        parts: ArrayList<String>,
+        sentIntents: ArrayList<PendingIntent>,
+        deliveredIntents: ArrayList<PendingIntent>
+    ) {
         try {
-
-
-            val sentIntent = PendingIntent.getBroadcast(
-                context,
-                0,
-                Intent("SMS_SENT"),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val deliveredIntent = PendingIntent.getBroadcast(
-                context,
-                0,
-                Intent("SMS_DELIVERED"),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val smsManager = SmsManager.getDefault()
-            val parts = smsManager.divideMessage(message)
-
-            val sentIntents = ArrayList<PendingIntent>().apply {
-                repeat(parts.size) { add(sentIntent) }
-            }
-
-            val deliveredIntents = ArrayList<PendingIntent>().apply {
-                repeat(parts.size) { add(deliveredIntent) }
-            }
-
-            Log.d(Definition.TAG_DEBUG, "Mensaje a enviar: $message")
-            Log.d(Definition.TAG_DEBUG, "Caracteres: ${message.length}, partes: ${parts.size}")
-
             smsManager.sendMultipartTextMessage(
                 telephoneNumber,
                 null,
@@ -112,9 +142,105 @@ class SmsHelper {
                 sentIntents,
                 deliveredIntents
             )
-
         } catch (e: Exception) {
-            Log.e("SMS", "Error al enviar el SMS: ${e.message}", e)
+            Log.e(Definition.TAG_DEBUG, "Error al enviar SMS (pre-35): ${e.message}", e)
+        }
+    }
+
+    /**
+     * En Android 15 (API 35) algunas operadoras/dispositivos se ponen quisquillosos con URLs
+     * dentro de mensajes multipart. Estrategia:
+     * - Si el mensaje tiene URL y se parte en 2+ → enviar el texto sin la URL como multipart
+     *   y la URL sola en un SMS aparte.
+     * - Si no hay URL (o una sola parte) → enviar como multipart normal.
+     */
+    private fun sendSmsAndroid35Plus(
+        telephoneNumber: String,
+        smsManager: SmsManager,
+        longMessage: String,
+        parts: ArrayList<String>,
+        sentIntents: ArrayList<PendingIntent>,
+        deliveredIntents: ArrayList<PendingIntent>
+    ) {
+        try {
+            val urlRegex = Regex("\\bhttps?://\\S+")
+            val hasUrl = urlRegex.containsMatchIn(longMessage)
+
+            if (hasUrl && parts.size >= 2) {
+                val url = urlRegex.find(longMessage)?.value
+                if (url != null) {
+                    val bodySinUrl = longMessage.replace(url, "").trim()
+
+                    val partsSinUrl: ArrayList<String> = smsManager.divideMessage(bodySinUrl)
+                    val sentIntentsText = ArrayList<PendingIntent>(partsSinUrl.size).apply {
+                        repeat(partsSinUrl.size) { add(sentIntents.first()) }
+                    }
+                    val deliveredIntentsText = ArrayList<PendingIntent>(partsSinUrl.size).apply {
+                        repeat(partsSinUrl.size) { add(deliveredIntents.first()) }
+                    }
+
+                    Log.d(Definition.TAG_DEBUG, "URL detectada: $url")
+                    Log.d(
+                        Definition.TAG_DEBUG,
+                        "Texto sin URL dividido en ${partsSinUrl.size} parte(s)"
+                    )
+
+                    // 1) Texto sin URL (multipart)
+                    smsManager.sendMultipartTextMessage(
+                        telephoneNumber,
+                        null,
+                        partsSinUrl,
+                        sentIntentsText,
+                        deliveredIntentsText
+                    )
+
+                    // 2) URL sola en un SMS independiente
+                    smsManager.sendTextMessage(
+                        telephoneNumber,
+                        null,
+                        url,
+                        sentIntents.firstOrNull(),
+                        deliveredIntents.firstOrNull()
+                    )
+
+                    Log.d(
+                        Definition.TAG_DEBUG,
+                        "Enviado: texto (${partsSinUrl.size} partes) + URL separada"
+                    )
+                    return
+                }
+            }
+
+            // Fallback: envío multipart normal
+            smsManager.sendMultipartTextMessage(
+                telephoneNumber,
+                null,
+                parts,
+                sentIntents,
+                deliveredIntents
+            )
+        } catch (e: Exception) {
+            Log.e(Definition.TAG_DEBUG, "Error al enviar SMS (35+): ${e.message}", e)
+        }
+    }
+
+    // -------------------- Utilidades --------------------
+
+    private fun getSmsManager(context: Context): SmsManager {
+        // Para 31+ usar el SUB por defecto cuando esté disponible
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val subId = SubscriptionManager.getDefaultSmsSubscriptionId()
+                if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+                    SmsManager.getSmsManagerForSubscriptionId(subId)
+                } else {
+                    SmsManager.getDefault()
+                }
+            } else {
+                SmsManager.getDefault()
+            }
+        } catch (_: Exception) {
+            SmsManager.getDefault()
         }
     }
 
@@ -123,45 +249,54 @@ class SmsHelper {
             .replace("[áàäâã]".toRegex(), "a")
             .replace("[éèëê]".toRegex(), "e")
             .replace("[íìïî]".toRegex(), "i")
-            .replace("[óòöôõö]".toRegex(), "o")
+            .replace("[óòöôõ]".toRegex(), "o")
             .replace("[úùüû]".toRegex(), "u")
             .replace("ñ", "n")
-            .replace("¡", "")
-            .replace("¿", "")
+            .replace("¡|¿".toRegex(), "")
             .replace("[^\\p{Print}\n\r]".toRegex(), "")
+            .trim()
     }
-
 
     fun registerSMSReceivers(context: Context) {
-        // Receiver para el envío del SMS
-        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (resultCode) {
-                    Activity.RESULT_OK -> Log.d("SMS", " SMS enviado correctamente")
-                    SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(
-                        "SMS",
-                        " Fallo genérico al enviar SMS"
-                    )
-
-                    SmsManager.RESULT_ERROR_NO_SERVICE -> Log.e(Definition.TAG_DEBUG, " Sin servicio")
-                    SmsManager.RESULT_ERROR_NULL_PDU -> Log.e(Definition.TAG_DEBUG, " PDU nulo")
-                    SmsManager.RESULT_ERROR_RADIO_OFF -> Log.e(Definition.TAG_DEBUG, " Radio apagada")
+        // Receiver para envío (SENT)
+        ContextCompat.registerReceiver(
+            context,
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    when (resultCode) {
+                        Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS enviado correctamente")
+                        SmsManager.RESULT_ERROR_GENERIC_FAILURE ->
+                            Log.e(Definition.TAG_DEBUG, "Fallo genérico al enviar SMS")
+                        SmsManager.RESULT_ERROR_NO_SERVICE ->
+                            Log.e(Definition.TAG_DEBUG, "Sin servicio")
+                        SmsManager.RESULT_ERROR_NULL_PDU ->
+                            Log.e(Definition.TAG_DEBUG, "PDU nulo")
+                        SmsManager.RESULT_ERROR_RADIO_OFF ->
+                            Log.e(Definition.TAG_DEBUG, "Radio apagada")
+                        else ->
+                            Log.w(Definition.TAG_DEBUG, "Estado de envío desconocido: $resultCode")
+                    }
                 }
-            }
-        }, IntentFilter("SMS_SENT"), ContextCompat.RECEIVER_NOT_EXPORTED)
+            },
+            IntentFilter(ACTION_SENT),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
-        // Receiver para la entrega del SMS
-        ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (resultCode) {
-                    Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
-                    else -> Log.e(Definition.TAG_DEBUG, " SMS no fue entregado")
+        // Receiver para entrega (DELIVERED)
+        ContextCompat.registerReceiver(
+            context,
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    when (resultCode) {
+                        Activity.RESULT_OK ->
+                            Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
+                        else ->
+                            Log.e(Definition.TAG_DEBUG, "SMS no fue entregado (code=$resultCode)")
+                    }
                 }
-            }
-        }, IntentFilter("SMS_DELIVERED"), ContextCompat.RECEIVER_EXPORTED)
+            },
+            IntentFilter(ACTION_DELIVERED),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
-
 }
-
-
-
