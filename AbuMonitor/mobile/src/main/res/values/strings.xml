@@ -56,6 +56,7 @@
     <string name="datos_de_zona_segura">Datos de Zona Segura</string>
     <string name="hora_proxima_alarma_verficiacion_configuracion">Horario proxima alarma de chequeo:</string>
     <string name="horas_minutos">(horas:minutos)</string>
+    <string name="state_default">Estado no cargado</string>
 
 
     <string-array name="spinner_events">

@@ -1,17 +1,21 @@
 package com.example.comunicationwearmobile.ui.view.adapter
 
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Tools
 import java.text.SimpleDateFormat
 import java.util.*
+import android.graphics.Color
+import android.widget.ImageView
+
 
 class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit) :
     ListAdapter<EntityScheduledAssistance, AssistanceAdapter.EventViewHolder>(DiffCallback) {
@@ -33,9 +37,23 @@ class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit
 
     class EventViewHolder(itemView: View, val onClick: (EntityScheduledAssistance) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
+
+        private val stateDateLinear:LinearLayout=itemView.findViewById(R.id.stateDateLinearLayout)
         private val title: TextView = itemView.findViewById(R.id.eventTitle)
         private val time: TextView = itemView.findViewById(R.id.eventTime)
+        private val eventState:TextView=itemView.findViewById(R.id.eventState)
+        private val imgEventState: ImageView =itemView.findViewById(R.id.eventStateIcon)
+
         private var currentEvent: EntityScheduledAssistance? = null
+
+        init{
+
+            val drawable = GradientDrawable()
+            drawable.setColor(Color.WHITE)
+            drawable.setStroke(4, Color.BLACK)
+            drawable.cornerRadius = 16f
+            stateDateLinear.background = drawable
+        }
 
         fun bind(assistance: EntityScheduledAssistance) {
             val date = Date(assistance.date_hour_appointment)
@@ -43,9 +61,30 @@ class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit
 
             currentEvent = assistance
 
+
             title.text = assistance.description
             time.text = format.format(date)
             itemView.setOnClickListener { onClick(assistance) }
+            setEventState(assistance.went_appointment, assistance.date_hour_appointment)
+        }
+
+        private fun setEventState(wentAssistance: Boolean, dateHourAppointment: Long )
+        {
+            when {
+                wentAssistance -> {
+                    eventState.text = "Cita asistida"
+                    imgEventState.setImageResource(R.drawable.ic_check_circle_24)
+                }
+                dateHourAppointment < System.currentTimeMillis() -> {
+                    eventState.text = "Cita no asistida"
+                    imgEventState.setImageResource(R.drawable.ic_event_busy)
+                }
+                else -> {
+                    eventState.text = "Cita pendiente"
+                    imgEventState.setImageResource(R.drawable.ic_schedule_24)
+                }
+            }
+
         }
 
     }
