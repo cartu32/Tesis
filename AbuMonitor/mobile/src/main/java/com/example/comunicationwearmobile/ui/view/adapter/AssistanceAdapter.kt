@@ -44,7 +44,6 @@ class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit
         private val eventState:TextView=itemView.findViewById(R.id.eventState)
         private val imgEventState: ImageView =itemView.findViewById(R.id.eventStateIcon)
 
-        private var currentEvent: EntityScheduledAssistance? = null
 
         init{
 
@@ -59,23 +58,23 @@ class AssistanceAdapter(private val onClick: (EntityScheduledAssistance) -> Unit
             val date = Date(assistance.date_hour_appointment)
             val format = SimpleDateFormat("dd/MM/yyyy - HH:mm:ss", Locale.getDefault())
 
-            currentEvent = assistance
-
+            //calculo cual es la hora en que la cita se desactiva
+            val endTimeAppointmentActivate=assistance.date_hour_appointment+assistance.time_duration_activation_appointment
 
             title.text = assistance.description
             time.text = format.format(date)
             itemView.setOnClickListener { onClick(assistance) }
-            setEventState(assistance.went_appointment, assistance.date_hour_appointment)
+            setEventState(assistance.went_appointment, endTimeAppointmentActivate)
         }
 
-        private fun setEventState(wentAssistance: Boolean, dateHourAppointment: Long )
+        private fun setEventState(wentAssistance: Boolean, endTimeAppointmentActivate: Long )
         {
             when {
                 wentAssistance -> {
                     eventState.text = "Cita asistida"
                     imgEventState.setImageResource(R.drawable.ic_check_circle_24)
                 }
-                dateHourAppointment < System.currentTimeMillis() -> {
+                endTimeAppointmentActivate < System.currentTimeMillis() -> {
                     eventState.text = "Cita no asistida"
                     imgEventState.setImageResource(R.drawable.ic_event_busy)
                 }
