@@ -23,10 +23,27 @@ class AbuMonitorApplicationMobile : Application() {
 
         initilizerDB()
         initializeAlarm()
+        initilizeSPRememberAppointment()
         configLeakCanary()
 
       }
 
+    private fun initilizeSPRememberAppointment() {
+        var hourTimeRemember=Definition.DEFAULT_HOUR_REMEMER_APPOINTMENT
+        val repository = RepositoryScheduleAlarmSPref.getInstance(this)
+
+        val timeRememberAppointment=repository.getTimeRememberAppointmentSync()
+
+        if (timeRememberAppointment != Definition.NO_STORED_VALUE) {
+            val (h, m) = Tools.getHourMinOfParcial(timeRememberAppointment)
+            hourTimeRemember   = h
+        } else {
+            Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
+
+            val timeParcialMillis=Tools.getTimeInMillis(hourTimeRemember, 0)
+            repository.saveTimeRememberAppointmentSync(timeParcialMillis)
+        }
+    }
 
 
     private fun initilizerDB() {

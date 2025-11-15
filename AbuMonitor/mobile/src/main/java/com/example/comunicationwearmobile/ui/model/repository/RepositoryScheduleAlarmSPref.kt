@@ -94,6 +94,11 @@ class RepositoryScheduleAlarmSPref (context: Context){
         return prefs.getLong(TIME_BETWEEN_CHECKS, Definition.NO_STORED_VALUE)
     }
 
+    //Versión síncrona para inicialización temprana
+    fun getTimeRememberAppointmentSync(): Long {
+        return prefs.getLong(TIME_REMEMBER_APPOINTMET, Definition.NO_STORED_VALUE)
+    }
+
     fun saveTimeBetweenChecksSync(hour:Long){
         val editor = prefs.edit()
         editor.putLong(TIME_BETWEEN_CHECKS, hour)
@@ -105,4 +110,14 @@ class RepositoryScheduleAlarmSPref (context: Context){
         editor.putLong(TIME_NEXT_ALARM, hour)
         editor.apply()
     }
+
+    fun saveTimeRememberAppointmentSync(hour:Long){
+        val editor = prefs.edit()
+        editor.putLong(TIME_REMEMBER_APPOINTMET, hour)
+        editor.apply()
+    }
+
+
+
+
 }
