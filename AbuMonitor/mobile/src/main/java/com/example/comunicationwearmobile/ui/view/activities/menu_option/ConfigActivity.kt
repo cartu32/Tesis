@@ -22,6 +22,7 @@ class ConfigActivity : AppCompatActivity() {
     private var cmdSaveConfig: Button? = null
     private var cmdCancelConfig: Button? = null
     private var cmdTimeAlarmBetweenChecks: Button? = null
+    private var cmdRememberHour: Button? = null
     private var txtTimeNextAlarm:TextView?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +34,7 @@ class ConfigActivity : AppCompatActivity() {
         cmdSaveConfig = findViewById(R.id.cmdSaveConfig)
         cmdCancelConfig = findViewById(R.id.cmdCancelConfig)
         cmdTimeAlarmBetweenChecks = findViewById(R.id.cmdTimeAlarmForCkecks)
+        cmdRememberHour = findViewById(R.id.cmdRememberHour)
         txtTimeNextAlarm  = findViewById(R.id.txtTimeNextAlarm)
 
         configObservers()
@@ -42,13 +44,14 @@ class ConfigActivity : AppCompatActivity() {
         cmdCancelConfig?.setOnClickListener { listenerCmdCancel() }
         cmdSaveConfig?.setOnClickListener { listenerCmdSaveConfig() }
         cmdTimeAlarmBetweenChecks?.setOnClickListener {listenerCmdTimeAlarmBetweenChecks() }
-
+        cmdRememberHour?.setOnClickListener{listenerCmdRememberHour()}
         configActionBar()
     }
 
+
     private fun initConfiguration() {
         // Estado inicial
-        vm.loadTimeBetweenChecks()
+        vm.loadConfiguration()
     }
 
     private fun listenerCmdSaveConfig() {
@@ -56,9 +59,13 @@ class ConfigActivity : AppCompatActivity() {
     }
 
     private fun listenerCmdTimeAlarmBetweenChecks() {
-        showCustomTimePicker { h, m -> vm.onTimePicked(h, m) }
+        showCustomTimePicker(0,2) { h, m -> vm.onTimePickedBetween(h, m) }
     }
 
+
+    private fun listenerCmdRememberHour() {
+        showCustomTimePicker(0,5,0,0) {h, m -> vm.onTimePickedRemember(h, m) }
+    }
     private fun listenerCmdCancel() {
         finish()
     }
@@ -71,6 +78,10 @@ class ConfigActivity : AppCompatActivity() {
         }
         vm.timeTextNextAlarm.observe(this) { text ->
             txtTimeNextAlarm?.text = text
+        }
+
+        vm.timeTextRemember.observe(this){text->
+            cmdRememberHour?.text=text
         }
 
         vm.saveEnabled.observe(this) { enabled ->
@@ -136,10 +147,9 @@ class ConfigActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         vm.onFinishConsumed()
-        vm.isChanged.removeObservers(this)
-        vm.isSaving.removeObservers(this)
         vm.timeTextCheck.removeObservers(this)
         vm.timeTextNextAlarm.removeObservers(this)
+        vm.timeTextRemember.removeObservers(this)
         vm.saveEnabled.removeObservers(this)
         vm.toastMessage.removeObservers(this)
         vm.finishEvent.removeObservers(this)

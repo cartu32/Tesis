@@ -27,11 +27,10 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     private var hourNextAlarm:Int=0
     private var minuteNextalarm:Int=0
 
-    private val _isChanged = MutableLiveData(false)
-    val isChanged: LiveData<Boolean> = _isChanged
+    private var hourRemember:Int=0
 
-    private val _isSaving = MutableLiveData(false)
-    val isSaving: LiveData<Boolean> = _isSaving
+    private val _timeTextRemember = MutableLiveData("--")
+    val timeTextRemember: LiveData<String> = _timeTextRemember
 
     // UI directa (sin Mediator): la actualizamos nosotros
     private val _timeTextCheck = MutableLiveData("--:--")
@@ -50,97 +49,158 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     private val _finishEvent = MutableLiveData<Boolean>(false)
     val finishEvent: LiveData<Boolean> = _finishEvent
 
+    private var isChangedBetween=false
+    private var isChangedRemeber=false
     // ------------------ Lógica ------------------
 
-    fun loadTimeBetweenChecks() {
+    fun loadConfiguration(){
         viewModelScope.launch {
-            val millisBetweenCheck = withContext(Dispatchers.IO) { repo.getTimeBetweenChecks() }
-            val millisNextAlarm = withContext(Dispatchers.IO) { repo.getTimeNextAlarm() }
-
-            val (hb, mb) = Tools.getHourMinOfParcial(millisBetweenCheck)
-            val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
-
-            hourBetweenCheck = hb
-            minuteBetweenCheck = mb
-            hourNextAlarm = hn
-            minuteNextalarm = mn
-
-            updateTimeTextCheck(hourBetweenCheck, minuteBetweenCheck)
-            updateTimeNextAlarm(hourNextAlarm, minuteNextalarm)
-            _isChanged.value = false
-            computeSaveEnabled()
+            loadTimeBetweenChecks()
+            loadTimeRememberAppointment()
         }
     }
 
+    suspend fun loadTimeRememberAppointment() {
+        val hourRemeber= withContext(Dispatchers.IO){repo.getTimeRememberAppointment()}
+        val (h,m)=Tools.getHourMinOfParcial(hourRemeber)
 
-    fun onTimePicked(h: Int, m: Int) {
+        hourRemember=h
+
+        updateTimeTextRemember(h)
+        isChangedRemeber=false
+        computeSaveEnabled()
+    }
+
+    suspend  fun loadTimeBetweenChecks() {
+        val millisBetweenCheck = withContext(Dispatchers.IO) { repo.getTimeBetweenChecks() }
+        val millisNextAlarm = withContext(Dispatchers.IO) { repo.getTimeNextAlarm() }
+
+        val (hb, mb) = Tools.getHourMinOfParcial(millisBetweenCheck)
+        val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
+
+        hourBetweenCheck = hb
+        minuteBetweenCheck = mb
+        hourNextAlarm = hn
+        minuteNextalarm = mn
+
+        updateTimeTextCheck(hourBetweenCheck, minuteBetweenCheck)
+        updateTimeNextAlarm(hourNextAlarm, minuteNextalarm)
+        isChangedBetween= false
+        computeSaveEnabled()
+    }
+
+    fun onTimePickedRemember(h: Int, m: Int) {
+        hourRemember = h
+        updateTimeTextRemember(h)
+        isChangedRemeber = true
+        computeSaveEnabled()
+    }
+
+    fun onTimePickedBetween(h: Int, m: Int) {
         hourBetweenCheck = h
         minuteBetweenCheck = m
         updateTimeTextCheck(h, m)
-        _isChanged.value = true
+        isChangedBetween = true
         computeSaveEnabled()
     }
 
     fun save() {
-        if (_isSaving.value == true) return
         viewModelScope.launch {
-            _isSaving.value = true
-            computeSaveEnabled()
-            try {
-                val hb = hourBetweenCheck
-                val mb = minuteBetweenCheck
+            // Si no hay cambios, no hacemos nada
+            if (!isChangedBetween && !isChangedRemeber) return@launch
 
-                //calclulo el horario de la proxima alarma
-                val millisBetweenCheck=Tools.getTimeInMillis(hb, mb)
-                val aux=System.currentTimeMillis()+millisBetweenCheck
+            var allOk = true
 
-                val millisNextAlarm=Tools.extractHourOfDateInMillis(aux)
-                val (hn,mn)=Tools.getHourMinOfParcial(millisNextAlarm)
-
-                // Persistir solo si hubo cambios
-                if (_isChanged.value == true) {
-
-                    withContext(Dispatchers.IO) {
-                        repo.saveTimeBetweenChecks(millisBetweenCheck)
-                        repo.saveTimeNextAlarm(millisNextAlarm)
-                    }
-                }
-                //cancelo la alarma previa
-                AlarmHelper().cancelAlarm(
-                    getApplication(),
-                    Definition.ALARM_ID_BETWEEN_CHECKS,
-                    Definition.ACTION_ALARM_FOR_CHECKS,
-                    AlarmDailyForChecksBroadcastReceiver::class.java
-                )
-
-                // Programar alarma
-                val ok = AlarmHelper().setAlarmAfterOfTime(
-                    getApplication(),
-                    Definition.ALARM_ID_BETWEEN_CHECKS,
-                    hb,
-                    mb,
-                    Definition.ACTION_ALARM_FOR_CHECKS,
-                    AlarmDailyForChecksBroadcastReceiver::class.java
-                )
-
-                if (ok) {
-                    //activo y desactivo las areas de geofence alamcenadas en
-                    // en la bd que deben acivarse dentro del nuevo intervalo de alamra
-                    geofenceScheduleHelper.activateAndDesactivateGeofenceScheduled()
-
-                    //actualizo en la view el horario de la proxima alarma
-                    updateTimeNextAlarm(hn,mn)
-                    _toastMessage.value = "Alarma de checkeo configurada correctamente"
-                    _finishEvent.value = true
-                } else {
-                    _toastMessage.value = "No se pudo configurar la alarma"
-                }
-            } catch (t: Throwable) {
-                _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
-            } finally {
-                _isSaving.value = false
-                computeSaveEnabled()
+            if (isChangedBetween) {
+                allOk = allOk && saveAlarmBetweenCheckInternal()
             }
+
+            if (isChangedRemeber) {
+                allOk = allOk && saveTimeRememberInternal()
+            }
+
+            // Recalcula el estado del botón guardar, etc.
+            computeSaveEnabled()
+
+            // Solo disparo el finish si TODO salió bien
+            if (allOk) {
+                _finishEvent.value = true
+            }
+        }
+    }
+
+    private suspend fun saveTimeRememberInternal(): Boolean {
+        return try {
+            val hb = hourRemember
+            val mb = 0
+
+            val millisRemember = Tools.getTimeInMillis(hb, mb)
+
+            withContext(Dispatchers.IO) {
+                repo.saveTimeRememberAppointment(millisRemember)
+            }
+
+            updateTimeTextRemember(hourRemember)
+            true
+        } catch (t: Throwable) {
+            _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
+            false
+        }
+    }
+
+
+    private suspend fun saveAlarmBetweenCheckInternal(): Boolean {
+        return try {
+            val hb = hourBetweenCheck
+            val mb = minuteBetweenCheck
+
+            // cálculo del intervalo entre chequeos
+            val millisBetweenCheck = Tools.getTimeInMillis(hb, mb)
+            val aux = System.currentTimeMillis() + millisBetweenCheck
+
+            val millisNextAlarm = Tools.extractHourOfDateInMillis(aux)
+            val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
+
+            // guardo configuración en SharedPreferences
+            withContext(Dispatchers.IO) {
+                repo.saveTimeBetweenChecks(millisBetweenCheck)
+                repo.saveTimeNextAlarm(millisNextAlarm)
+            }
+
+            // cancelo alarma previa
+            AlarmHelper().cancelAlarm(
+                getApplication(),
+                Definition.ALARM_ID_BETWEEN_CHECKS,
+                Definition.ACTION_ALARM_FOR_CHECKS,
+                AlarmDailyForChecksBroadcastReceiver::class.java
+            )
+
+            // programo nueva alarma
+            val okAlarm = AlarmHelper().setAlarmAfterOfTime(
+                getApplication(),
+                Definition.ALARM_ID_BETWEEN_CHECKS,
+                hb,
+                mb,
+                Definition.ACTION_ALARM_FOR_CHECKS,
+                AlarmDailyForChecksBroadcastReceiver::class.java
+            )
+
+            if (okAlarm) {
+                // activo/desactivo geofences según la nueva ventana
+                geofenceScheduleHelper.activateAndDesactivateGeofenceScheduled()
+
+                // actualizo en la vista el horario de la próxima alarma
+                updateTimeNextAlarm(hn, mn)
+                _toastMessage.value = "Alarma de checkeo configurada correctamente"
+                true
+            } else {
+                _toastMessage.value = "No se pudo configurar la alarma"
+                false
+            }
+
+        } catch (t: Throwable) {
+            _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
+            false
         }
     }
 
@@ -153,10 +213,16 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         _timeTextCheck.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
     }
 
+    private fun updateTimeTextRemember(h: Int) {
+        _timeTextRemember.value = String.format(Locale.getDefault(), "%02d", h)
+    }
+
     private fun updateTimeNextAlarm(h: Int, m: Int) {
         _timeTextNextAlarm.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
     }
     private fun computeSaveEnabled() {
-        _saveEnabled.value = (_isChanged.value == true) && (_isSaving.value != true)
+        _saveEnabled.value = (isChangedBetween == true) || (isChangedRemeber==true)
     }
+
+
 }

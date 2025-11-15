@@ -58,6 +58,7 @@
     <string name="horas_minutos">(horas:minutos)</string>
     <string name="state_default">Estado no cargado</string>
     <string name="numero_de_horas_previas_para_recordar_cita_de_asistencia">Numero de horas previas para recordar cita de asistencia</string>
+    <string name="horas">(HORAS)</string>
 
 
     <string-array name="spinner_events">
