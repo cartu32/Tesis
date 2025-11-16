@@ -5,6 +5,7 @@ import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
@@ -29,18 +30,16 @@ class AbuMonitorApplicationMobile : Application() {
       }
 
     private fun initilizeSPRememberAppointment() {
-        var hourTimeRemember=Definition.DEFAULT_HOUR_REMEMER_APPOINTMENT
+        var hourTimeRemember    = Definition.DEFAULT_HOUR_REMEMER_APPOINTMENT
+        var minuteTimeRemember  = Definition.DEFAULT_MINUTE_REMEMER_APPOINTMENT
         val repository = RepositoryScheduleAlarmSPref.getInstance(this)
 
         val timeRememberAppointment=repository.getTimeRememberAppointmentSync()
 
-        if (timeRememberAppointment != Definition.NO_STORED_VALUE) {
-            val (h, m) = Tools.getHourMinOfParcial(timeRememberAppointment)
-            hourTimeRemember   = h
-        } else {
-            Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
+        if (timeRememberAppointment == Definition.NO_STORED_VALUE) {
+            Log.w(Definition.TAG_DEBUG, "No hay tiempo configurado para recordar cita. Uso valores por defecto.")
 
-            val timeParcialMillis=Tools.getTimeInMillis(hourTimeRemember, 0)
+            val timeParcialMillis=Tools.getTimeInMillis(hourTimeRemember, minuteTimeRemember)
             repository.saveTimeRememberAppointmentSync(timeParcialMillis)
         }
     }
@@ -56,28 +55,43 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
-        val repository = RepositoryScheduleAlarmSPref.getInstance(this)
+        val repository  = RepositoryScheduleAlarmSPref.getInstance(this)
         val alarmHelper = AlarmHelper()
 
-        // Valores por defecto
-        var hourAlarmBetweenCheck   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
-        var minuteAlramBetweenCheck = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
+        //leo del SharedPreferences la hora de la alarma de chequeo
+        val storedMillis = repository.getTimeBetweenChecksSync()
 
-        val timeBetweenChecks = repository.getTimeBetweenChecksSync()
+        //obtengo la hora, minutos de la alarma
+        val (hourBetweenCheck, minuteBetweenCheck, intervalMillis) = setAlarmFirsTime(storedMillis,repository)
 
-        if (timeBetweenChecks != Definition.NO_STORED_VALUE) {
-            val (h, m) = Tools.getHourMinOfParcial(timeBetweenChecks)
-            hourAlarmBetweenCheck   = h
-            minuteAlramBetweenCheck = m
-        } else {
-            Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
-
-            val timeParcialMillis=Tools.getTimeInMillis(hourAlarmBetweenCheck, minuteAlramBetweenCheck)
-            repository.saveTimeBetweenChecksSync(timeParcialMillis)
-        }
+        //cada vez que se inicia la app se cancela la alarma actual y se vuelve a configurar una nueva
+        SharedVariables.timeAlarmChecksFirstTime = Tools.extractHourOfDateInMillis(System.currentTimeMillis() + intervalMillis)
+        SharedVariables.isOpenAppFirsTime=true
 
         cancelAlarmPrevious(alarmHelper)
-        initAlarm(hourAlarmBetweenCheck, minuteAlramBetweenCheck,alarmHelper)
+        initAlarm(hourBetweenCheck, minuteBetweenCheck, alarmHelper)
+    }
+
+    private fun setAlarmFirsTime(storedMillis: Long, repository:RepositoryScheduleAlarmSPref): Triple<Int, Int, Long> {
+
+        //pregunto si la alarma esta incializada en el shared preference
+        if (storedMillis != Definition.NO_STORED_VALUE)
+        {
+            val (h, m) = Tools.getHourMinOfParcial(storedMillis)
+            return Triple(h, m, storedMillis)
+        } else
+        {
+            Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
+
+            val defaultHour   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
+            val defaultMinute = Definition.DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS
+            val defaultMillis = Tools.getTimeInMillis(defaultHour, defaultMinute)
+
+            // Primero calculamos los millis y recién ahí los guardamos
+            repository.saveTimeBetweenChecksSync(defaultMillis)
+
+            return Triple(defaultHour, defaultMinute, defaultMillis)
+        }
 
     }
 

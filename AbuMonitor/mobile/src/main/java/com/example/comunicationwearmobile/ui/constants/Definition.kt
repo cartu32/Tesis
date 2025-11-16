@@ -28,10 +28,11 @@ object Definition {
     const val DEFAULT_HOUR_ALARM_BETWEEN_CHECKS       = 0
     const val DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS     = 3
 
-    const val DEFAULT_HOUR_REMEMER_APPOINTMENT        = 3
+    const val DEFAULT_HOUR_REMEMER_APPOINTMENT        = 0
+    const val DEFAULT_MINUTE_REMEMER_APPOINTMENT      = 10
 
     const val MAX_HOUR_DTPICKER_ALARMCHECKS: Int      = 2
-    const val MAX_HOUR_DTPICKER_REMEMBER: Int      = 5
+    const val MAX_HOUR_DTPICKER_REMEMBER: Int         = 5
 
     const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
     const val ACTION_ALARM_DAILY_CHECKS                = "ACTION_ALARM_DAILY_CHECKS"

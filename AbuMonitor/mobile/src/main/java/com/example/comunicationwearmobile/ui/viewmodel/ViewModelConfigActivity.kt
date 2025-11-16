@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
@@ -73,11 +74,26 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         computeSaveEnabled()
     }
 
-    suspend  fun loadTimeBetweenChecks() {
-        val millisBetweenCheck = withContext(Dispatchers.IO) { repo.getTimeBetweenChecks() }
-        val millisNextAlarm = withContext(Dispatchers.IO) { repo.getTimeNextAlarm() }
+    private suspend fun getTimeNextAlarm(): Long {
+        //pregunto si es la primera vez que se abre la app
+        if(SharedVariables.isOpenAppFirsTime){
+            SharedVariables.isOpenAppFirsTime=false
+            return SharedVariables.timeAlarmChecksFirstTime
+        }else
+            return repo.getTimeNextAlarm()
+    }
+
+    private suspend fun getTimeBetweenChecks():Long{
+        return repo.getTimeBetweenChecks()
+    }
+
+    private suspend  fun loadTimeBetweenChecks() {
+        val millisBetweenCheck = withContext(Dispatchers.IO) { getTimeBetweenChecks() }
+        val millisNextAlarm = withContext(Dispatchers.IO) { getTimeNextAlarm() }
 
         val (hb, mb) = Tools.getHourMinOfParcial(millisBetweenCheck)
+
+
         val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
 
         hourBetweenCheck = hb
