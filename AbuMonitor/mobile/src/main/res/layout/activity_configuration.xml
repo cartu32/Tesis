@@ -5,7 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:text="@string/title_Activty_configuration"
+        android:textStyle="bold"
+        android:textAlignment="center"/>
 
+    <!-- PRIMER GRUPO: lo dejo igual que vos -->
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,8 +32,8 @@
             <TextView
                 android:id="@+id/txtDateAlarmActivateGeof"
                 android:layout_width="wrap_content"
-                android:textSize="20sp"
                 android:layout_height="wrap_content"
+                android:textSize="20sp"
                 android:text="@string/hora_de_alarma_verficiacion_configuracion"/>
         </TableRow>
 
@@ -35,90 +43,82 @@
             android:layout_marginTop="5dp"
             android:layout_marginHorizontal="10dp"
             android:layout_marginBottom="5dp">
+
             <Button
                 android:id="@+id/cmdTimeAlarmForCkecks"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/horas_minutos"
-                android:textSize="20sp" />
+                android:textSize="20sp"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:textSize="20sp"
+                android:text="@string/hora_proxima_alarma_verficiacion_configuracion"/>
         </TableRow>
 
         <TableRow
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginBottom="0dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30sp"
-                android:textSize="20sp"
-                android:text="@string/hora_proxima_alarma_verficiacion_configuracion">
-            </TextView>
-        </TableRow>
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginBottom="0dp">
+            android:layout_marginBottom="5dp">
 
             <TextView
                 android:id="@+id/txtTimeNextAlarm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5sp"
-                android:textSize="20sp"
-                />
+                android:layout_marginTop="5dp"
+                android:textSize="20sp"/>
         </TableRow>
     </TableLayout>
-    <TableLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="5dp"
-        android:background="@drawable/group_round_box">
 
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginBottom="0dp">
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30sp"
-                android:textSize="20sp"
-                android:text="@string/numero_de_horas_previas_para_recordar_cita_de_asistencia" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginTop="5dp">
-
-            <Button
-            android:id="@+id/cmdRememberHour"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="@string/horas" />
-
-        </TableRow>
-    </TableLayout>
-    <TableLayout
+    <!-- SEGUNDO GRUPO: CAMBIADO A LINEARLAYOUT -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp"
-        >
+        android:background="@drawable/group_round_box"
+        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:singleLine="false"
+            android:maxLines="3"
+            android:ellipsize="none"
+            android:text="@string/numero_de_horas_previas_para_recordar_cita_de_asistencia"/>
+
+        <Button
+            android:id="@+id/cmdRememberHour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="20sp"
+            android:text="@string/horas_minutos"/>
+    </LinearLayout>
+
+    <!-- TERCER GRUPO: BOTONES -->
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp">
 
         <TableRow
             android:layout_width="match_parent"
@@ -130,25 +130,23 @@
                 android:id="@+id/cmdSaveConfig"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/cmd_guardar_geofences"
                 android:layout_marginTop="50dp"
-                android:textSize="20sp" />
+                android:text="@string/cmd_guardar_geofences"
+                android:textSize="20sp"/>
 
-            <!-- Espaciador para empujar el siguiente elemento a la derecha -->
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
+                android:layout_weight="1"/>
 
             <Button
                 android:id="@+id/cmdCancelConfig"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/cmd_cancelar_geofences"
                 android:layout_marginTop="50dp"
-                android:textSize="20sp" />
-
+                android:text="@string/cmd_cancelar_geofences"
+                android:textSize="20sp"/>
         </TableRow>
     </TableLayout>
+
 </LinearLayout>

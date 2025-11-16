@@ -28,6 +28,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     private var minuteNextalarm:Int=0
 
     private var hourRemember:Int=0
+    private var minuteRemember:Int=0
 
     private val _timeTextRemember = MutableLiveData("--")
     val timeTextRemember: LiveData<String> = _timeTextRemember
@@ -62,11 +63,12 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun loadTimeRememberAppointment() {
         val hourRemeber= withContext(Dispatchers.IO){repo.getTimeRememberAppointment()}
-        val (h,m)=Tools.getHourMinOfParcial(hourRemeber)
+        val (hr,mr)=Tools.getHourMinOfParcial(hourRemeber)
 
-        hourRemember=h
+        hourRemember=hr
+        minuteRemember=mr
+        updateTimeTextRemember(hr,mr)
 
-        updateTimeTextRemember(h)
         isChangedRemeber=false
         computeSaveEnabled()
     }
@@ -90,8 +92,9 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun onTimePickedRemember(h: Int, m: Int) {
-        hourRemember = h
-        updateTimeTextRemember(h)
+        hourRemember    = h
+        minuteRemember  = m
+        updateTimeTextRemember(h,m)
         isChangedRemeber = true
         computeSaveEnabled()
     }
@@ -124,6 +127,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
             // Solo disparo el finish si TODO salió bien
             if (allOk) {
+                _toastMessage.value = "Configuracion guardada correctamente"
                 _finishEvent.value = true
             }
         }
@@ -132,7 +136,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     private suspend fun saveTimeRememberInternal(): Boolean {
         return try {
             val hb = hourRemember
-            val mb = 0
+            val mb = minuteRemember
 
             val millisRemember = Tools.getTimeInMillis(hb, mb)
 
@@ -140,7 +144,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 repo.saveTimeRememberAppointment(millisRemember)
             }
 
-            updateTimeTextRemember(hourRemember)
+            updateTimeTextRemember(hourRemember, minuteRemember)
             true
         } catch (t: Throwable) {
             _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
@@ -191,7 +195,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
                 // actualizo en la vista el horario de la próxima alarma
                 updateTimeNextAlarm(hn, mn)
-                _toastMessage.value = "Alarma de checkeo configurada correctamente"
                 true
             } else {
                 _toastMessage.value = "No se pudo configurar la alarma"
@@ -210,11 +213,12 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     // ------------------ Helpers ------------------
 
     private fun updateTimeTextCheck(h: Int, m: Int) {
-        _timeTextCheck.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+        //_timeTextCheck.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+        _timeTextCheck.value = String.format(Locale.getDefault(), "%d horas y %d minutos", h, m)
     }
 
-    private fun updateTimeTextRemember(h: Int) {
-        _timeTextRemember.value = String.format(Locale.getDefault(), "%02d", h)
+    private fun updateTimeTextRemember(h: Int, m: Int) {
+        _timeTextRemember.value = String.format(Locale.getDefault(), "%d horas y %d minutos", h, m)
     }
 
     private fun updateTimeNextAlarm(h: Int, m: Int) {

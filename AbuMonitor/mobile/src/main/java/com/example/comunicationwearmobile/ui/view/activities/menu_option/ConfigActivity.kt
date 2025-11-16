@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.viewmodel.ConfigViewModel
 
@@ -59,12 +60,12 @@ class ConfigActivity : AppCompatActivity() {
     }
 
     private fun listenerCmdTimeAlarmBetweenChecks() {
-        showCustomTimePicker(0,2) { h, m -> vm.onTimePickedBetween(h, m) }
+        showCustomTimePicker(maxHour=Definition.MAX_HOUR_DTPICKER_ALARMCHECKS) { h, m -> vm.onTimePickedBetween(h, m) }
     }
 
 
     private fun listenerCmdRememberHour() {
-        showCustomTimePicker(0,5,0,0) {h, m -> vm.onTimePickedRemember(h, m) }
+        showCustomTimePicker(maxHour=Definition.MAX_HOUR_DTPICKER_REMEMBER) {h, m -> vm.onTimePickedRemember(h, m) }
     }
     private fun listenerCmdCancel() {
         finish()
