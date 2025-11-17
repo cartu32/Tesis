@@ -76,4 +76,13 @@ interface DaoScheduledAssistance {
     """)
     fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance>
 
+
+    @Query("""
+        SELECT *
+        FROM scheduled_assistance sa
+        WHERE sa.date_hour_appointment - :timePreviousRemember >= :dateTimeAlarmInitial AND
+              sa.date_hour_appointment - :timePreviousRemember < :dateTimeAlarmNext
+    """)
+    fun getAreasWithAppointmentRemember(timePreviousRemember: Long,dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance>
+
 }

@@ -7,10 +7,12 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
+import com.example.shared_library.SharedData
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -46,9 +48,8 @@ class GeofenceScheduleHelper(mContext:Context) {
     //la activacion y desactivacion por vez, ya que esta funcion puede ser llamada al activarse alarma
     // o tambien se llama desde el menu configuracion. Entonces se puede llamar por diferentes corutinas
     //al mismo tiempo aplico un mutex para evitar problemas de concurrencia.
-    suspend fun activateAndDesactivateGeofenceScheduled()= mutex.withLock{
+    suspend fun executeActionsOfAlarm()= mutex.withLock{
         var timeBetweenAlarm:Long=0
-        var resultActivate=false
 
         //obtengo cual es el intervalo de tiempo en que se va a ejecutar la alarma
         timeBetweenAlarm=repositoryScheduleAlarmSPref.getTimeBetweenChecks()
@@ -64,6 +65,17 @@ class GeofenceScheduleHelper(mContext:Context) {
         Log.d(Definition.TAG_DEBUG,"intervalo desactivacion: ${Tools.getMillisToHourMinutes(prev.start)} - ${Tools.getMillisToHourMinutes(prev.end)}")
         Log.d(Definition.TAG_DEBUG,"intervalo activacion: ${Tools.getMillisToHourMinutes(curr.start)} - ${Tools.getMillisToHourMinutes(curr.end)}")
 
+        //veo que citas se deben generar notificaciones de recordatorios de citas
+        checkRememberAppointmentInsideInterval(prev,curr)
+
+        //activo y desactivo las geofences programadas dentro del intervalo de la alarma
+        activateAndDesactivateGeofenceScheduled(prev,curr)
+
+    }
+
+    private suspend fun activateAndDesactivateGeofenceScheduled(prev: TimeWindow, curr: TimeWindow){
+        var resultActivate=false
+
         //primero desactivo las geofences que fueron programadas por la alarma anterior
         if(desactivateGeofencePreviousAlarm(prev.start,prev.end)) {
             //luego activo las geofences que dentro del interrvalo horario correspondiente
@@ -75,7 +87,6 @@ class GeofenceScheduleHelper(mContext:Context) {
 
         checkActivationAllGeofences(resultActivate)
     }
-
 
     private suspend  fun activateGeofenceOfCurrentAlarm(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): Boolean {
         var listAreasInsideDateInterval:List<AreaGeofenceWithAppointment>?=null
@@ -245,6 +256,63 @@ class GeofenceScheduleHelper(mContext:Context) {
         }
         return message
 
+
+    }
+
+    suspend  fun checkRememberAppointmentInsideInterval(prev: TimeWindow, curr: TimeWindow) {
+        //obtengo el intervalo de tiempo en que se va a recordar las citas
+        val timePreviousRemeber=repositoryScheduleAlarmSPref.getTimeRememberAppointment()
+
+        //obtengo de la bd el listado de citas a las que se debe recordar
+        var listAreasWithPreviousRemember:List<EntityScheduledAssistance>?=null
+
+        listAreasWithPreviousRemember=repositoryScheduleAssistance.getAreasWithAppointmentRemember(timePreviousRemeber,curr.start,curr.end)
+
+        if(listAreasWithPreviousRemember.isEmpty()){
+            Log.d(Definition.TAG_DEBUG,"No hay citas a las que se debe recordar")
+            return
+        }
+
+        for(date in listAreasWithPreviousRemember){
+            notifyRemeberUser(date)
+        }
+    }
+
+    private fun notifyRemeberUser(dateRemember: EntityScheduledAssistance)
+    {
+        //creo el mensaje del Recordatorio
+        val msg = SharedData.MsgNotification().apply {
+            typeNotification = SharedData.TypeNotification.Reminder
+            title = "Recordatorio de Cita"
+            message = dateRemember.description
+            hour = Tools.getMillisToHourMinutes(dateRemember.date_hour_appointment)
+            date = Tools.getMillisToDate(dateRemember.date_hour_appointment)
+
+        }
+
+        Log.d(Definition.TAG_DEBUG,msg.toString())
+
+        val idMsg=showReminderInSmarthpone(msg)
+        showReminderInWearable(idMsg,msg)
+    }
+
+    private fun showReminderInWearable(idMsg: Int?, msg: SharedData.MsgNotification) {
+        if (idMsg != null) {
+            msg.idMsgMobile = idMsg
+            RepositoryDispatcherWearable.sendDataToWearable(
+                context,
+                SharedData.PATH_ADD_NOTIFICATION_GENERAL,
+                msg
+            )
+        }
+
+    }
+
+    private fun showReminderInSmarthpone(msg: SharedData.MsgNotification): Int? {
+        val notificationHelper = NotificationHelper.getInstance(context)
+        val id = notificationHelper?.showNotificationGeneral(msg)
+
+        return id
 
     }
 

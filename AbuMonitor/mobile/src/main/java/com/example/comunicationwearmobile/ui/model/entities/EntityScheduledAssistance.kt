@@ -16,7 +16,12 @@ import kotlinx.parcelize.Parcelize
         childColumns = ["id_area"],
         onDelete = ForeignKey.CASCADE //si se borra el area se borra el time range
     )],
-    indices = [Index(value = ["id_area"], unique = true)] //con unique aseguro que la reacion sea 1 a 1
+    indices = [
+        Index(value = ["id_area"], unique = true),//con unique aseguro que la reacion sea 1 a 1
+        Index(value = ["is_activated_geof"]),
+        Index(value = ["date_hour_appointment"]),
+        Index(value = ["time_duration_activation_appointment"])
+    ]
 )data class EntityScheduledAssistance(
     @PrimaryKey(autoGenerate = true)
     var id_assistance: Int = 0,

@@ -16,7 +16,8 @@ class RepositoryScheduleAssistance(context: Context) {
     private val daoAssistance = database.entityScheduledAssistanceDao()
 
     companion object {
-        @Volatile private var INSTANCE: RepositoryScheduleAssistance? = null
+        @Volatile
+        private var INSTANCE: RepositoryScheduleAssistance? = null
 
         fun getInstance(context: Context): RepositoryScheduleAssistance {
             return INSTANCE ?: synchronized(this) {
@@ -32,7 +33,7 @@ class RepositoryScheduleAssistance(context: Context) {
             try {
                 val idAssistance = daoAssistance.insertScheduledAssistance(assistance)
 
-                if(idAssistance!=-1L)
+                if (idAssistance != -1L)
                     idAssistance
                 else
                     Definition.ERROR_INSERT_BD_GEOF
@@ -49,7 +50,7 @@ class RepositoryScheduleAssistance(context: Context) {
     }
 
     suspend fun getAssistanceWithId(idAssistance: Int): EntityScheduledAssistance {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             daoAssistance.getAssistanceWithId(idAssistance)
         }
     }
@@ -59,40 +60,47 @@ class RepositoryScheduleAssistance(context: Context) {
     // hasta el final de dia (inicio del proximo dia a las 0:00)
     fun getEventsByDate(date: Long): LiveData<List<EntityScheduledAssistance>> {
         val startDayDate = Tools.extractDayOfDateInMillis(date)
-        val endDayDate   = Tools.getStartNextDay(startDayDate)
+        val endDayDate = Tools.getStartNextDay(startDayDate)
 
         return daoAssistance.getAppointmetByDate(startDayDate, endDayDate)
     }
 
 
     suspend fun getAssistanceWithAreaId(idArea: Long): EntityScheduledAssistance {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             daoAssistance.getAppointmetByIdArea(idArea)
         }
     }
 
     suspend fun updateScheduleAssistance(assistance: EntityScheduledAssistance): Int {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             daoAssistance.updateScheduledAssistance(assistance)
         }
     }
 
 
     suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithAppointment> {
-        return withContext(Dispatchers.IO){
-            daoAssistance.getAreasInsideDateInterval(dateTimeAlarmInitial,dateTimeAlarmNext)
+        return withContext(Dispatchers.IO) {
+            daoAssistance.getAreasInsideDateInterval(dateTimeAlarmInitial, dateTimeAlarmNext)
         }
     }
 
-    suspend fun updateIsActivatedGeofence(idArea: Long,valueIsActivatedGeof:Boolean):Int{
-        return withContext(Dispatchers.IO){
+    suspend fun updateIsActivatedGeofence(idArea: Long, valueIsActivatedGeof: Boolean): Int {
+        return withContext(Dispatchers.IO) {
             daoAssistance.updateIsActivatedGeofence(idArea, valueIsActivatedGeof)
         }
     }
 
-    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long):List<EntityScheduledAssistance>{
+    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
+        return withContext(Dispatchers.IO) {
+            daoAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial, dateTimeAlarmNext)
+        }
+
+    }
+
+    suspend fun getAreasWithAppointmentRemember(timePreviousRemember: Long, dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
         return withContext(Dispatchers.IO){
-            daoAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial,dateTimeAlarmNext)
+            daoAssistance.getAreasWithAppointmentRemember(timePreviousRemember,dateTimeAlarmInitial, dateTimeAlarmNext)
         }
 
     }

@@ -207,7 +207,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
             if (okAlarm) {
                 // activo/desactivo geofences según la nueva ventana
-                geofenceScheduleHelper.activateAndDesactivateGeofenceScheduled()
+                geofenceScheduleHelper.executeActionsOfAlarm()
 
                 // actualizo en la vista el horario de la próxima alarma
                 updateTimeNextAlarm(hn, mn)

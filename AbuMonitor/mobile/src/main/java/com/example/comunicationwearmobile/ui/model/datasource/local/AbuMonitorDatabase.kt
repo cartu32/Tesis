@@ -33,7 +33,7 @@ import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
         EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
         EntitySecurityZoneTimeRange::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

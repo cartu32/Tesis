@@ -97,10 +97,7 @@ class GeofencesServices: Service() {
         val geofenceHelper=GeofenceScheduleHelper(this)
 
         when(intent?.action){
-            //Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF-> geofenceHelper.activateGeofenceScheduled()
-    //          Definition.ACTION_ALARM_DAILY_CHECKS-> geofenceHelper.checkAssistanceScheduled()
-
-            Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.activateAndDesactivateGeofenceScheduled()
+            Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
         }
     }
 
