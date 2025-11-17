@@ -17,6 +17,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
+data class dataNextAlarm(
+    var hb:Int=0,
+    var mb:Int=0,
+    var hn:Int=0,
+    var mn:Int=0,
+    var millisBetweenCheck:Long=0,
+    var millisNextAlarm:Long=0
+)
+
+data class dataTimeReminder(
+    var hb:Int=0,
+    var mb:Int=0,
+    var millisRemember:Long=0
+)
 class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // UI directa (sin Mediator): la actualizamos nosotros
@@ -130,12 +144,19 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
             var allOk = true
 
+            val dataNextAlarm=calculateDataNextAlarm()
+            val dataTimeReminder=calculateTimeReminder()
+
+            if (dataNextAlarm.millisBetweenCheck>dataTimeReminder.millisRemember){
+                _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
+                return@launch
+            }
             if (isChangedBetween) {
-                allOk = allOk && saveAlarmBetweenCheckInternal()
+                allOk = allOk && saveAlarmBetweenCheckInternal(dataNextAlarm)
             }
 
             if (isChangedRemeber) {
-                allOk = allOk && saveTimeRememberInternal()
+                allOk = allOk && saveTimeRememberInternal(dataTimeReminder)
             }
 
             // Recalcula el estado del botón guardar, etc.
@@ -149,18 +170,27 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private suspend fun saveTimeRememberInternal(): Boolean {
-        return try {
-            val hb = hourRemember
-            val mb = minuteRemember
+    private fun calculateTimeReminder(): dataTimeReminder {
+        val dataTimeReminder=dataTimeReminder()
 
-            val millisRemember = Tools.getTimeInMillis(hb, mb)
+        with(dataTimeReminder){
+            hb = hourRemember
+            mb = minuteRemember
+
+            millisRemember = Tools.getTimeInMillis(hb, mb)
+
+        }
+        return dataTimeReminder
+    }
+
+    private suspend fun saveTimeRememberInternal(dataTimeReminder: dataTimeReminder): Boolean {
+        return try {
 
             withContext(Dispatchers.IO) {
-                repo.saveTimeRememberAppointment(millisRemember)
+                repo.saveTimeRememberAppointment(dataTimeReminder.millisRemember)
             }
 
-            updateTimeTextRemember(hourRemember, minuteRemember)
+            updateTimeTextRemember(dataTimeReminder.hb, dataTimeReminder.mb)
             true
         } catch (t: Throwable) {
             _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
@@ -168,23 +198,32 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private fun calculateDataNextAlarm():dataNextAlarm{
+        var dataNextAlarm=dataNextAlarm()
 
-    private suspend fun saveAlarmBetweenCheckInternal(): Boolean {
-        return try {
-            val hb = hourBetweenCheck
-            val mb = minuteBetweenCheck
+        with(dataNextAlarm) {
+            hb = hourBetweenCheck
+            mb = minuteBetweenCheck
 
             // cálculo del intervalo entre chequeos
-            val millisBetweenCheck = Tools.getTimeInMillis(hb, mb)
+            millisBetweenCheck = Tools.getTimeInMillis(hb, mb)
             val aux = System.currentTimeMillis() + millisBetweenCheck
 
-            val millisNextAlarm = Tools.extractHourOfDateInMillis(aux)
-            val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
+            millisNextAlarm = Tools.extractHourOfDateInMillis(aux)
+            val (hnAux, mnAux) = Tools.getHourMinOfParcial(millisNextAlarm)
+            hn=hnAux
+            mn=mnAux
+        }
+        return dataNextAlarm
+    }
+
+    private suspend fun saveAlarmBetweenCheckInternal(dataNextAlarm: dataNextAlarm): Boolean {
+        return try {
 
             // guardo configuración en SharedPreferences
             withContext(Dispatchers.IO) {
-                repo.saveTimeBetweenChecks(millisBetweenCheck)
-                repo.saveTimeNextAlarm(millisNextAlarm)
+                repo.saveTimeBetweenChecks(dataNextAlarm.millisBetweenCheck)
+                repo.saveTimeNextAlarm(dataNextAlarm.millisNextAlarm)
             }
 
             // cancelo alarma previa
@@ -199,8 +238,8 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
             val okAlarm = AlarmHelper().setAlarmAfterOfTime(
                 getApplication(),
                 Definition.ALARM_ID_BETWEEN_CHECKS,
-                hb,
-                mb,
+                dataNextAlarm.hb,
+                dataNextAlarm.mb,
                 Definition.ACTION_ALARM_FOR_CHECKS,
                 AlarmDailyForChecksBroadcastReceiver::class.java
             )
@@ -210,7 +249,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 geofenceScheduleHelper.executeActionsOfAlarm()
 
                 // actualizo en la vista el horario de la próxima alarma
-                updateTimeNextAlarm(hn, mn)
+                updateTimeNextAlarm(dataNextAlarm.hn, dataNextAlarm.mn)
                 true
             } else {
                 _toastMessage.value = "No se pudo configurar la alarma"
