@@ -284,7 +284,11 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
     @SuppressLint("MissingPermission")
     fun showNotificationIndependent(context:Context, title:String, msg:String){
-        val notificationBuilder = createChannelAlerts(CHANNEL_ID_INDEPENDENT,CHANNEL_INDEPENDENT,CHANNEL_DESCRIPTION_INDEPENDENT)
+        val notificationBuilder = createChannelAlerts(
+            CHANNEL_ID_INDEPENDENT,
+            CHANNEL_INDEPENDENT,
+            CHANNEL_DESCRIPTION_INDEPENDENT
+        ).setLocalOnly(true)
 
         notificationBuilder
             .setSmallIcon(R.drawable.ic_old_person)
@@ -292,7 +296,7 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
             .setContentText(msg)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        idNotificationIndependent++
+        //idNotificationIndependent++
 
         with(NotificationManagerCompat.from(context)) {
             notify(idNotificationIndependent, notificationBuilder.build())
@@ -317,7 +321,9 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
         const val FIRST_ITEM_LIST_NOTIF = 255
 
-        var idNotificationIndependent=0
+        //inicializo las notificaciones independientes con un valor alto para que
+        //no se repitan y choquen con las demás notificaciones
+        var idNotificationIndependent=800
 
         var instance: NotificationHelper? = null
 
