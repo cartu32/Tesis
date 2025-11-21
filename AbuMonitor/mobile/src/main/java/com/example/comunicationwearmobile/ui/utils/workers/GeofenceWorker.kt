@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
@@ -27,10 +28,12 @@ import java.util.Locale
 
 //worker que trabaja la logica de cuando se detectan(activan) areas de geofence
 //esta clase se llama desde GeofenceBrodacst
-class GeofenceWorker(private val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWorker(mContext, params) {
 
+    private val context = mContext.applicationContext
     private var geofLatitude: String=""
     private var geofLongitude: String=""
+    private var repositoryConfigAppSPref=RepositoryConfigAppSPref(context)
 
     override suspend fun doWork(): Result = withTimeoutOrNull(60_000) {
         val transition = inputData.getInt("transition", -1)
@@ -174,7 +177,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
                 val msg = SharedData.MsgNotification().apply {
                     typeNotification = SharedData.TypeNotification.Alert
                     title = "Notificacion de Asistencia!"
-                    message = "El abuelo ha asistido a la cita de $description"
+                    message = "ha asistido a la cita de $description"
                     hour = Tools.getHour(LocalTime.now())
                     date = Tools.getDate(LocalDate.now())
                 }
@@ -195,7 +198,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
         val msg = SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
-            message = "El abuelo ha entrado en la zona segura $description"
+            message = "ha entrado en la zona segura $description"
             hour = Tools.getHour(LocalTime.now())
             date = Tools.getDate(LocalDate.now())
         }
@@ -234,7 +237,7 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
         //si estuvo mas de 1 minuto y menor a 3 minutos notificamos la salida inesperada
         if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
 
-            msgSMS="El abuelo ha salido inesperadamente de la zona segura $description"
+            msgSMS="ha salido inesperadamente de la zona segura $description"
             msg=createMsgSecurityZone(msgSMS)
 
         } else {
@@ -243,14 +246,14 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
 
             //si estuvo mas de 3 minutos y esta fuera de horario notificamos la salida fuera de horario
             if (isOutOfRange) {
-                msgSMS="El abuelo ha salido de la zona segura $description fuera del rango horario normal"
+                msgSMS="ha salido de la zona segura $description fuera del rango horario normal"
                 Log.d(Definition.TAG_DEBUG,msgSMS)
 
                 msg=createMsgSecurityZone(msgSMS)
 
             } else {
                 //si estuvo mas de 3 minutos y esta dentro de horario notificamos la salida dentro de horario
-                msgSMS="El abuelo ha salido de la zona segura $description dentro del rango horario normal"
+                msgSMS="ha salido de la zona segura $description dentro del rango horario normal"
                 Log.d(Definition.TAG_DEBUG,msgSMS)
 
                 msg=createMsgSecurityZone(msgSMS)
@@ -288,40 +291,75 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Geofence!"
             message = when (transition) {
-                Geofence.GEOFENCE_TRANSITION_ENTER -> "Usted ha entrado en la zona $description "
-                Geofence.GEOFENCE_TRANSITION_EXIT -> "Usted ha salido de la zona $description "
-                Geofence.GEOFENCE_TRANSITION_DWELL -> "Usted estuvo mas de $dwellTime min. en la zona $description "
+                Geofence.GEOFENCE_TRANSITION_ENTER -> "ha entrado en la zona $description "
+                Geofence.GEOFENCE_TRANSITION_EXIT -> "ha salido de la zona $description "
+                Geofence.GEOFENCE_TRANSITION_DWELL -> "estuvo mas de $dwellTime min. en la zona $description "
                 else -> "Evento desconocido en zona $description"
             }
         }
         return completeMsg
     }
+    // PRIORIDAD BAJA: solo SMS al familiar
+    private suspend fun notifyUserPriorityBaja(context: Context, originalMsg: SharedData.MsgNotification) {
+        val smsManagerCustom = SmsHelper()
 
-    private suspend fun notifyUserPriorityBaja(context: Context, msg: SharedData.MsgNotification) {
-        val smsManagerCustom=SmsHelper()
+        // Mensaje adaptado para el familiar
+        val msgForCustomUser = originalMsg.copy(
+            message = getMessageForCustomName(originalMsg.message)
+        )
 
-        smsManagerCustom.sendSMSNotifyGeofence(context, msg,geofLatitude,geofLongitude)
-
+        smsManagerCustom.sendSMSNotifyGeofence(
+            context,
+            msgForCustomUser,
+            geofLatitude,
+            geofLongitude
+        )
     }
 
-    private suspend fun notifyUserPriorityMedia(context: Context, msg: SharedData.MsgNotification): Int? {
-        val notificationHelper = NotificationHelper.getInstance(context)
-        val id = notificationHelper?.showNotificationGeneral(msg)
-        notifyUserPriorityBaja(context, msg)
+    // PRIORIDAD MEDIA: notificación al abuelo + SMS al familiar
+    private suspend fun notifyUserPriorityMedia(context: Context, originalMsg: SharedData.MsgNotification): Int? {
+        val notificationHelper = NotificationHelper.getInstance(context) ?: return null
+
+        // Mensaje para el abuelo
+        val msgForElderly = originalMsg.copy(
+            message = getMessageForElderly(originalMsg.message)
+        )
+
+        val id = notificationHelper.showNotificationGeneral(msgForElderly)
+
+        // Además, aviso al familiar por SMS
+        notifyUserPriorityBaja(context, originalMsg)
+
         return id
     }
 
-    private suspend fun notifyUserPriorityAlta(context: Context, msg: SharedData.MsgNotification) {
-        val idMsg = notifyUserPriorityMedia(context, msg)
-        if (idMsg != null) {
-            msg.idMsgMobile = idMsg
-            RepositoryDispatcherWearable.sendDataToWearable(
-                context,
-                SharedData.PATH_ADD_NOTIFICATION_GENERAL,
-                msg
-            )
-        }
+    // PRIORIDAD ALTA: media + envío al reloj
+    private suspend fun notifyUserPriorityAlta(context: Context, originalMsg: SharedData.MsgNotification) {
+        val notificationHelper = NotificationHelper.getInstance(context) ?: return
+
+        // Mensaje para el abuelo
+        val msgForElderly = originalMsg.copy(
+            message = getMessageForElderly(originalMsg.message)
+        )
+
+        // Notificación en el celu
+        val id = notificationHelper.showNotificationGeneral(msgForElderly)
+
+        // SMS al familiar
+        notifyUserPriorityBaja(context, originalMsg)
+
+        // Enviar al reloj con el id de la notificación del móvil
+        val msgForWear = msgForElderly.copy(
+            idMsgMobile = id
+        )
+
+        RepositoryDispatcherWearable.sendDataToWearable(
+            context,
+            SharedData.PATH_ADD_NOTIFICATION_GENERAL,
+            msgForWear
+        )
     }
+
 
     private suspend fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
         when (idPriority) {
@@ -330,5 +368,17 @@ class GeofenceWorker(private val context: Context, params: WorkerParameters) : C
             Definition.PRIORITY_ID_HIGH -> notifyUserPriorityAlta(context, msg)
             else -> Log.e(Definition.TAG_DEBUG, "No se encontró el id de prioridad")
         }
+    }
+
+    //funcion que concatena el nombre del usuario con el mensaje
+    //para ser enviado al familiar
+    suspend fun getMessageForCustomName(message: String): String {
+        val nameUser=repositoryConfigAppSPref.getNameUser()
+        return "$nameUser $message"
+    }
+
+    //funcion que concatena el mensaje para que lo pueda ver el abuelo
+    fun getMessageForElderly(message: String):String{
+        return "Usted $message"
     }
 }
