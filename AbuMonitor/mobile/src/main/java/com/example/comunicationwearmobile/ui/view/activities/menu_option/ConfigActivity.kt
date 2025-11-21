@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
+import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
@@ -25,6 +26,7 @@ class ConfigActivity : AppCompatActivity() {
     private var cmdTimeAlarmBetweenChecks: Button? = null
     private var cmdRememberHour: Button? = null
     private var txtTimeNextAlarm:TextView?=null
+    private var txtNameUser:EditText?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,7 @@ class ConfigActivity : AppCompatActivity() {
         cmdTimeAlarmBetweenChecks = findViewById(R.id.cmdTimeAlarmForCkecks)
         cmdRememberHour = findViewById(R.id.cmdRememberHour)
         txtTimeNextAlarm  = findViewById(R.id.txtTimeNextAlarm)
+        txtNameUser       = findViewById(R.id.txtNameUser)
 
         configObservers()
         initConfiguration()

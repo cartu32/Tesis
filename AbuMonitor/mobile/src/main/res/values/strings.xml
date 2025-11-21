@@ -60,6 +60,7 @@
     <string name="numero_de_horas_previas_para_recordar_cita_de_asistencia">Tiempo previo para hacer recordar cita de asistencia</string>
     <string name="horas">(HORAS)</string>
     <string name="title_Activty_configuration">CONFIGURACION</string>
+    <string name="ingrese_el_nombre_del_usuario_a_monitorear">Ingrese el nombre del usuario a monitorear</string>
 
 
     <string-array name="spinner_events">

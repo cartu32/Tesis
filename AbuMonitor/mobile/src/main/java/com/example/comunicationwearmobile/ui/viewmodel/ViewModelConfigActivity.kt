@@ -73,6 +73,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loadTimeBetweenChecks()
             loadTimeRememberAppointment()
+            loadNameUser()
         }
     }
 
