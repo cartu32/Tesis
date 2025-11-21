@@ -7,23 +7,24 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class RepositoryScheduleAlarmSPref (context: Context){
+class RepositoryConfigAppSPref (context: Context){
     private val TIME_BETWEEN_CHECKS = "TIME_BETWEEN_CHECKS"
     private val TIME_NEXT_ALARM = "TIME_NEXT_ALARM"
     private val TIME_REMEMBER_APPOINTMET = "TIME_REMEMBER_APPOINTMET"
+    private val NAME_USER = "NAME_USER"
 
     private val prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
 
     private var fileMutex= Mutex()
 
     companion object {
-        private const val PREF_FILE_NAME = "SPREF_SCHEDULE_ALARM"
+        private const val PREF_FILE_NAME = "SPREF_CONFIG_APP"
         @Volatile
-        private var INSTANCE: RepositoryScheduleAlarmSPref? = null
+        private var INSTANCE: RepositoryConfigAppSPref? = null
 
-        fun getInstance(context: Context): RepositoryScheduleAlarmSPref {
+        fun getInstance(context: Context): RepositoryConfigAppSPref {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: RepositoryScheduleAlarmSPref(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: RepositoryConfigAppSPref(context.applicationContext).also { INSTANCE = it }
             }
         }
     }
@@ -48,6 +49,23 @@ class RepositoryScheduleAlarmSPref (context: Context){
         }
     }
 
+    suspend fun saveNameUser(nameUser: String){
+        withContext(Dispatchers.IO) {
+            fileMutex.withLock {
+                val editor = prefs.edit()
+                editor.putString(NAME_USER,nameUser)
+                editor.apply()
+            }
+        }
+    }
+
+    suspend fun getNameUser(): String {
+        return withContext(Dispatchers.IO) {
+            fileMutex.withLock {
+                prefs.getString(NAME_USER, Definition.DEFAULT_NAME_USER)?:Definition.DEFAULT_NAME_USER
+            }
+        }
+    }
 
     suspend fun saveTimeRememberAppointment(hour:Long){
         withContext(Dispatchers.IO) {
@@ -68,6 +86,8 @@ class RepositoryScheduleAlarmSPref (context: Context){
             }
         }
     }
+
+
 
     suspend fun saveTimeNextAlarm(hour:Long){
         withContext(Dispatchers.IO) {
@@ -94,9 +114,18 @@ class RepositoryScheduleAlarmSPref (context: Context){
         return prefs.getLong(TIME_BETWEEN_CHECKS, Definition.NO_STORED_VALUE)
     }
 
-    //Versión síncrona para inicialización temprana
     fun getTimeRememberAppointmentSync(): Long {
         return prefs.getLong(TIME_REMEMBER_APPOINTMET, Definition.NO_STORED_VALUE)
+    }
+
+    fun getNameUserSync(): Long {
+        return prefs.getLong(NAME_USER, Definition.NO_STORED_VALUE)
+    }
+
+    fun saveNameUserSync(nameUser:String){
+        val editor = prefs.edit()
+        editor.putString(NAME_USER, nameUser)
+        editor.apply()
     }
 
     fun saveTimeBetweenChecksSync(hour:Long){

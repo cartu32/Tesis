@@ -7,7 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
@@ -33,7 +33,7 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
             return
         }
 
-        val repository = RepositoryScheduleAlarmSPref.getInstance(context)
+        val repository = RepositoryConfigAppSPref.getInstance(context)
         //obtengo cada cuanto tiempo se debe hacer el checkeo
         val timeBetweenChecks = repository.getTimeBetweenChecksSync()
         //calculo la hora de la proxima alarma

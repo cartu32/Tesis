@@ -7,7 +7,7 @@ import android.widget.Toast
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
@@ -32,7 +32,7 @@ class AbuMonitorApplicationMobile : Application() {
     private fun initilizeSPRememberAppointment() {
         var hourTimeRemember    = Definition.DEFAULT_HOUR_REMEMER_APPOINTMENT
         var minuteTimeRemember  = Definition.DEFAULT_MINUTE_REMEMER_APPOINTMENT
-        val repository = RepositoryScheduleAlarmSPref.getInstance(this)
+        val repository = RepositoryConfigAppSPref.getInstance(this)
 
         val timeRememberAppointment=repository.getTimeRememberAppointmentSync()
 
@@ -55,7 +55,7 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
-        val repository  = RepositoryScheduleAlarmSPref.getInstance(this)
+        val repository  = RepositoryConfigAppSPref.getInstance(this)
         val alarmHelper = AlarmHelper()
 
         //leo del SharedPreferences la hora de la alarma de chequeo
@@ -72,7 +72,7 @@ class AbuMonitorApplicationMobile : Application() {
         initAlarm(hourBetweenCheck, minuteBetweenCheck, alarmHelper)
     }
 
-    private fun setAlarmFirsTime(storedMillis: Long, repository:RepositoryScheduleAlarmSPref): Triple<Int, Int, Long> {
+    private fun setAlarmFirsTime(storedMillis: Long, repository:RepositoryConfigAppSPref): Triple<Int, Int, Long> {
 
         //pregunto si la alarma esta incializada en el shared preference
         if (storedMillis != Definition.NO_STORED_VALUE)

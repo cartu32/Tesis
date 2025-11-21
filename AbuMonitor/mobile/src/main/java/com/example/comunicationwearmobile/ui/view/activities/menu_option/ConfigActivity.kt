@@ -16,6 +16,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.viewmodel.ConfigViewModel
+import androidx.core.widget.addTextChangedListener
+
 
 class ConfigActivity : AppCompatActivity() {
 
@@ -49,7 +51,13 @@ class ConfigActivity : AppCompatActivity() {
         cmdSaveConfig?.setOnClickListener { listenerCmdSaveConfig() }
         cmdTimeAlarmBetweenChecks?.setOnClickListener {listenerCmdTimeAlarmBetweenChecks() }
         cmdRememberHour?.setOnClickListener{listenerCmdRememberHour()}
+        txtNameUser?.addTextChangedListener{listenerChangeNameUser()}
+
         configActionBar()
+    }
+
+    private fun listenerChangeNameUser() {
+        vm.markAsChangedNameUser()
     }
 
 
@@ -59,7 +67,7 @@ class ConfigActivity : AppCompatActivity() {
     }
 
     private fun listenerCmdSaveConfig() {
-        vm.save()
+        vm.save(txtNameUser?.text.toString())
     }
 
     private fun listenerCmdTimeAlarmBetweenChecks() {
@@ -77,6 +85,10 @@ class ConfigActivity : AppCompatActivity() {
     private fun configObservers() {
 
         // Observers
+        vm.nameUser.observe(this){ text->
+            txtNameUser?.setText(text)
+        }
+
         vm.timeTextCheck.observe(this) { text ->
             cmdTimeAlarmBetweenChecks?.text = text
         }
@@ -152,6 +164,7 @@ class ConfigActivity : AppCompatActivity() {
         super.onDestroy()
         vm.onFinishConsumed()
         vm.timeTextCheck.removeObservers(this)
+        vm.nameUser.removeObservers(this)
         vm.timeTextNextAlarm.removeObservers(this)
         vm.timeTextRemember.removeObservers(this)
         vm.saveEnabled.removeObservers(this)

@@ -17,7 +17,7 @@ import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +29,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
     private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
-    private val repositoryScheduleAlarmSPref=RepositoryScheduleAlarmSPref.getInstance(application.applicationContext)
+    private val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(application.applicationContext)
 
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
@@ -146,7 +146,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     ): Long {
 
         //obtengo el horario de la proxima alarma relativo al dia actual(no tiene la fecha)
-        val timeNextAlarmRelative = repositoryScheduleAlarmSPref.getTimeNextAlarm()
+        val timeNextAlarmRelative = repositoryConfigAppSPref.getTimeNextAlarm()
         //calculo el horario de la proxima alarma en milisegundos(sumandole la fecha)
         val timeNextAlarm=Tools.getDateTodayInMillis()+timeNextAlarmRelative
         //obtengo la fecha actual
@@ -211,7 +211,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
 
     fun getTimeDurationAppointmentSaved() {
         viewModelScope.launch(Dispatchers.IO) {
-            var timeBetweenChecks = repositoryScheduleAlarmSPref.getTimeBetweenChecks()
+            var timeBetweenChecks = repositoryConfigAppSPref.getTimeBetweenChecks()
 			//incremento el doble de tiempo + 1 minutos de lo que esta configurada la alarma
 			// por ejemplo si se ejecuta cada 3 miuntos entonces pongo como inicio 6+1 o sea 7 minutos
             timeBetweenChecks = (timeBetweenChecks * 2) + 60000

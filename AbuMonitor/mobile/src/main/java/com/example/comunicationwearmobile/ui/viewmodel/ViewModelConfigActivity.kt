@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
@@ -34,7 +34,7 @@ data class dataTimeReminder(
 class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // UI directa (sin Mediator): la actualizamos nosotros
-    private val repo by lazy { RepositoryScheduleAlarmSPref.getInstance(app) }
+    private val repo by lazy { RepositoryConfigAppSPref.getInstance(app) }
     private var geofenceScheduleHelper=GeofenceScheduleHelper(app.applicationContext)
     private var hourBetweenCheck:Int=0
     private var minuteBetweenCheck:Int=0
@@ -44,6 +44,9 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     private var hourRemember:Int=0
     private var minuteRemember:Int=0
+
+    private val _nameUser = MutableLiveData<String?>()
+    val nameUser: LiveData<String?> = _nameUser
 
     private val _timeTextRemember = MutableLiveData("--")
     val timeTextRemember: LiveData<String> = _timeTextRemember
@@ -67,6 +70,9 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     private var isChangedBetween=false
     private var isChangedRemeber=false
+    private var isChangeNameUser=false
+
+    private var updatingProgrammatically=false
     // ------------------ Lógica ------------------
 
     fun loadConfiguration(){
@@ -75,6 +81,16 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
             loadTimeRememberAppointment()
             loadNameUser()
         }
+    }
+
+    suspend fun loadNameUser() {
+        val name = withContext(Dispatchers.IO){repo.getNameUser()}
+        isChangeNameUser=false
+
+        updatingProgrammatically =true
+        _nameUser.value=name
+        updatingProgrammatically =false
+
     }
 
     suspend fun loadTimeRememberAppointment() {
@@ -138,16 +154,21 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         computeSaveEnabled()
     }
 
-    fun save() {
+    fun save(nameUser:String) {
         viewModelScope.launch {
             // Si no hay cambios, no hacemos nada
-            if (!isChangedBetween && !isChangedRemeber) return@launch
+            if (!isChangedBetween && !isChangedRemeber && !isChangeNameUser)
+                return@launch
 
             var allOk = true
 
             val dataNextAlarm=calculateDataNextAlarm()
             val dataTimeReminder=calculateTimeReminder()
 
+            if(nameUser.isEmpty()) {
+                _toastMessage.value = "Por favor ingrese un nombre de usuario"
+                return@launch
+            }
             if (dataNextAlarm.millisBetweenCheck>dataTimeReminder.millisRemember){
                 _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
                 return@launch
@@ -160,6 +181,10 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 allOk = allOk && saveTimeRememberInternal(dataTimeReminder)
             }
 
+            if(isChangeNameUser){
+                allOk = allOk && saveNameUserInternal(nameUser)
+            }
+
             // Recalcula el estado del botón guardar, etc.
             computeSaveEnabled()
 
@@ -168,6 +193,19 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 _toastMessage.value = "Configuracion guardada correctamente"
                 _finishEvent.value = true
             }
+        }
+    }
+
+    suspend fun saveNameUserInternal(nameUser: String): Boolean {
+        return try {
+
+            withContext(Dispatchers.IO) {
+                repo.saveNameUser(nameUser)
+            }
+            true
+        } catch (t: Throwable) {
+            _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
+            false
         }
     }
 
@@ -281,7 +319,16 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         _timeTextNextAlarm.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
     }
     private fun computeSaveEnabled() {
-        _saveEnabled.value = (isChangedBetween == true) || (isChangedRemeber==true)
+        _saveEnabled.value = (isChangeNameUser == true) ||
+                             (isChangedBetween == true) ||
+                             (isChangedRemeber == true)
+    }
+
+    fun markAsChangedNameUser() {
+        if(!updatingProgrammatically) {
+            isChangeNameUser = true
+            computeSaveEnabled()
+        }
     }
 
 

@@ -9,7 +9,7 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAlarmSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
@@ -23,7 +23,7 @@ class GeofenceScheduleHelper(mContext:Context) {
     private val context=mContext.applicationContext
     private var repositoryScheduleAssistance:RepositoryScheduleAssistance
     private var repositoryGeofActivate: RepositoryGeofActivate
-    private var repositoryScheduleAlarmSPref: RepositoryScheduleAlarmSPref
+    private var repositoryConfigAppSPref: RepositoryConfigAppSPref
 
     //Como puede haber varias instancias de GeofenSchedulerHelper, creo un mutex comun
     //a todas ellas.
@@ -34,7 +34,7 @@ class GeofenceScheduleHelper(mContext:Context) {
     init {
         repositoryScheduleAssistance=RepositoryScheduleAssistance.getInstance(context)
         repositoryGeofActivate= RepositoryGeofActivate()
-        repositoryScheduleAlarmSPref= RepositoryScheduleAlarmSPref.getInstance(context)
+        repositoryConfigAppSPref= RepositoryConfigAppSPref.getInstance(context)
     }
 
 
@@ -52,7 +52,7 @@ class GeofenceScheduleHelper(mContext:Context) {
         var timeBetweenAlarm:Long=0
 
         //obtengo cual es el intervalo de tiempo en que se va a ejecutar la alarma
-        timeBetweenAlarm=repositoryScheduleAlarmSPref.getTimeBetweenChecks()
+        timeBetweenAlarm=repositoryConfigAppSPref.getTimeBetweenChecks()
         Log.d(Definition.TAG_DEBUG,"timeBetweenAlarm: $timeBetweenAlarm")
 
         val now = System.currentTimeMillis()
@@ -261,7 +261,7 @@ class GeofenceScheduleHelper(mContext:Context) {
 
     suspend  fun checkRememberAppointmentInsideInterval(prev: TimeWindow, curr: TimeWindow) {
         //obtengo el intervalo de tiempo en que se va a recordar las citas
-        val timePreviousRemeber=repositoryScheduleAlarmSPref.getTimeRememberAppointment()
+        val timePreviousRemeber=repositoryConfigAppSPref.getTimeRememberAppointment()
 
         //obtengo de la bd el listado de citas a las que se debe recordar
         var listAreasWithPreviousRemember:List<EntityScheduledAssistance>?=null

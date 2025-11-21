@@ -8,8 +8,12 @@ import android.graphics.Typeface
 
 object Definition {
 
+    /********************************************************
+     ******* constante de nombre de usuario por defecto*****
+     ********************************************************
+     */
 
-
+    const val DEFAULT_NAME_USER     = "abuelo"
 
     /********************************************************
      ************** constantes de configuracion de alarmas*****
