@@ -12,7 +12,6 @@ import com.example.shared_library.toByteArray
 import com.google.android.gms.wearable.MessageEvent
 
 object RepositoryDispatcherWearable {
-    private val smsManager = SmsHelper()
 
      suspend fun dispatcherMsgFromWearable(context: Context, messageEvent: MessageEvent) {
         val notificationManager = NotificationHelper.getInstance(context.applicationContext)
@@ -20,7 +19,7 @@ object RepositoryDispatcherWearable {
         notificationManager.let {
             when (messageEvent.path) {
                 SharedData.PATH_VIEWED_NOTIFICATION ->notificationManager?.notificationViewedOnWearable(messageEvent.data)
-                SharedData.PATH_FALL_DETECTION_SMS ->smsManager.sendSMSFallDetection(context, messageEvent.data)
+                SharedData.PATH_FALL_DETECTION_SMS ->SmsHelper.sendSMSFallDetection(context, messageEvent.data)
                 else -> Log.d(Definition.TAG_DEBUG, "Unknown path received: ${messageEvent.path}")
             }
         }?: run {

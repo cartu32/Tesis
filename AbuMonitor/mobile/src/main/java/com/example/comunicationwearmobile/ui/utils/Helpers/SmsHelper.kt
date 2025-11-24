@@ -15,14 +15,23 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import com.example.shared_library.SharedData
 import com.example.shared_library.fromByteArray
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Locale
 
-class SmsHelper {
+object SmsHelper {
 
-    companion object {
-        const val ACTION_SENT = "com.example.abumonitor.SMS_SENT"
-        const val ACTION_DELIVERED = "com.example.abumonitor.SMS_DELIVERED"
-    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private var smsMutex= Mutex()
+
+    const val ACTION_SENT = "com.example.abumonitor.SMS_SENT"
+    const val ACTION_DELIVERED = "com.example.abumonitor.SMS_DELIVERED"
 
     // -------------------- API pública --------------------
 
@@ -66,33 +75,60 @@ class SmsHelper {
         sendSMSToAllContact(context, message)
     }
 
+    /**
+     * Enviar a todos los contactos en background, sin bloquear al que llama.
+     */
     fun sendSMSToAllContact(context: Context, message: String) {
-        val repositoryContact = RepositoryContact(context)
-        val listContact = repositoryContact.getAllContactList()
+        val appContext = context.applicationContext
 
-        for (contact in listContact) {
-            Log.d(Definition.TAG_DEBUG, "Enviando SMS al contacto: ${contact.name}")
-            sendSMSToContact(context, message, contact.telephone)
+        scope.launch {
+            smsMutex.withLock {
+                val repositoryContact = RepositoryContact(appContext)
+                val listContact = repositoryContact.getAllContactList()
 
+                for (contact in listContact) {
+                    Log.d(Definition.TAG_DEBUG, "Enviando SMS al contacto: ${contact.name}")
+                    sendSMSToContact(appContext, message, contact.telephone)
+
+                    // Dejamos respirar al módem / operadora
+                    delay(5_000)
+                }
+            }
         }
     }
 
+    /**
+     * Enviar un SMS (posiblemente multipart) a un solo número.
+     */
     fun sendSMSToContact(context: Context, message: String, telephoneNumber: String) {
-        // Un solo par de PendingIntent reutilizado (uno por parte)
+        val appContext = context.applicationContext
+
+        // Intent base con info del número (por si querés loguear en el receiver)
+        val sentIntentBase = Intent(ACTION_SENT).apply {
+            putExtra("phone", telephoneNumber)
+        }
+        val deliveredIntentBase = Intent(ACTION_DELIVERED).apply {
+            putExtra("phone", telephoneNumber)
+        }
+
+        // requestCode distinto por número, para no reutilizar siempre el mismo PendingIntent
+        val requestCode = telephoneNumber.hashCode()
+
         val sentIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(ACTION_SENT),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        val deliveredIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(ACTION_DELIVERED),
-            PendingIntent.FLAG_IMMUTABLE
+            appContext,
+            requestCode,
+            sentIntentBase,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val smsManager = getSmsManager(context)
+        val deliveredIntent = PendingIntent.getBroadcast(
+            appContext,
+            requestCode,
+            deliveredIntentBase,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val smsManager = getSmsManager(appContext)
 
         val parts: ArrayList<String> = smsManager.divideMessage(message)
         val sentIntents = ArrayList<PendingIntent>(parts.size).apply {
@@ -115,9 +151,18 @@ class SmsHelper {
                 deliveredIntents
             )
         } else {
+            /*
             sendSmsPreAndroid35(
                 telephoneNumber,
                 smsManager,
+                parts,
+                sentIntents,
+                deliveredIntents
+            )*/
+            sendSmsAndroid35Plus(
+                telephoneNumber,
+                smsManager,
+                message,
                 parts,
                 sentIntents,
                 deliveredIntents
@@ -154,6 +199,7 @@ class SmsHelper {
      *   y la URL sola en un SMS aparte.
      * - Si no hay URL (o una sola parte) → enviar como multipart normal.
      */
+
     private fun sendSmsAndroid35Plus(
         telephoneNumber: String,
         smsManager: SmsManager,
@@ -227,7 +273,6 @@ class SmsHelper {
     // -------------------- Utilidades --------------------
 
     private fun getSmsManager(context: Context): SmsManager {
-        // Para 31+ usar el SUB por defecto cuando esté disponible
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val subId = SubscriptionManager.getDefaultSmsSubscriptionId()
@@ -257,24 +302,43 @@ class SmsHelper {
             .trim()
     }
 
+    /**
+     * Registrar receivers UNA sola vez (por ejemplo en Application).
+     */
     fun registerSMSReceivers(context: Context) {
+        val appContext = context.applicationContext
+
         // Receiver para envío (SENT)
         ContextCompat.registerReceiver(
-            context,
+            appContext,
             object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val phone = intent?.getStringExtra("phone")
+
                     when (resultCode) {
-                        Activity.RESULT_OK -> Log.d(Definition.TAG_DEBUG, "SMS enviado correctamente")
+                        Activity.RESULT_OK ->
+                            Log.d(Definition.TAG_DEBUG, "SMS enviado correctamente a $phone")
+
                         SmsManager.RESULT_ERROR_GENERIC_FAILURE ->
-                            Log.e(Definition.TAG_DEBUG, "Fallo genérico al enviar SMS")
+                            Log.e(Definition.TAG_DEBUG, "Fallo genérico al enviar SMS a $phone")
+
                         SmsManager.RESULT_ERROR_NO_SERVICE ->
-                            Log.e(Definition.TAG_DEBUG, "Sin servicio")
+                            Log.e(Definition.TAG_DEBUG, "Sin servicio al enviar SMS a $phone")
+
                         SmsManager.RESULT_ERROR_NULL_PDU ->
-                            Log.e(Definition.TAG_DEBUG, "PDU nulo")
+                            Log.e(Definition.TAG_DEBUG, "PDU nulo al enviar SMS a $phone")
+
                         SmsManager.RESULT_ERROR_RADIO_OFF ->
-                            Log.e(Definition.TAG_DEBUG, "Radio apagada")
+                            Log.e(Definition.TAG_DEBUG, "Radio apagada al enviar SMS a $phone")
+
+                        SmsManager.RESULT_MODEM_ERROR ->
+                            Log.e(Definition.TAG_DEBUG, "Error de módem (16) al enviar SMS a $phone")
+
                         else ->
-                            Log.w(Definition.TAG_DEBUG, "Estado de envío desconocido: $resultCode")
+                            Log.w(
+                                Definition.TAG_DEBUG,
+                                "Estado de envío desconocido: $resultCode para $phone"
+                            )
                     }
                 }
             },
@@ -284,14 +348,20 @@ class SmsHelper {
 
         // Receiver para entrega (DELIVERED)
         ContextCompat.registerReceiver(
-            context,
+            appContext,
             object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val phone = intent?.getStringExtra("phone")
+
                     when (resultCode) {
                         Activity.RESULT_OK ->
-                            Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente")
+                            Log.d(Definition.TAG_DEBUG, "SMS entregado correctamente a $phone")
+
                         else ->
-                            Log.e(Definition.TAG_DEBUG, "SMS no fue entregado (code=$resultCode)")
+                            Log.e(
+                                Definition.TAG_DEBUG,
+                                "SMS no fue entregado a $phone (code=$resultCode)"
+                            )
                     }
                 }
             },

@@ -27,7 +27,7 @@ class GeofencesServices: Service() {
     private var notificationManagerHelper:NotificationHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
     private var locationObserver :Observer<Location>?=null
-    private val smsHelper=SmsHelper()
+
     override fun onCreate() {
         super.onCreate()
 
@@ -49,7 +49,7 @@ class GeofencesServices: Service() {
 
         channelLector()
         configOberserverLivedata()
-        smsHelper.registerSMSReceivers(this)
+        SmsHelper.registerSMSReceivers(this)
     }
 
     private fun configOberserverLivedata() {

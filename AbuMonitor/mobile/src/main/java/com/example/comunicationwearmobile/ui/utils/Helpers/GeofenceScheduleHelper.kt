@@ -230,14 +230,13 @@ class GeofenceScheduleHelper(mContext:Context) {
 
 
     suspend fun reportInassistanceScheduled(listAppointWithoutAssisntace:List<EntityScheduledAssistance>) {
-        val smsHelper=SmsHelper()
 
         //se genera un resumen de las citas a la que no asistio la persona en el dia de la fecha
         val msg=generateMessageInTable(listAppointWithoutAssisntace)
         Log.d(Definition.TAG_DEBUG, msg)
 
         //Envio SMS notificando el problema
-        smsHelper.sendSMSPlainText(context,msg)
+        SmsHelper.sendSMSPlainText(context,msg)
     }
 
     private fun generateMessageInTable(listAppointWithoutAssisntace: List<EntityScheduledAssistance>): String {

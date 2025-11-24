@@ -301,14 +301,13 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
     }
     // PRIORIDAD BAJA: solo SMS al familiar
     private suspend fun notifyUserPriorityBaja(context: Context, originalMsg: SharedData.MsgNotification) {
-        val smsManagerCustom = SmsHelper()
 
         // Mensaje adaptado para el familiar
         val msgForCustomUser = originalMsg.copy(
             message = getMessageForCustomName(originalMsg.message)
         )
 
-        smsManagerCustom.sendSMSNotifyGeofence(
+        SmsHelper.sendSMSNotifyGeofence(
             context,
             msgForCustomUser,
             geofLatitude,
