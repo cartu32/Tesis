@@ -1,9 +1,8 @@
-package com.example.comunicationwearmobile.ui.utils.workers
+package com.example.comunicationwearmobile.ui.utils.Helpers
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.util.Log
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
@@ -12,12 +11,17 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatch
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.LocalDate
@@ -25,21 +29,54 @@ import java.time.LocalTime
 import java.util.Date
 import java.util.Locale
 
+object GeofenceEventPreocessorHelper {
 
-//worker que trabaja la logica de cuando se detectan(activan) areas de geofence
-//esta clase se llama desde GeofenceBrodacst
-class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWorker(mContext, params) {
+    // Scope de toda la app para procesar eventos de geofence
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val context = mContext.applicationContext
+    // Mutex para serializar los eventos (uno por vez)
+    private val geofenceMutex = Mutex()
+
     private var geofLatitude: String=""
     private var geofLongitude: String=""
-    private var repositoryConfigAppSPref=RepositoryConfigAppSPref(context)
 
-    override suspend fun doWork(): Result = withTimeoutOrNull(60_000) {
-        val transition = inputData.getInt("transition", -1)
-        val triggeringIds = inputData.getStringArray("triggering_ids")?.mapNotNull { it.toLongOrNull() } ?: return@withTimeoutOrNull Result.failure()
+    private lateinit var appContext: Context
 
-        val repository = RepositoryAreaDB(context)
+    private val repositoryConfigAppSPref: RepositoryConfigAppSPref by lazy {
+        RepositoryConfigAppSPref(appContext)
+    }
+
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
+
+    fun handleEvent(triggeringIds: List<Long>, transition: Int, pendingResult: BroadcastReceiver.PendingResult) {
+
+        scope.launch {
+            try {
+                // Timeout de seguridad para que nada quede colgado
+                withTimeout(60_000) {
+                    geofenceMutex.withLock {
+                        processGeofenceEvent(triggeringIds, transition)
+                    }
+                }
+            } catch (e: TimeoutCancellationException) {
+                Log.e(Definition.TAG_DEBUG, "Tiempo máximo excedido procesando evento de geofence", e)
+            } catch (t: Throwable) {
+                Log.e(Definition.TAG_DEBUG, "Error procesando evento de geofence", t)
+            } finally {
+                pendingResult.finish()
+            }
+        }
+    }
+
+    private suspend fun processGeofenceEvent(
+        triggeringIds: List<Long>,
+        transition: Int
+    ) {
+
+        val repository = RepositoryAreaDB(appContext)
 
         for (idAreaGeofence in triggeringIds) {
             val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence)
@@ -51,32 +88,31 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
 
             Log.d(Definition.TAG_DEBUG,"transicion: $transition")
             when(areaGeof?.areaGeofence?.id_type_area){
-                Definition.TYPE_AREA_ID_NORMAL ->analizeNormalZone(context, areaGeof, transition)
-                Definition.TYPE_AREA_ID_SECURITY_ZONE ->analizeSecurityZone(context, areaGeof, transition)
-                Definition.TYPE_AREA_ID_ASSISTANCE ->analizeAssistanceZone(context, areaGeof.areaGeofence.id_area, transition)
+                Definition.TYPE_AREA_ID_NORMAL ->analizeNormalZone(areaGeof, transition)
+                Definition.TYPE_AREA_ID_SECURITY_ZONE ->analizeSecurityZone(areaGeof, transition)
+                Definition.TYPE_AREA_ID_ASSISTANCE ->analizeAssistanceZone( areaGeof.areaGeofence.id_area, transition)
             }
         }
 
-        Result.success()
-    } ?: Result.failure()
+    }
 
 
-    private suspend  fun analizeNormalZone(context: Context, areaGeof: JoinAreaGeofence?, transition: Int) {
+
+    private suspend  fun analizeNormalZone(areaGeof: JoinAreaGeofence?, transition: Int) {
         val msg = areaGeof?.areaGeofence?.let {
             createMsg(transition, it.description, it.dwell_time)
         } ?: return
-        determineRecipientByPriority(context, areaGeof.areaGeofence.id_priority, msg)
+        determineRecipientByPriority(areaGeof.areaGeofence.id_priority, msg)
     }
 
-    private suspend fun analizeSecurityZone(context: Context, areaGeof: JoinAreaGeofence, transition: Int) {
+    private suspend fun analizeSecurityZone(areaGeof: JoinAreaGeofence, transition: Int) {
 
         when (transition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                processEnterSecurityZone(context, areaGeof.areaGeofence.description)
+                processEnterSecurityZone(areaGeof.areaGeofence.description)
             }
             Geofence.GEOFENCE_TRANSITION_EXIT -> {
                 processExitSecurityZone(
-                    context,
                     areaGeof.areaGeofence.description,
                     areaGeof.securityZoneTimeRange?.min_hour,
                     areaGeof.securityZoneTimeRange?.max_hour
@@ -85,22 +121,22 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         }
     }
 
-    private suspend fun analizeAssistanceZone(context: Context, idArea: Long, transition: Int) {
+    private suspend fun analizeAssistanceZone(idArea: Long, transition: Int) {
 
 
         when (transition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                processEnterAssistenceZone(context,idArea)
+                processEnterAssistenceZone(idArea)
             }
 
             Geofence.GEOFENCE_TRANSITION_EXIT -> {
-                proccessExitAssistanceZone(context,idArea)
+                proccessExitAssistanceZone(idArea)
             }
         }
     }
 
-    private suspend fun processEnterAssistenceZone(context: Context, idArea: Long) {
-        val repositoryScheduleAssistance=RepositoryScheduleAssistance(context)
+    private suspend fun processEnterAssistenceZone(idArea: Long) {
+        val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
         val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
 
         with(entityAssistance){
@@ -122,7 +158,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
                 return
             }
 
-            date_hour_enter_assistance=System.currentTimeMillis()
+            date_hour_enter_assistance= System.currentTimeMillis()
 
             val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
 
@@ -134,10 +170,10 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         }
     }
 
-    private suspend fun proccessExitAssistanceZone(context: Context, idArea: Long) {
+    private suspend fun proccessExitAssistanceZone( idArea: Long) {
         val repositoryGeofActivate= RepositoryGeofActivate()
 
-        val repositoryScheduleAssistance=RepositoryScheduleAssistance(context)
+        val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
         val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
         val minuteInMillis=60000L
 
@@ -153,12 +189,12 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
                 return
             }
 
-            val hourExit=System.currentTimeMillis()
+            val hourExit= System.currentTimeMillis()
             //conveirto el tiempo que estuvo en la zona de asistencia a minutos
             val timeInAssitanceZone = (hourExit - date_hour_enter_assistance)/minuteInMillis
 
             //si la persona menos de un minuto en la zona de asistencia descartamos el evento
-            if(timeInAssitanceZone<Definition.TIME_MIN_IN_ASSISTANCE_ZONE){
+            if(timeInAssitanceZone< Definition.TIME_MIN_IN_ASSISTANCE_ZONE){
                 Log.d(Definition.TAG_DEBUG,"Se descarta la salida porque estuvo menos de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos")
                 return
             }
@@ -181,10 +217,10 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
                     hour = Tools.getHour(LocalTime.now())
                     date = Tools.getDate(LocalDate.now())
                 }
-                notifyUserPriorityBaja(context, msg)
+                notifyUserPriorityBaja(msg)
 
                 //como ya se asitio a la cita desactivo el area de geofence
-                repositoryGeofActivate.desactivateGeofence(context, id_area.toString())
+                repositoryGeofActivate.desactivateGeofence(appContext, id_area.toString())
                 Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
             }else{
                 Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
@@ -194,7 +230,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
 
     }
 
-    private suspend  fun processEnterSecurityZone(context: Context, description: String) {
+    private suspend  fun processEnterSecurityZone(description: String) {
         val msg = SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
@@ -203,26 +239,26 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
             date = Tools.getDate(LocalDate.now())
         }
 
-        RepositorySecurityZoneSPref.getInstance(context).saveEnteredHour(System.currentTimeMillis())
-        notifyUserPriorityBaja(context, msg)
+        RepositorySecurityZoneSPref.getInstance(appContext).saveEnteredHour(System.currentTimeMillis())
+        notifyUserPriorityBaja(msg)
     }
 
     /********************************************************************
-    * Método que se ejecuta al salir de una zona segura:
-    *
-    * 1) Si estuvo menos de 1 minuto → se descarta el evento.
-    * 2) Si estuvo entre X y Z minutos → se notifica salida inesperada.
-    * 3) Si estuvo más de Z minutos:
-    *   a) Si salió fuera del horario seguro → se notifica salida fuera de horario.
-    *   b) Si salió dentro del horario seguro → se notifica salida dentro del horario.
-    ********************************************************************/
+     * Método que se ejecuta al salir de una zona segura:
+     *
+     * 1) Si estuvo menos de 1 minuto → se descarta el evento.
+     * 2) Si estuvo entre X y Z minutos → se notifica salida inesperada.
+     * 3) Si estuvo más de Z minutos:
+     *   a) Si salió fuera del horario seguro → se notifica salida fuera de horario.
+     *   b) Si salió dentro del horario seguro → se notifica salida dentro del horario.
+     ********************************************************************/
 
-    private suspend fun processExitSecurityZone(context: Context, description: String, minHour: String?, maxHour: String?) {
-        val prefs = RepositorySecurityZoneSPref.getInstance(context)
+    private suspend fun processExitSecurityZone( description: String, minHour: String?, maxHour: String?) {
+        val prefs = RepositorySecurityZoneSPref.getInstance(appContext)
         val entryHour = prefs.getEnteredHour()
         val exitHour = System.currentTimeMillis()
         var msgSMS=""
-        var msg:SharedData.MsgNotification
+        var msg: SharedData.MsgNotification
 
         if (entryHour == -1L) return
 
@@ -261,7 +297,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         }
 
         //enviamos la notificacion por sms
-        notifyUserPriorityBaja(context, msg)
+        notifyUserPriorityBaja( msg)
         prefs.clearSharedPreferences()
 
         Log.d(Definition.TAG_DEBUG,msgSMS)
@@ -300,7 +336,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         return completeMsg
     }
     // PRIORIDAD BAJA: solo SMS al familiar
-    private suspend fun notifyUserPriorityBaja(context: Context, originalMsg: SharedData.MsgNotification) {
+    private suspend fun notifyUserPriorityBaja(originalMsg: SharedData.MsgNotification) {
 
         // Mensaje adaptado para el familiar
         val msgForCustomUser = originalMsg.copy(
@@ -308,7 +344,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         )
 
         SmsHelper.sendSMSNotifyGeofence(
-            context,
+            appContext,
             msgForCustomUser,
             geofLatitude,
             geofLongitude
@@ -316,8 +352,8 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
     }
 
     // PRIORIDAD MEDIA: notificación al abuelo + SMS al familiar
-    private suspend fun notifyUserPriorityMedia(context: Context, originalMsg: SharedData.MsgNotification): Int? {
-        val notificationHelper = NotificationHelper.getInstance(context) ?: return null
+    private suspend fun notifyUserPriorityMedia(originalMsg: SharedData.MsgNotification): Int? {
+        val notificationHelper = NotificationHelper.getInstance(appContext) ?: return null
 
         // Mensaje para el abuelo
         val msgForElderly = originalMsg.copy(
@@ -327,14 +363,14 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         val id = notificationHelper.showNotificationGeneral(msgForElderly)
 
         // Además, aviso al familiar por SMS
-        notifyUserPriorityBaja(context, originalMsg)
+        notifyUserPriorityBaja(originalMsg)
 
         return id
     }
 
     // PRIORIDAD ALTA: media + envío al reloj
-    private suspend fun notifyUserPriorityAlta(context: Context, originalMsg: SharedData.MsgNotification) {
-        val notificationHelper = NotificationHelper.getInstance(context) ?: return
+    private suspend fun notifyUserPriorityAlta(originalMsg: SharedData.MsgNotification) {
+        val notificationHelper = NotificationHelper.getInstance(appContext) ?: return
 
         // Mensaje para el abuelo
         val msgForElderly = originalMsg.copy(
@@ -345,7 +381,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         val id = notificationHelper.showNotificationGeneral(msgForElderly)
 
         // SMS al familiar
-        notifyUserPriorityBaja(context, originalMsg)
+        notifyUserPriorityBaja( originalMsg)
 
         // Enviar al reloj con el id de la notificación del móvil
         val msgForWear = msgForElderly.copy(
@@ -353,18 +389,18 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
         )
 
         RepositoryDispatcherWearable.sendDataToWearable(
-            context,
+            appContext,
             SharedData.PATH_ADD_NOTIFICATION_GENERAL,
             msgForWear
         )
     }
 
 
-    private suspend fun determineRecipientByPriority(context: Context, idPriority: Int?, msg: SharedData.MsgNotification) {
+    private suspend fun determineRecipientByPriority( idPriority: Int?, msg: SharedData.MsgNotification) {
         when (idPriority) {
-            Definition.PRIORITY_ID_LOW -> notifyUserPriorityBaja(context, msg)
-            Definition.PRIORITY_ID_MEDIUM -> notifyUserPriorityMedia(context, msg)
-            Definition.PRIORITY_ID_HIGH -> notifyUserPriorityAlta(context, msg)
+            Definition.PRIORITY_ID_LOW -> notifyUserPriorityBaja( msg)
+            Definition.PRIORITY_ID_MEDIUM -> notifyUserPriorityMedia(msg)
+            Definition.PRIORITY_ID_HIGH -> notifyUserPriorityAlta(msg)
             else -> Log.e(Definition.TAG_DEBUG, "No se encontró el id de prioridad")
         }
     }
@@ -372,7 +408,7 @@ class GeofenceWorker(mContext: Context, params: WorkerParameters) : CoroutineWor
     //funcion que concatena el nombre del usuario con el mensaje
     //para ser enviado al familiar
     suspend fun getMessageForCustomName(message: String): String {
-        val nameUser=repositoryConfigAppSPref.getNameUser()
+        val nameUser=repositoryConfigAppSPref?.getNameUser()
         return "$nameUser $message"
     }
 

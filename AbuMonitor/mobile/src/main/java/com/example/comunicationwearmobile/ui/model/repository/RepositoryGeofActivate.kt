@@ -34,18 +34,22 @@ class RepositoryGeofActivate() {
             transitionTypes = transitionTypes or type
         }
 
-        if (transitionTypes == 0)
+        if (transitionTypes == 0) {
+            Log.e(Definition.TAG_DEBUG, "Error:No se seleccionó ningún tipo de transición")
             continuation.resume(false)
+            return@suspendCancellableCoroutine
+        }
 
         val builder = Geofence.Builder()
-            .setRequestId(area.id_area.toString())
-            .setCircularRegion(
-                area.latitude.toDouble(),
-                area.longitude.toDouble(),
-                area.meters.toFloat()
-            )
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(transitionTypes)
+        .setRequestId(area.id_area.toString())
+        .setCircularRegion(
+            area.latitude.toDouble(),
+            area.longitude.toDouble(),
+            area.meters.toFloat()
+        )
+        .setExpirationDuration(Geofence.NEVER_EXPIRE)
+        .setTransitionTypes(transitionTypes)
+        .setNotificationResponsiveness(Definition.NOTIFICATION_MAX_RESPONSIVENESS_GEOFENCE)
 
 
         if (transitionTypes and Geofence.GEOFENCE_TRANSITION_DWELL != 0) {

@@ -9,41 +9,49 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.workers.GeofenceWorker
+import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceEventPreocessorHelper
 import com.google.android.gms.location.GeofencingEvent
 
-// Reemplazo de la corutina por Worker en el BroadcastReceiver
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val appContext = context.applicationContext
-        Log.d(Definition.TAG_DEBUG,"onReceive GeofenceBroadcastReceiver")
-        if (intent.action == Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
-            val geofencingEvent = GeofencingEvent.fromIntent(intent)
-
-            if (geofencingEvent == null || geofencingEvent.hasError()) {
-                Log.e(Definition.TAG_DEBUG, "Error en el Geofencing: ${geofencingEvent?.errorCode}")
-                return
-            }
-
-            // Serializamos el evento (guardamos los IDs y el tipo de transición)
-            val triggeringIds = geofencingEvent.triggeringGeofences?.map { it.requestId }?.toTypedArray()
-            val transition = geofencingEvent.geofenceTransition
-
-            val inputData = workDataOf(
-                "triggering_ids" to triggeringIds,
-                "transition" to transition
-            )
-
-            val workRequest = OneTimeWorkRequestBuilder<GeofenceWorker>()
-                .setInputData(inputData)
-                .build()
-
-            WorkManager.getInstance(appContext).enqueueUniqueWork(
-                "trabajo_geofence",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                workRequest
-            )
+        if (intent.action != Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
+            return
         }
+
+        val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        if (geofencingEvent == null) {
+            Log.e(TAG, "GeofencingEvent nulo")
+            return
+        }
+
+        if (geofencingEvent.hasError()) {
+            Log.e(TAG, "Error en GeofencingEvent: ${geofencingEvent.errorCode}")
+            return
+        }
+
+        val triggeringIds = geofencingEvent.triggeringGeofences
+            ?.mapNotNull { it.requestId.toLongOrNull() }
+            ?: emptyList()
+
+        if (triggeringIds.isEmpty()) {
+            Log.e(TAG, "No se encontraron IDs de geofence en el evento")
+            return
+        }
+
+        val transition = geofencingEvent.geofenceTransition
+
+        val pendingResult = goAsync()
+        val appContext = context.applicationContext
+
+        GeofenceEventPreocessorHelper.handleEvent(
+            triggeringIds,
+            transition,
+            pendingResult
+        )
+    }
+
+    companion object {
+        private const val TAG = "GeofenceReceiver"
     }
 }

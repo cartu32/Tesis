@@ -8,6 +8,8 @@ import android.graphics.Typeface
 
 object Definition {
 
+
+
     /********************************************************
      ******* constante de nombre de usuario por defecto*****
      ********************************************************
@@ -137,6 +139,9 @@ object Definition {
     //cantidad de citas maximas que se pueden agendar por cada dia
     const val COUNT_MAX_DATE_FOR_DAY = 3
 
+    //tiempo de maximo de respuesta en que el S.O notifica al broadcastt cuando
+    //detecta un evento de geofence
+    const val NOTIFICATION_MAX_RESPONSIVENESS_GEOFENCE = 10000
     /********************************************************
      ************** constantes de tiempo*****************
      ********************************************************

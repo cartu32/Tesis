@@ -9,6 +9,8 @@ import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceEventPreocessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.CoroutineScope
@@ -25,9 +27,19 @@ class AbuMonitorApplicationMobile : Application() {
         initilizerDB()
         initializeAlarm()
         initilizeSPRememberAppointment()
+        initSmsHelper()
+        initGeofenceEventProcessorHelper()
         configLeakCanary()
 
       }
+
+    private fun initSmsHelper() {
+        SmsHelper.registerSMSReceivers(this)
+    }
+
+    private fun initGeofenceEventProcessorHelper() {
+        GeofenceEventPreocessorHelper.init(this)
+    }
 
     private fun initilizeSPRememberAppointment() {
         var hourTimeRemember    = Definition.DEFAULT_HOUR_REMEMER_APPOINTMENT

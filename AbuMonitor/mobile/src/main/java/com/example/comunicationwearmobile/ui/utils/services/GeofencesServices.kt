@@ -49,7 +49,6 @@ class GeofencesServices: Service() {
 
         channelLector()
         configOberserverLivedata()
-        SmsHelper.registerSMSReceivers(this)
     }
 
     private fun configOberserverLivedata() {
