@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Notification
 
 import android.app.Activity
 import android.app.PendingIntent

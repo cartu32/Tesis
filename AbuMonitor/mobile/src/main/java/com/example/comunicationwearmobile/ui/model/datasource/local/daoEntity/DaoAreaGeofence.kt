@@ -10,6 +10,8 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityEvent
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceBasic
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 
 @Dao
 
@@ -62,4 +64,25 @@ interface DaoAreaGeofence {
         WHERE ae.id_area = :areaId
     """)
     suspend fun getEventByArea(areaId: Long): List<EntityEvent>
+
+    @Transaction
+    @Query("SELECT * FROM Area_Geofence WHERE id_area = :idArea")
+    suspend fun getJoinAreaGeofence(idArea:Long): JoinAreaGeofence
+
+    @Query("""
+        SELECT 
+            ag.id_area,
+            ag.latitude,
+            ag.longitude,
+            ag.meters,
+            ag.id_priority,
+            ag.id_type_area,
+            ag.description,
+            ag.dwell_time,
+            GROUP_CONCAT(ae.id_event) AS list_id_event
+        FROM Area_Geofence ag
+        INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.id_priority,ag.id_type_area,ag.dwell_time,ag.description
+    """)
+    fun getAreasActivated():List<AreaGeofenceWithEvents>
 }

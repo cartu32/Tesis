@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences
 
 import android.content.Context
 import android.util.Log
@@ -6,11 +6,12 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import kotlinx.coroutines.sync.Mutex
@@ -22,7 +23,7 @@ class GeofenceScheduleHelper(mContext:Context) {
 
     private val context=mContext.applicationContext
     private var repositoryScheduleAssistance:RepositoryScheduleAssistance
-    private var repositoryGeofActivate: RepositoryGeofActivate
+    private var geofenceActivatorHelpero: GeofenceActivatorHelper
     private var repositoryConfigAppSPref: RepositoryConfigAppSPref
 
     //Como puede haber varias instancias de GeofenSchedulerHelper, creo un mutex comun
@@ -33,7 +34,7 @@ class GeofenceScheduleHelper(mContext:Context) {
 
     init {
         repositoryScheduleAssistance=RepositoryScheduleAssistance.getInstance(context)
-        repositoryGeofActivate= RepositoryGeofActivate()
+        geofenceActivatorHelpero= GeofenceActivatorHelper()
         repositoryConfigAppSPref= RepositoryConfigAppSPref.getInstance(context)
     }
 
@@ -89,7 +90,7 @@ class GeofenceScheduleHelper(mContext:Context) {
     }
 
     private suspend  fun activateGeofenceOfCurrentAlarm(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): Boolean {
-        var listAreasInsideDateInterval:List<AreaGeofenceWithAppointment>?=null
+        var listAreasInsideDateInterval:List<AreaGeofenceWithEvents>?=null
         var result=false
 
         //busco todas las geofences programadas dentro del intervalo de la alarma
@@ -108,7 +109,7 @@ class GeofenceScheduleHelper(mContext:Context) {
         return result
     }
 
-    private suspend fun activateGeofencesForThisAlarm(listAreasInsideDateInterval: List<AreaGeofenceWithAppointment>): Boolean {
+    private suspend fun activateGeofencesForThisAlarm(listAreasInsideDateInterval: List<AreaGeofenceWithEvents>): Boolean {
 
         var allGeofencesActivated = true
 
@@ -122,7 +123,7 @@ class GeofenceScheduleHelper(mContext:Context) {
                 if(repositoryScheduleAssistance.updateIsActivatedGeofence(areaScheduled.id_area,true)==0){
                     //si no se pudo registro como que ya activada, entonces la desactivo
                     //ya que hubo un error
-                    repositoryGeofActivate.desactivateGeofence(context,areaScheduled.id_area.toString())
+                    geofenceActivatorHelpero.desactivateGeofence(context,areaScheduled.id_area.toString())
                     allGeofencesActivated=false
 
                     Log.d(Definition.TAG_DEBUG,"No se pudo activar la geofence id: ${areaScheduled.id_area}")
@@ -137,7 +138,7 @@ class GeofenceScheduleHelper(mContext:Context) {
     }
 
     //metodo que activa todas las areas de geofence programada dentro del intervalo de la alarma
-    suspend fun activateOneGeofences(areaScheduled: AreaGeofenceWithAppointment): Boolean {
+    suspend fun activateOneGeofences(areaScheduled: AreaGeofenceWithEvents): Boolean {
         var result=false
 
         //armo la entidad area de geofence
@@ -162,16 +163,16 @@ class GeofenceScheduleHelper(mContext:Context) {
             secZoneTimeRange = null // o como lo necesites
         )
         //activo el area de geofence y si hay algun error lo indico en allGeofencesActivated
-        result= repositoryGeofActivate.activateGeofence(context,areaForActivate)
+        result= geofenceActivatorHelpero.activateGeofence(context,areaForActivate)
 
         return result
     }
 
 
     private suspend fun checkActivationAllGeofences(allGeofencesActivated: Boolean) {
-        var notificationHelper:NotificationHelper?=null
+        var notificationHelper: NotificationHelper?=null
 
-        notificationHelper=NotificationHelper.getInstance(context)
+        notificationHelper= NotificationHelper.getInstance(context)
 
         if(allGeofencesActivated){
             notificationHelper?.showNotificationIndependent(context,"Abumonitor","Se activaron las areas programadas para este horario")
@@ -199,7 +200,7 @@ class GeofenceScheduleHelper(mContext:Context) {
 
             with(area) {
                 //desactivo primero el area de geofence de la cita
-                repositoryGeofActivate.desactivateGeofence(context, id_area.toString())
+                geofenceActivatorHelpero.desactivateGeofence(context, id_area.toString())
 
                 Log.d(Definition.TAG_DEBUG,"**udpaete tiempo prev ${Tools.getMillisToHourMinutes(dateTimeAlarmInitial)} - ${Tools.getMillisToHourMinutes(dateTimeAlarmNext)}")
                 Log.d(Definition.TAG_DEBUG, "**update grabadsa ${Tools.getMillisToHourMinutes(date_hour_appointment + time_duration_activation_appointment)}")

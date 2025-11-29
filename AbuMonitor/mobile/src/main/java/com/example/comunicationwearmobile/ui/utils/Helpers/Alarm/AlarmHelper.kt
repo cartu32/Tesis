@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Alarm
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -10,7 +10,7 @@ import android.os.SystemClock
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.utils.Tools
-import java.util.Calendar
+
 class AlarmHelper {
 
     /**

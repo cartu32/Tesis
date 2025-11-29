@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // UI directa (sin Mediator): la actualizamos nosotros
     private val repo by lazy { RepositoryConfigAppSPref.getInstance(app) }
-    private var geofenceScheduleHelper=GeofenceScheduleHelper(app.applicationContext)
+    private var geofenceScheduleHelper= GeofenceScheduleHelper(app.applicationContext)
     private var hourBetweenCheck:Int=0
     private var minuteBetweenCheck:Int=0
 
@@ -173,9 +173,9 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
                 return@launch
             }
-            if (isChangedBetween) {
+           /* if (isChangedBetween) {
                 allOk = allOk && saveAlarmBetweenCheckInternal(dataNextAlarm)
-            }
+            }*/
 
             if (isChangedRemeber) {
                 allOk = allOk && saveTimeRememberInternal(dataTimeReminder)

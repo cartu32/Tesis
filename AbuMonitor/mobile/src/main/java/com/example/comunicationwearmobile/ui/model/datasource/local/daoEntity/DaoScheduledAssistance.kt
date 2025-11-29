@@ -8,7 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
 
 @Dao
 interface DaoScheduledAssistance {
@@ -42,6 +42,8 @@ interface DaoScheduledAssistance {
             ag.latitude,
             ag.longitude,
             ag.meters,
+            ag.dwell_time,
+            ag.description,
             p.id_priority,
             ta.id_type_area,
             GROUP_CONCAT(ae.id_event) AS list_id_event
@@ -52,12 +54,12 @@ interface DaoScheduledAssistance {
         INNER JOIN Priority p ON ag.id_priority = p.id_priority
         WHERE sa.date_hour_appointment >= :dateTimeAlarmInitial AND
               sa.date_hour_appointment< :dateTimeAlarmNext              
-        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,p.id_priority,ta.id_type_area
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.dwell_time,p.id_priority,ta.id_type_area,ag.description
     """)
     fun getAreasInsideDateInterval(
         dateTimeAlarmInitial: Long,
         dateTimeAlarmNext: Long
-    ):List<AreaGeofenceWithAppointment>
+    ):List<AreaGeofenceWithEvents>
 
     @Query("""
         update scheduled_assistance 

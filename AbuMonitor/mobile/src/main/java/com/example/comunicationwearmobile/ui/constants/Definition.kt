@@ -23,10 +23,16 @@ object Definition {
      */
 
     const val ACTION_ALARM_FOR_CHECKS     = "ACTION_ALARM_FOR_CHECKS"
+    const val ACTION_GEOFENCE_WATCHDOG    = "ACTION_GEOFENCE_WATCHDOG"
 
     const val INTENT_ALARM_ALARM_ID            = "INTENT_ALARAM_ALARM_ID"
     const val INTENT_ALARM_HOUR                = "INTENT_ALARM_HOUR"
     const val INTENT_ALARM_MINUTE              = "INTENT_ALARM_MINUTE"
+
+    const val REQUEST_CODE_GEOFENCE_WATCHDOG = 2001
+
+    // Intervalo entre ejecuciones del watchdog (ej: cada 3 horas)
+    const val INTERVAL_WATCHDOG_MS = 1 *60 * 60 * 1000L
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy

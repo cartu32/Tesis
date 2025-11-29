@@ -16,7 +16,7 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceActivatorHelper
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
-    private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
+    private var geofenceActivatorHelper: GeofenceActivatorHelper = GeofenceActivatorHelper()
     private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
     private val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(application.applicationContext)
@@ -187,7 +187,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     }
 
     private suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
-        return repositoryGeofActivate.activateGeofence(context, dataAreaGeofAux)
+        return geofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
     }
 
     // Configura los datos para el área geográfica

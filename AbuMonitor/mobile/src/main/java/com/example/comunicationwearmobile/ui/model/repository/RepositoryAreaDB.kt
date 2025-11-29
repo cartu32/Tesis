@@ -16,7 +16,6 @@ class RepositoryAreaDB (context: Context) {
     private val database = AbuMonitorDatabase.getDatabase(context.applicationContext)
 
     private val daoAreaGeofence = database.entityAreaGeofenceDao()
-    private val daoJoinAreaGeofence = database.joinAreaGeofenceDao()
     private val daoSecurityZoneTimeRange = database.entitySecurityZoneTimeRangeDao()
 
     companion object {
@@ -34,7 +33,7 @@ class RepositoryAreaDB (context: Context) {
     suspend fun getJoinAreaGeofence(idArea: Long): JoinAreaGeofence? {
         return withContext(Dispatchers.IO) {
             try {
-                val areaGeof = daoJoinAreaGeofence.getJoinAreaGeofence(idArea = idArea)
+                val areaGeof = daoAreaGeofence.getJoinAreaGeofence(idArea = idArea)
                 areaGeof
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -139,5 +138,38 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
+    /**
+    * Devuelve todas las áreas activas junto con sus eventos
+    * mapeadas a DataAreaGeofAux (para pasárselas directo al activador).
+    */
+    suspend fun getAllActiveAreasWithEvents(): List<DataAreaGeofAux> {
+        val rows = daoAreaGeofence.getAreasActivated()
+
+        return rows.map { row ->
+
+            val events: MutableList<Int> = row.list_id_event
+                ?.split(",")
+                ?.mapNotNull { it.toIntOrNull() }
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            val entity = EntityAreaGeofence(
+                id_area = row.id_area,
+                latitude = row.latitude,
+                longitude = row.longitude,
+                meters = row.meters,
+                dwell_time = row.dwell_time,
+                description = row.description,
+                id_type_area = row.id_type_area,
+                id_priority = row.id_priority
+            )
+
+            DataAreaGeofAux(
+                entityAreaGeofence = entity,
+                listIdEventSelected = events,
+                secZoneTimeRange = null // acá después podés traer la zona segura si querés
+            )
+        }
+    }
 
 }

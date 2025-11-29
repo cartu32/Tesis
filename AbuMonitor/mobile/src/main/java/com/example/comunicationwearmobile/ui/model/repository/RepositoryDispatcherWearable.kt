@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.services.SenderToWearableService
 import com.example.shared_library.SharedData
 import com.example.shared_library.toByteArray
@@ -19,7 +19,7 @@ object RepositoryDispatcherWearable {
         notificationManager.let {
             when (messageEvent.path) {
                 SharedData.PATH_VIEWED_NOTIFICATION ->notificationManager?.notificationViewedOnWearable(messageEvent.data)
-                SharedData.PATH_FALL_DETECTION_SMS ->SmsHelper.sendSMSFallDetection(context, messageEvent.data)
+                SharedData.PATH_FALL_DETECTION_SMS -> SmsHelper.sendSMSFallDetection(context, messageEvent.data)
                 else -> Log.d(Definition.TAG_DEBUG, "Unknown path received: ${messageEvent.path}")
             }
         }?: run {

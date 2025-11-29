@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithAppointment
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
 import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -79,7 +79,7 @@ class RepositoryScheduleAssistance(context: Context) {
     }
 
 
-    suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithAppointment> {
+    suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithEvents> {
         return withContext(Dispatchers.IO) {
             daoAssistance.getAreasInsideDateInterval(dateTimeAlarmInitial, dateTimeAlarmNext)
         }

@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,9 +8,10 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
@@ -83,14 +84,14 @@ object GeofenceEventPreocessorHelper {
 
             //alamaceno la longitud y latitud del area de geofence detectada
 
-            geofLongitude= areaGeof?.areaGeofence?.longitude.toString()
-            geofLatitude=areaGeof?.areaGeofence?.latitude.toString()
+            geofLongitude = areaGeof?.areaGeofence?.longitude.toString()
+            geofLatitude =areaGeof?.areaGeofence?.latitude.toString()
 
             Log.d(Definition.TAG_DEBUG,"transicion: $transition")
             when(areaGeof?.areaGeofence?.id_type_area){
-                Definition.TYPE_AREA_ID_NORMAL ->analizeNormalZone(areaGeof, transition)
-                Definition.TYPE_AREA_ID_SECURITY_ZONE ->analizeSecurityZone(areaGeof, transition)
-                Definition.TYPE_AREA_ID_ASSISTANCE ->analizeAssistanceZone( areaGeof.areaGeofence.id_area, transition)
+                Definition.TYPE_AREA_ID_NORMAL -> analizeNormalZone(areaGeof, transition)
+                Definition.TYPE_AREA_ID_SECURITY_ZONE -> analizeSecurityZone(areaGeof, transition)
+                Definition.TYPE_AREA_ID_ASSISTANCE -> analizeAssistanceZone( areaGeof.areaGeofence.id_area, transition)
             }
         }
 
@@ -171,7 +172,7 @@ object GeofenceEventPreocessorHelper {
     }
 
     private suspend fun proccessExitAssistanceZone( idArea: Long) {
-        val repositoryGeofActivate= RepositoryGeofActivate()
+        val geofenceActivatorHelper= GeofenceActivatorHelper()
 
         val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
         val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
@@ -220,7 +221,7 @@ object GeofenceEventPreocessorHelper {
                 notifyUserPriorityBaja(msg)
 
                 //como ya se asitio a la cita desactivo el area de geofence
-                repositoryGeofActivate.desactivateGeofence(appContext, id_area.toString())
+                geofenceActivatorHelper.desactivateGeofence(appContext, id_area.toString())
                 Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
             }else{
                 Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
@@ -274,7 +275,7 @@ object GeofenceEventPreocessorHelper {
         if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
 
             msgSMS="ha salido inesperadamente de la zona segura $description"
-            msg=createMsgSecurityZone(msgSMS)
+            msg= createMsgSecurityZone(msgSMS)
 
         } else {
             val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
@@ -285,14 +286,14 @@ object GeofenceEventPreocessorHelper {
                 msgSMS="ha salido de la zona segura $description fuera del rango horario normal"
                 Log.d(Definition.TAG_DEBUG,msgSMS)
 
-                msg=createMsgSecurityZone(msgSMS)
+                msg= createMsgSecurityZone(msgSMS)
 
             } else {
                 //si estuvo mas de 3 minutos y esta dentro de horario notificamos la salida dentro de horario
                 msgSMS="ha salido de la zona segura $description dentro del rango horario normal"
                 Log.d(Definition.TAG_DEBUG,msgSMS)
 
-                msg=createMsgSecurityZone(msgSMS)
+                msg= createMsgSecurityZone(msgSMS)
             }
         }
 
@@ -408,7 +409,7 @@ object GeofenceEventPreocessorHelper {
     //funcion que concatena el nombre del usuario con el mensaje
     //para ser enviado al familiar
     suspend fun getMessageForCustomName(message: String): String {
-        val nameUser=repositoryConfigAppSPref?.getNameUser()
+        val nameUser= repositoryConfigAppSPref?.getNameUser()
         return "$nameUser $message"
     }
 

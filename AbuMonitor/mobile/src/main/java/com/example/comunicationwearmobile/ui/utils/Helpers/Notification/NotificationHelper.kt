@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Notification
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -264,7 +264,11 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
     //son utilizadas principalmente para notificaciones de alerta
     fun showNotificationGeneral(msg:SharedData.MsgNotification):Int{
         // Crear el canal de notificaciones
-        val notificationBuilder = createChannelAlerts(CHANNEL_ID_ALERTS,CHANNEL_ALERTS,CHANNEL_DESCRIPTION_ALERTS)
+        val notificationBuilder = createChannelAlerts(
+            CHANNEL_ID_ALERTS,
+            CHANNEL_ALERTS,
+            CHANNEL_DESCRIPTION_ALERTS
+        )
 
         // crear y mostrar(muestra como una notificacion) el grupo de notificaciones
         //En este caso al crear grupo se configuro para que no se muestra una notificacion

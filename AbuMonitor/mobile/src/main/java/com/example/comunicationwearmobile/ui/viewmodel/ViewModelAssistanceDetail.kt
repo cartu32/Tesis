@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceActivatorHelper
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import kotlinx.coroutines.launch
 
@@ -24,7 +24,7 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
     private val _areaGeofenceData = MutableLiveData<EntityAreaGeofence?>()
     val areaGeofenceData: LiveData<EntityAreaGeofence?> get() = _areaGeofenceData
 
-    private var repositoryGeofActivate=RepositoryGeofActivate()
+    private var geofenActivatorHelper= GeofenceActivatorHelper()
 
     fun loadAssistanceDetail(id: Int) {
         viewModelScope.launch {
@@ -41,7 +41,7 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
 
             if (result!=error) {
                 //desactivo el area de geofence
-                repositoryGeofActivate.desactivateGeofence(context, idArea.toString())
+                geofenActivatorHelper.desactivateGeofence(context, idArea.toString())
 
                 //si se pudo eliminar la area de geofence le aviso a a la activity
                 //enviandole true como parametro de la funcion callback onComplete

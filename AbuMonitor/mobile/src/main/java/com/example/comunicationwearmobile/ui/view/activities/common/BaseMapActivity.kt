@@ -18,7 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Helpers.DrawAreaGeofHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Maps.DrawAreaGeofHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability

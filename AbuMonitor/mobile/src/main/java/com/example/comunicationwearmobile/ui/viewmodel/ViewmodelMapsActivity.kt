@@ -12,7 +12,7 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceActivatorHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -40,7 +40,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     val areaGeofenceForId: LiveData<JoinAreaGeofence?> = _areaGeofenceForId
 
     private var repositoryAreaDB: RepositoryAreaDB ?=null
-    private var repositoryGeofActivate: RepositoryGeofActivate ?=null
+    private var geofenceActivatorHelper: GeofenceActivatorHelper?=null
 
 
     init {
@@ -49,7 +49,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             withContext(Dispatchers.Main) {
 
                 repositoryAreaDB = RepositoryAreaDB.getInstance(application)
-                repositoryGeofActivate = RepositoryGeofActivate()
+                geofenceActivatorHelper = GeofenceActivatorHelper()
 
                 getListAreasGefence()
 
@@ -92,7 +92,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
                 dataAreaGeofAux.entityAreaGeofence.id_area = newAreaId
                 //activo el area de geofence
-                val stateActivateGeof = repositoryGeofActivate?.activateGeofence(context, dataAreaGeofAux) == true
+                val stateActivateGeof = geofenceActivatorHelper?.activateGeofence(context, dataAreaGeofAux) == true
 
                 // Si falla, eliminamos el registro de la base de datos
                 if (!stateActivateGeof) {
@@ -152,7 +152,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             if (result!=error)
             {
                 //desactivo el area de geofence
-                repositoryGeofActivate?.desactivateGeofence(context,idArea.toString())
+                geofenceActivatorHelper?.desactivateGeofence(context,idArea.toString())
 
 
                 //le aviso a la view que borre el circulo del mapa grafico
@@ -180,7 +180,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     fun onDestroyed() {
 
         repositoryAreaDB=null
-        repositoryGeofActivate=null
+        geofenceActivatorHelper=null
 
         // Limpio el LiveData
         _showMessage = null

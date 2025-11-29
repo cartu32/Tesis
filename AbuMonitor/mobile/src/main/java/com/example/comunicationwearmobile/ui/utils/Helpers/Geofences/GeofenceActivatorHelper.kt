@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.model.repository
+package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.utils.broadcast.GeofenceBroadcastReceiver
 import com.google.android.gms.location.Geofence
@@ -15,7 +14,7 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-class RepositoryGeofActivate() {
+class GeofenceActivatorHelper() {
 
     private var geofencePendingIntent: PendingIntent? = null
 
@@ -78,6 +77,23 @@ class RepositoryGeofActivate() {
             }
     }
 
+    suspend fun clearAllGeofence(context: Context):Boolean=
+        suspendCancellableCoroutine { continuation ->
+        val geofencingClient = LocationServices.getGeofencingClient(context)
+
+        val geofencePendingIntent=getGeofencePendingIntent(context)
+
+        geofencingClient.removeGeofences(geofencePendingIntent)
+            .addOnSuccessListener {
+                Log.d(Definition.TAG_DEBUG, "Se eliminaron TODAS las geofences registradas")
+                continuation.resume(true)
+            }
+            .addOnFailureListener{
+                Log.e(Definition.TAG_DEBUG, "Error al eliminar todas las geofences: ${it.message}")
+                continuation.resume(false)
+            }
+
+    }
 
     fun desactivateGeofence(context: Context,idArea:String) {
         val geofencingClient = LocationServices.getGeofencingClient(context)

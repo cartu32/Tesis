@@ -8,9 +8,10 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceEventPreocessorHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.GeofenceWatchdogScheduler
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventPreocessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +26,9 @@ class AbuMonitorApplicationMobile : Application() {
         super.onCreate()
 
         initilizerDB()
-        initializeAlarm()
+        //initializeAlarm()
+        GeofenceWatchdogScheduler.scheduleNext(this,reason="FROM_APPLICATION_ONCREATE")
+
         initilizeSPRememberAppointment()
         initSmsHelper()
         initGeofenceEventProcessorHelper()
@@ -67,6 +70,9 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarm() {
+
+
+
         val repository  = RepositoryConfigAppSPref.getInstance(this)
         val alarmHelper = AlarmHelper()
 
@@ -80,8 +86,8 @@ class AbuMonitorApplicationMobile : Application() {
         SharedVariables.timeAlarmChecksFirstTime = Tools.extractHourOfDateInMillis(System.currentTimeMillis() + intervalMillis)
         SharedVariables.isOpenAppFirsTime=true
 
-        cancelAlarmPrevious(alarmHelper)
-        initAlarm(hourBetweenCheck, minuteBetweenCheck, alarmHelper)
+        //cancelAlarmPrevious(alarmHelper)
+     //   initAlarm(hourBetweenCheck, minuteBetweenCheck, alarmHelper)
     }
 
     private fun setAlarmFirsTime(storedMillis: Long, repository:RepositoryConfigAppSPref): Triple<Int, Int, Long> {

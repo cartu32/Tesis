@@ -2,14 +2,13 @@ package com.example.comunicationwearmobile.ui.view.activities.areas_geofence
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Maps.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.interfaces.OnDataSentListenerMapAct
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity

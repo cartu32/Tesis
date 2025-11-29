@@ -26,7 +26,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.ui.viewmodel.GenericViewModelFactory
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.common.SharedVariables
-import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 import com.example.comunicationwearmobile.ui.view.activities.areas_geofence.MapsDefineAreasActivity
 import com.example.comunicationwearmobile.ui.view.activities.calendar_assistance.AssistanceCalendarActivity
@@ -49,7 +49,7 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
 
     //atributos asociados al viewmodel
     private var viewmodelMainActivity: ViewmodelMainActivity?=null
-    private var notificationManagerHelper:NotificationHelper?= null
+    private var notificationManagerHelper: NotificationHelper?= null
 
     private lateinit var backPressedCallback: OnBackPressedCallback
 

@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Maps
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider

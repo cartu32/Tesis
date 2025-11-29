@@ -7,10 +7,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
-import com.example.comunicationwearmobile.ui.utils.Helpers.GeofenceScheduleHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.SmsHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,19 +24,22 @@ class GeofencesServices: Service() {
     private var requestChannel: Channel<Intent>? = null
     private var serviceScope:CoroutineScope? = null
 
-    private var notificationManagerHelper:NotificationHelper?= null
+    private var notificationManagerHelper: NotificationHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
     private var locationObserver :Observer<Location>?=null
 
     override fun onCreate() {
         super.onCreate()
 
+        val pid = android.os.Process.myPid()
+        RepositoryDebugLogger.log(this, "ForegroundService.onCreate() PID=$pid")
+
         requestChannel=Channel<Intent>(Channel.UNLIMITED)
         serviceScope=CoroutineScope(Dispatchers.IO + Job())
 
         repositoryLocation = RepositoryLocation.getInstance(application)
 
-        notificationManagerHelper=NotificationHelper.getInstance(applicationContext)
+        notificationManagerHelper= NotificationHelper.getInstance(applicationContext)
 
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
@@ -45,7 +48,7 @@ class GeofencesServices: Service() {
         }
 
         //empieza a recibir actualizaciones del gps
-        repositoryLocation?.startLocationUpdates()
+       // repositoryLocation?.startLocationUpdates()
 
         channelLector()
         configOberserverLivedata()
@@ -64,7 +67,7 @@ class GeofencesServices: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             // Comprobar el estado del GPS
-            repositoryLocation?.checkStatusGPS()
+            //repositoryLocation?.checkStatusGPS()
 
             // Encola la solicitud en el Channel
             requestChannel?.trySend(it)
@@ -93,7 +96,7 @@ class GeofencesServices: Service() {
 
     }
     private suspend fun handleIntent(intent: Intent?)  {
-        val geofenceHelper=GeofenceScheduleHelper(this)
+        val geofenceHelper= GeofenceScheduleHelper(this)
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()

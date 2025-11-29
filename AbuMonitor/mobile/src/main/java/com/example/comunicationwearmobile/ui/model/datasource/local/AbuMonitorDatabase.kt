@@ -21,7 +21,6 @@ import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.Da
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoScheduledAssistance
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoSecurityZoneTimeRange
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoTypeArea
-import com.example.comunicationwearmobile.ui.model.datasource.local.daoPojo.DaoJoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.entities.EntitySecurityZoneTimeRange
 import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
@@ -45,7 +44,6 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entityPriorityDao(): DaoPriority
     abstract fun entityScheduledAssistanceDao(): DaoScheduledAssistance
     abstract fun firstTimeStateDao(): DaoFirstTimeState
-    abstract fun joinAreaGeofenceDao(): DaoJoinAreaGeofence
     abstract fun entitySecurityZoneTimeRangeDao(): DaoSecurityZoneTimeRange
     abstract fun entityTypeAreaDao(): DaoTypeArea
 
