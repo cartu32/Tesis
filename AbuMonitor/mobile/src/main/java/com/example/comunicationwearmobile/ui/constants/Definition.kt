@@ -32,7 +32,8 @@ object Definition {
     const val REQUEST_CODE_GEOFENCE_WATCHDOG = 2001
 
     // Intervalo entre ejecuciones del watchdog (ej: cada 3 horas)
-    const val INTERVAL_WATCHDOG_MS = 1 *60 * 60 * 1000L
+    const val INTERVAL_WATCHDOG_MS = 15 * 60 * 1000L
+    //const val INTERVAL_WATCHDOG_MS = 1 *60 * 60 * 1000L
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy

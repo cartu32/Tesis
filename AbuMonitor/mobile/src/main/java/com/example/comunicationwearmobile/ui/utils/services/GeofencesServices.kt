@@ -1,12 +1,18 @@
 package com.example.comunicationwearmobile.ui.utils.services
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
@@ -28,6 +34,10 @@ class GeofencesServices: Service() {
     private var repositoryLocation: RepositoryLocation? = null
     private var locationObserver :Observer<Location>?=null
 
+
+    private lateinit var connectivityManager: ConnectivityManager
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
     override fun onCreate() {
         super.onCreate()
 
@@ -46,6 +56,11 @@ class GeofencesServices: Service() {
         notificationManagerHelper?.let {
             startForeground(it.ID_NOTIFICATION_FOREGROUND_SERVICE, notification)
         }
+
+        // Inicializo ConnectivityManager y registro callback
+        connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        registerNetworkCallback()
 
         //empieza a recibir actualizaciones del gps
        // repositoryLocation?.startLocationUpdates()
@@ -103,6 +118,87 @@ class GeofencesServices: Service() {
         }
     }
 
+    private fun registerNetworkCallback() {
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+
+            override fun onAvailable(network: Network) {
+                // Se conectó a una red (WiFi o datos)
+                RepositoryDebugLogger.log(
+                    this@GeofencesServices,
+                    "NETWORK_CHANGE: onAvailable -> pido ubicación puntual"
+                )
+                refreshLocationAfterNetworkChange()
+            }
+
+            override fun onLost(network: Network) {
+                // Se perdió una red (ej: apagaste WiFi)
+                RepositoryDebugLogger.log(
+                    this@GeofencesServices,
+                    "NETWORK_CHANGE: onLost -> pido ubicación puntual"
+                )
+                refreshLocationAfterNetworkChange()
+            }
+        }
+
+        connectivityManager.registerNetworkCallback(request, networkCallback!!)
+    }
+
+    private fun unregisterNetworkCallback() {
+        try {
+            networkCallback?.let { connectivityManager.unregisterNetworkCallback(it) }
+        } catch (_: Exception) {
+            // por si ya estaba unregister
+        }
+    }
+
+    private fun refreshLocationAfterNetworkChange() {
+        val appContext = applicationContext
+
+        serviceScope?.launch {
+            try {
+                // 1) Ver si tiene sentido hacer algo (que haya áreas activas)
+                val repoAreas = RepositoryAreaDB.getInstance(appContext)
+                val activeAreas = repoAreas.getAllActiveAreasWithEvents() // usa tu método real
+
+                if (activeAreas.isEmpty()) {
+                    RepositoryDebugLogger.log(
+                        appContext,
+                        "NETWORK_CHANGE: no hay áreas activas, no pido ubicación"
+                    )
+                    return@launch
+                }
+
+                // 2) Pedir UNA sola ubicación liviana
+                val repoLoc = RepositoryLocation.getInstance(appContext)
+                val loc = repoLoc.getSingleBalancedLocation()
+
+                if (loc != null) {
+                    RepositoryDebugLogger.log(
+                        appContext,
+                        "NETWORK_CHANGE: ubicación puntual -> " +
+                                "lat=${loc.latitude}, lon=${loc.longitude}, acc=${loc.accuracy}"
+                    )
+                    // El solo hecho de obtener esta ubicación ya "despierta" al proveedor
+                    // y hace recalcular las geofences
+                } else {
+                    RepositoryDebugLogger.log(
+                        appContext,
+                        "NETWORK_CHANGE: no se pudo obtener ubicación puntual"
+                    )
+                }
+
+            } catch (e: Exception) {
+                RepositoryDebugLogger.log(
+                    appContext,
+                    "NETWORK_CHANGE: excepción al pedir ubicación puntual: ${e.message}"
+                )
+            }
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -121,6 +217,9 @@ class GeofencesServices: Service() {
         // Cancela la corutina cuando el servicio se destruye
         serviceScope?.cancel()
         serviceScope=null
+
+        // Desregistrar callback de red
+        unregisterNetworkCallback()
 
         //libero los recursos
         requestChannel=null
