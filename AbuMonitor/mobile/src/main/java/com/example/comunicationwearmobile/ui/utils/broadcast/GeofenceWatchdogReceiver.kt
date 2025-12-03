@@ -22,8 +22,7 @@ class GeofenceWatchdogReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
 
         val repo = RepositoryAreaDB.getInstance(context)
-        val activator = GeofenceActivatorHelper()
-        val watchdog = GeofenceWatchDogHelper(repo, activator)
+        val watchdog = GeofenceWatchDogHelper(repo)
 
         RepositoryDebugLogger.log(context, "WatchdogReceiver ejecutado")
         CoroutineScope(Dispatchers.Default).launch {

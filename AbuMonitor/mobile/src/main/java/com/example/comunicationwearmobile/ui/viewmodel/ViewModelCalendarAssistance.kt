@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
-    private var geofenceActivatorHelper: GeofenceActivatorHelper = GeofenceActivatorHelper()
     private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
     private val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(application.applicationContext)
@@ -187,7 +186,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     }
 
     private suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
-        return geofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
+        return GeofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
     }
 
     // Configura los datos para el área geográfica

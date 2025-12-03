@@ -1,6 +1,5 @@
 package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.util.Log
 import com.example.abumonitor.constants.Definition
@@ -15,14 +14,9 @@ import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelpe
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeout
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.LocalDate
@@ -30,14 +24,9 @@ import java.time.LocalTime
 import java.util.Date
 import java.util.Locale
 
-object GeofenceEventPreocessorHelper {
+object GeofenceEventProcessorHelper {
 
-    // Scope de toda la app para procesar eventos de geofence
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    // Mutex para serializar los eventos (uno por vez)
-    private val geofenceMutex = Mutex()
-
+    private var mutex=Mutex()
     private var geofLatitude: String=""
     private var geofLongitude: String=""
 
@@ -52,23 +41,13 @@ object GeofenceEventPreocessorHelper {
         appContext = context.applicationContext
     }
 
-    fun handleEvent(triggeringIds: List<Long>, transition: Int, pendingResult: BroadcastReceiver.PendingResult) {
-
-        scope.launch {
-            try {
-                // Timeout de seguridad para que nada quede colgado
-                withTimeout(60_000) {
-                    geofenceMutex.withLock {
-                        processGeofenceEvent(triggeringIds, transition)
-                    }
-                }
-            } catch (e: TimeoutCancellationException) {
-                Log.e(Definition.TAG_DEBUG, "Tiempo máximo excedido procesando evento de geofence", e)
-            } catch (t: Throwable) {
-                Log.e(Definition.TAG_DEBUG, "Error procesando evento de geofence", t)
-            } finally {
-                pendingResult.finish()
-            }
+    suspend fun handleEvent(triggeringIds: MutableList<Long>, transition: Int) {
+        try {
+            processGeofenceEvent(triggeringIds, transition)
+        } catch (e: TimeoutCancellationException) {
+            Log.e(Definition.TAG_DEBUG, "Tiempo máximo excedido procesando evento de geofence", e)
+        } catch (t: Throwable) {
+            Log.e(Definition.TAG_DEBUG, "Error procesando evento de geofence", t)
         }
     }
 
@@ -83,11 +62,13 @@ object GeofenceEventPreocessorHelper {
             val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence)
 
             //alamaceno la longitud y latitud del area de geofence detectada
-
-            geofLongitude = areaGeof?.areaGeofence?.longitude.toString()
-            geofLatitude =areaGeof?.areaGeofence?.latitude.toString()
+            mutex.withLock {
+                geofLongitude = areaGeof?.areaGeofence?.longitude.toString()
+                geofLatitude = areaGeof?.areaGeofence?.latitude.toString()
+            }
 
             Log.d(Definition.TAG_DEBUG,"transicion: $transition")
+
             when(areaGeof?.areaGeofence?.id_type_area){
                 Definition.TYPE_AREA_ID_NORMAL -> analizeNormalZone(areaGeof, transition)
                 Definition.TYPE_AREA_ID_SECURITY_ZONE -> analizeSecurityZone(areaGeof, transition)
@@ -172,7 +153,6 @@ object GeofenceEventPreocessorHelper {
     }
 
     private suspend fun proccessExitAssistanceZone( idArea: Long) {
-        val geofenceActivatorHelper= GeofenceActivatorHelper()
 
         val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
         val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
@@ -221,7 +201,7 @@ object GeofenceEventPreocessorHelper {
                 notifyUserPriorityBaja(msg)
 
                 //como ya se asitio a la cita desactivo el area de geofence
-                geofenceActivatorHelper.desactivateGeofence(appContext, id_area.toString())
+                GeofenceActivatorHelper.desactivateGeofence(appContext, id_area.toString())
                 Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
             }else{
                 Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
@@ -344,12 +324,14 @@ object GeofenceEventPreocessorHelper {
             message = getMessageForCustomName(originalMsg.message)
         )
 
-        SmsHelper.sendSMSNotifyGeofence(
-            appContext,
-            msgForCustomUser,
-            geofLatitude,
-            geofLongitude
-        )
+        mutex.withLock {
+            SmsHelper.sendSMSNotifyGeofence(
+                appContext,
+                msgForCustomUser,
+                geofLatitude,
+                geofLongitude
+            )
+        }
     }
 
     // PRIORIDAD MEDIA: notificación al abuelo + SMS al familiar

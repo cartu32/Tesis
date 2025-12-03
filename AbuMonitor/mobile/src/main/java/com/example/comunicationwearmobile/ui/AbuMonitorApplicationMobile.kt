@@ -10,7 +10,8 @@ import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitialize
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.GeofenceWatchdogScheduler
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventPreocessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
@@ -26,9 +27,7 @@ class AbuMonitorApplicationMobile : Application() {
         super.onCreate()
 
         initilizerDB()
-        //initializeAlarm()
-        GeofenceWatchdogScheduler.scheduleNext(this,reason="FROM_APPLICATION_ONCREATE")
-
+        //initializeAlarms()
         initilizeSPRememberAppointment()
         initSmsHelper()
         initGeofenceEventProcessorHelper()
@@ -36,12 +35,13 @@ class AbuMonitorApplicationMobile : Application() {
 
       }
 
+
     private fun initSmsHelper() {
         SmsHelper.registerSMSReceivers(this)
     }
 
     private fun initGeofenceEventProcessorHelper() {
-        GeofenceEventPreocessorHelper.init(this)
+        GeofenceEventProcessorHelper.init(this)
     }
 
     private fun initilizeSPRememberAppointment() {
@@ -60,6 +60,16 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
 
+    private fun initializeAlarms() {
+        initializeAlarmWatchdog()
+        initializeAlarmAssistance()
+    }
+
+    private fun initializeAlarmWatchdog() {
+        GeofenceWatchdogScheduler.scheduleNext(this,reason="FROM_APPLICATION_ONCREATE")
+
+    }
+
     private fun initilizerDB() {
         val dbInitializer = dbInitializer()
 
@@ -69,7 +79,7 @@ class AbuMonitorApplicationMobile : Application() {
         }
     }
 
-    private fun initializeAlarm() {
+    private fun initializeAlarmAssistance() {
 
 
 
@@ -146,6 +156,13 @@ class AbuMonitorApplicationMobile : Application() {
     private fun configLeakCanary() {
         // Configuración adicional si es necesario
         //   LeakCanary.config = LeakCanary.config.copy(dumpHeap = false)
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        SmsHelper.onDestroy()
+        NotificationHelper.getInstance(this)?.cancelCorutineInit()
+
     }
 
 }

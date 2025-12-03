@@ -14,7 +14,7 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-class GeofenceActivatorHelper() {
+object GeofenceActivatorHelper {
 
     private var geofencePendingIntent: PendingIntent? = null
 
@@ -112,6 +112,8 @@ class GeofenceActivatorHelper() {
             }
     }
 
+
+    @Synchronized
     private fun getGeofencePendingIntent(context: Context): PendingIntent {
         if (geofencePendingIntent != null) return geofencePendingIntent!!
 

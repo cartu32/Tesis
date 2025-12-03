@@ -14,54 +14,6 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 class AlarmHelper {
 
     /**
-     * Programa una alarma exacta en una hora del día (próxima ocurrencia).
-     * Usa reloj de pared (RTC).
-     */
-    fun setAlarmAtSpecificTime(
-        context: Context,
-        alarmId: Int,
-        hour: Int,
-        minute: Int,
-        action: String,
-        receiverClass: Class<out BroadcastReceiver>
-    ): Boolean{
-        try {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
-
-            if (alarmManager==null)
-                return false
-
-            val intent = Intent(context, receiverClass).apply {
-                this.action = action
-                putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
-                putExtra(Definition.INTENT_ALARM_HOUR, hour)
-                putExtra(Definition.INTENT_ALARM_MINUTE, minute)
-            }
-
-            val pi = PendingIntent.getBroadcast(
-                context,
-                alarmId,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            // Instante absoluto (epoch ms) para HOY a (hour:minute), o mañana si ya pasó
-            val triggerAtMillisRtc = Tools.getHourInMillis(hour, minute)
-
-            configExactAlarm(
-                triggerAtMillis = triggerAtMillisRtc,
-                type = AlarmManager.RTC_WAKEUP,
-                pendingIntent = pi,
-                alarmManager = alarmManager
-            )
-        } catch (e: Exception) {
-            Log.e(Definition.TAG_DEBUG, "Error al programar alarma (RTC): ${e.message}")
-            return  false
-        }
-        return true
-    }
-
-    /**
      * Programa una alarma exacta para “dentro de” (h, m) usando reloj relativo.
      *
      */

@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.utils.Helpers.Maps.DrawAreaGeofHelper
@@ -108,7 +109,7 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     }
 
     private fun clickCmdSerachAndroid12(addressText: String){
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             try {
                 @Suppress("DEPRECATION")
                 val addresses = withContext(Dispatchers.IO) {

@@ -24,7 +24,6 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
     private val _areaGeofenceData = MutableLiveData<EntityAreaGeofence?>()
     val areaGeofenceData: LiveData<EntityAreaGeofence?> get() = _areaGeofenceData
 
-    private var geofenActivatorHelper= GeofenceActivatorHelper()
 
     fun loadAssistanceDetail(id: Int) {
         viewModelScope.launch {
@@ -41,7 +40,7 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
 
             if (result!=error) {
                 //desactivo el area de geofence
-                geofenActivatorHelper.desactivateGeofence(context, idArea.toString())
+                GeofenceActivatorHelper.desactivateGeofence(context, idArea.toString())
 
                 //si se pudo eliminar la area de geofence le aviso a a la activity
                 //enviandole true como parametro de la funcion callback onComplete

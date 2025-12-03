@@ -13,10 +13,13 @@ import android.util.Log
 import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.extra.GeofenceEventParameter
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Tools.getParcelable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -63,7 +66,7 @@ class GeofencesServices: Service() {
         registerNetworkCallback()
 
         //empieza a recibir actualizaciones del gps
-       // repositoryLocation?.startLocationUpdates()
+       repositoryLocation?.startLocationUpdates()
 
         channelLector()
         configOberserverLivedata()
@@ -82,7 +85,7 @@ class GeofencesServices: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             // Comprobar el estado del GPS
-            //repositoryLocation?.checkStatusGPS()
+            repositoryLocation?.checkStatusGPS()
 
             // Encola la solicitud en el Channel
             requestChannel?.trySend(it)
@@ -115,6 +118,16 @@ class GeofencesServices: Service() {
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
+            Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
+
+        }
+    }
+
+    private suspend fun callGeofenceEventProcessor(intent: Intent) {
+        val parameter = intent.getParcelable<GeofenceEventParameter>(Definition.PARAMETER_SERVICE)
+
+        parameter?.let {
+            GeofenceEventProcessorHelper.handleEvent(it.triggeringIds, it.transition)
         }
     }
 
@@ -205,28 +218,36 @@ class GeofencesServices: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopForeground(STOP_FOREGROUND_REMOVE)
 
-        //remueve los observer de livedata del repository
-        repositoryLocation?.stopLocationUpdates()
+        try {
+            RepositoryDebugLogger.log(applicationContext, "GeofencesServices.onDestroy() llamado")
 
-        locationObserver?.let {
-            repositoryLocation?.locationLiveData?.removeObserver(it)
+            stopForeground(STOP_FOREGROUND_REMOVE)
+
+            //remueve los observer de livedata del repository
+                repositoryLocation?.stopLocationUpdates()
+
+            locationObserver?.let {
+                repositoryLocation?.locationLiveData?.removeObserver(it)
+            }
+
+            // Cancela la corutina cuando el servicio se destruye
+            serviceScope?.cancel()
+            requestChannel?.close()
+            serviceScope=null
+
+            // Desregistrar callback de red
+            unregisterNetworkCallback()
+
+            //libero los recursos
+            requestChannel=null
+            notificationManagerHelper=null
+            repositoryLocation=null
+
+            Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
+        } catch (e: Exception) {
+            Log.e(Definition.TAG_DEBUG, "Error deteniendo location updates: ${e.message}")
         }
-
-        // Cancela la corutina cuando el servicio se destruye
-        serviceScope?.cancel()
-        serviceScope=null
-
-        // Desregistrar callback de red
-        unregisterNetworkCallback()
-
-        //libero los recursos
-        requestChannel=null
-        notificationManagerHelper=null
-        repositoryLocation=null
-
-        Log.d(Definition.TAG_DEBUG," GeofenceService Destruido")
 
     }
 

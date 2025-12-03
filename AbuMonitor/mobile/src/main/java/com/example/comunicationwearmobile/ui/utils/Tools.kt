@@ -1,7 +1,9 @@
 package com.example.comunicationwearmobile.ui.utils
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.os.StrictMode
 import android.text.Editable
 import android.util.Log
@@ -346,4 +348,18 @@ object Tools {
             @Suppress("DEPRECATION")
             data.getParcelable(Definition.INTENT_DATA_NEW_AREA_GEOF)
         }
+
+    /**
+     * Funcion que se usa para extraer un objeto pasado como parametroen en un [Intent].
+     *
+     * @param valor key donde se alamacena el parametro.
+     */
+    inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.getParcelableExtra(key, T::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            this.getParcelableExtra(key)
+        }
+    }
 }
