@@ -25,9 +25,8 @@ object Definition {
     const val ACTION_ALARM_FOR_CHECKS     = "ACTION_ALARM_FOR_CHECKS"
     const val ACTION_GEOFENCE_WATCHDOG    = "ACTION_GEOFENCE_WATCHDOG"
 
-    const val INTENT_ALARM_ALARM_ID            = "INTENT_ALARAM_ALARM_ID"
-    const val INTENT_ALARM_HOUR                = "INTENT_ALARM_HOUR"
-    const val INTENT_ALARM_MINUTE              = "INTENT_ALARM_MINUTE"
+    const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
+    const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
 
     const val REQUEST_CODE_GEOFENCE_WATCHDOG = 2001
 
@@ -60,7 +59,7 @@ object Definition {
 
     //constante del id que identifica la alarma de checkeo de asistencia y
     //de activacion de geofence
-    const val ALARM_ID_BETWEEN_CHECKS   = 1
+    const val ALARM_ID_FOR_CHECKS   = 1
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
     val NO_STORED_VALUE: Long =-1L

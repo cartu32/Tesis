@@ -9,33 +9,26 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.Tools
 
-class AlarmHelper {
+object AlarmHelper {
 
-    /**
-     * Programa una alarma exacta para “dentro de” (h, m) usando reloj relativo.
-     *
-     */
-    fun setAlarmAfterOfTime(
+
+    private fun setAlarmInternal(
         context: Context,
         alarmId: Int,
-        hours: Int,
-        minutes: Int,
+        triggerAtMillis: Long,
+        type: Int,
         action: String,
         receiverClass: Class<out BroadcastReceiver>
     ): Boolean {
-        try {
-            val alarmManager =context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
-
-            if (alarmManager==null)
-                return false
+        return try {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+                ?: return false
 
             val intent = Intent(context, receiverClass).apply {
                 this.action = action
-                putExtra(Definition.INTENT_ALARM_ALARM_ID, alarmId)
-                putExtra(Definition.INTENT_ALARM_HOUR, hours)
-                putExtra(Definition.INTENT_ALARM_MINUTE, minutes)
+                putExtra(Definition.INTENT_ALARM_ID, alarmId)
+                putExtra(Definition.INTENT_ALARM_TIME, triggerAtMillis)
             }
 
             val pi = PendingIntent.getBroadcast(
@@ -45,21 +38,11 @@ class AlarmHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // Delay en ms (duración), convertido a instante relativo
-            val delayMs = Tools.getTimeInMillis(hours, minutes) // e.j. h*3600000 + m*60000
-            val triggerAtElapsed = SystemClock.elapsedRealtime() + delayMs
-
-            configExactAlarm(
-                triggerAtMillis = triggerAtElapsed,
-                type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                pendingIntent = pi,
-                alarmManager = alarmManager
-            )
+            configExactAlarm(triggerAtMillis, type, pi, alarmManager)
         } catch (e: Exception) {
-            Log.e(Definition.TAG_DEBUG, "Error al programar alarma (ELAPSED): ${e.message}")
-            return false
+            Log.e(Definition.TAG_DEBUG, "Error al programar alarma: ${e.message}")
+            false
         }
-        return true
     }
 
     /**
@@ -121,6 +104,52 @@ class AlarmHelper {
             return false
         }
         return true
+    }
+
+    // Alarma relativa (en X milisegundos) usando ELAPSED_REALTIME_WAKEUP
+    // se usa para activar la alarma para que se active cada determinado tiempo
+    // por ejemplo:cada 3 minutos, cada 5 minutos, etc.
+    fun setNextAlarmInXTime(context: Context, alarmId: Int, delayMillis: Long, action: String, receiverClass: Class<out BroadcastReceiver>): Boolean {
+        val triggerAtElapsed = SystemClock.elapsedRealtime() + delayMillis
+
+        //cancelo la alrma si anteriormente esta configurada
+        cancelAlarm(context, alarmId, action, receiverClass)
+
+        //configuro la alarma
+        return setAlarmInternal(
+            context,
+            alarmId,
+            triggerAtMillis = triggerAtElapsed,
+            type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            action = action,
+            receiverClass = receiverClass
+        )
+    }
+
+
+    //Alarma en una fecha/hora exacta de calendario usando RTC_WAKEUP
+    //se usa para activar la alarma exacta en una hora determinada
+    //por ejemplo: el lunes 15 a las 20:30
+    fun setNextAlarmAtExactTime(
+        context: Context,
+        alarmId: Int,
+        triggerAtMillis: Long, // epoch time (System.currentTimeMillis-based)
+        action: String,
+        receiverClass: Class<out BroadcastReceiver>
+    ): Boolean {
+
+        //cancelo la alrma si anteriormente esta configurada
+        cancelAlarm(context, alarmId, action, receiverClass)
+
+        //configuro la alarma
+        return setAlarmInternal(
+            context,
+            alarmId,
+            triggerAtMillis = triggerAtMillis,
+            type = AlarmManager.RTC_WAKEUP,
+            action = action,
+            receiverClass = receiverClass
+        )
     }
 }
 

@@ -27,7 +27,7 @@ class AbuMonitorApplicationMobile : Application() {
         super.onCreate()
 
         initilizerDB()
-        //initializeAlarms()
+        initializeAlarms()
         initilizeSPRememberAppointment()
         initSmsHelper()
         initGeofenceEventProcessorHelper()
@@ -61,7 +61,7 @@ class AbuMonitorApplicationMobile : Application() {
 
 
     private fun initializeAlarms() {
-        initializeAlarmWatchdog()
+        //initializeAlarmWatchdog()
         initializeAlarmAssistance()
     }
 
@@ -81,34 +81,26 @@ class AbuMonitorApplicationMobile : Application() {
 
     private fun initializeAlarmAssistance() {
 
-
-
         val repository  = RepositoryConfigAppSPref.getInstance(this)
-        val alarmHelper = AlarmHelper()
+
 
         //leo del SharedPreferences la hora de la alarma de chequeo
         val storedMillis = repository.getTimeBetweenChecksSync()
 
         //obtengo la hora, minutos de la alarma
-        val (hourBetweenCheck, minuteBetweenCheck, intervalMillis) = setAlarmFirsTime(storedMillis,repository)
+        val intervalMillis = getIntervalForFirsTimeAlarm(storedMillis,repository)
 
-        //cada vez que se inicia la app se cancela la alarma actual y se vuelve a configurar una nueva
+        //cada vez que se inicia la app se vuelve a configurar una nueva alarama
         SharedVariables.timeAlarmChecksFirstTime = Tools.extractHourOfDateInMillis(System.currentTimeMillis() + intervalMillis)
         SharedVariables.isOpenAppFirsTime=true
 
-        //cancelAlarmPrevious(alarmHelper)
-     //   initAlarm(hourBetweenCheck, minuteBetweenCheck, alarmHelper)
+        initAlarmAssistance (intervalMillis)
     }
 
-    private fun setAlarmFirsTime(storedMillis: Long, repository:RepositoryConfigAppSPref): Triple<Int, Int, Long> {
+    private fun getIntervalForFirsTimeAlarm(storedMillis: Long, repository:RepositoryConfigAppSPref): Long{
 
         //pregunto si la alarma esta incializada en el shared preference
-        if (storedMillis != Definition.NO_STORED_VALUE)
-        {
-            val (h, m) = Tools.getHourMinOfParcial(storedMillis)
-            return Triple(h, m, storedMillis)
-        } else
-        {
+        if (storedMillis == Definition.NO_STORED_VALUE) {
             Log.w(Definition.TAG_DEBUG, "No hay intervalo configurado para los chequeos. Uso valores por defecto.")
 
             val defaultHour   = Definition.DEFAULT_HOUR_ALARM_BETWEEN_CHECKS
@@ -118,27 +110,18 @@ class AbuMonitorApplicationMobile : Application() {
             // Primero calculamos los millis y recién ahí los guardamos
             repository.saveTimeBetweenChecksSync(defaultMillis)
 
-            return Triple(defaultHour, defaultMinute, defaultMillis)
+            return  defaultMillis
         }
-
+        return storedMillis
     }
 
-    private fun cancelAlarmPrevious(alarmHelper: AlarmHelper) {
-        alarmHelper.cancelAlarm(
-            this,
-            Definition.ALARM_ID_BETWEEN_CHECKS,
-            Definition.ACTION_ALARM_FOR_CHECKS,
-            AlarmDailyForChecksBroadcastReceiver::class.java
-        )
-    }
 
-    private fun initAlarm(hour: Int, minute: Int,alarmHelper: AlarmHelper){
+    private fun initAlarmAssistance(intervalToAlarmMS: Long){
 
-        val resultSetAlarm = alarmHelper.setAlarmAfterOfTime(
+        val resultSetAlarm = AlarmHelper.setNextAlarmInXTime(
             this,
-            Definition.ALARM_ID_BETWEEN_CHECKS,
-            hour,
-            minute,
+            Definition.ALARM_ID_FOR_CHECKS,
+            intervalToAlarmMS,
             Definition.ACTION_ALARM_FOR_CHECKS,
             AlarmDailyForChecksBroadcastReceiver::class.java
         )

@@ -173,9 +173,9 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
                 return@launch
             }
-           /* if (isChangedBetween) {
+            if (isChangedBetween) {
                 allOk = allOk && saveAlarmBetweenCheckInternal(dataNextAlarm)
-            }*/
+            }
 
             if (isChangedRemeber) {
                 allOk = allOk && saveTimeRememberInternal(dataTimeReminder)
@@ -265,20 +265,12 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 repo.saveTimeNextAlarm(dataNextAlarm.millisNextAlarm)
             }
 
-            // cancelo alarma previa
-            AlarmHelper().cancelAlarm(
-                getApplication(),
-                Definition.ALARM_ID_BETWEEN_CHECKS,
-                Definition.ACTION_ALARM_FOR_CHECKS,
-                AlarmDailyForChecksBroadcastReceiver::class.java
-            )
 
             // programo nueva alarma
-            val okAlarm = AlarmHelper().setAlarmAfterOfTime(
+            val okAlarm = AlarmHelper.setNextAlarmInXTime(
                 getApplication(),
-                Definition.ALARM_ID_BETWEEN_CHECKS,
-                dataNextAlarm.hb,
-                dataNextAlarm.mb,
+                Definition.ALARM_ID_FOR_CHECKS,
+                dataNextAlarm.millisBetweenCheck,
                 Definition.ACTION_ALARM_FOR_CHECKS,
                 AlarmDailyForChecksBroadcastReceiver::class.java
             )
