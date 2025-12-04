@@ -18,6 +18,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLog
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceWatchDogHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.Tools.getParcelable
 import kotlinx.coroutines.CoroutineScope
@@ -113,13 +114,15 @@ class GeofencesServices: Service() {
         }
 
     }
+
+
     private suspend fun handleIntent(intent: Intent?)  {
         val geofenceHelper= GeofenceScheduleHelper(this)
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
             Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
-
+            Definition.ACTION_GEOFENCE_WATCHDOG -> callGeofenceWatchdog()
         }
     }
 
@@ -131,6 +134,10 @@ class GeofencesServices: Service() {
         }
     }
 
+    private suspend fun callGeofenceWatchdog() {
+
+        GeofenceWatchDogHelper.reRegisterAllActiveGeofences(this)
+    }
     private fun registerNetworkCallback() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)

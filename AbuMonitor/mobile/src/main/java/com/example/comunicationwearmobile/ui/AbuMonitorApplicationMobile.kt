@@ -9,7 +9,6 @@ import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.datasource.local.dbInitializer
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.GeofenceWatchdogScheduler
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
@@ -66,8 +65,7 @@ class AbuMonitorApplicationMobile : Application() {
     }
 
     private fun initializeAlarmWatchdog() {
-        GeofenceWatchdogScheduler.scheduleNext(this,reason="FROM_APPLICATION_ONCREATE")
-
+        AlarmHelper.setNextAlarmInXTime(this,Definition.ALARM_ID_FOR_WATCHDOG,Definition.INTERVAL_WATCHDOG_MS,Definition.ACTION_GEOFENCE_WATCHDOG,AlarmDailyForChecksBroadcastReceiver::class.java)
     }
 
     private fun initilizerDB() {

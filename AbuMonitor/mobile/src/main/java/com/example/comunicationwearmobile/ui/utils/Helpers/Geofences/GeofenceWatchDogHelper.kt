@@ -8,13 +8,15 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class GeofenceWatchDogHelper(private val repo: RepositoryAreaDB) {
+object GeofenceWatchDogHelper {
 
     private val mutex= Mutex()
 
-    suspend fun reRegisterAllActiveGeofences(context: Context) {
+    suspend fun reRegisterAllActiveGeofences(context: Context): Boolean {
         val appContext = context.applicationContext
         mutex.withLock {
+
+            val repo = RepositoryAreaDB.getInstance(appContext)
 
             // 1) Traigo todas las geofences activas desde BD
             val listAreas = repo.getAllActiveAreasWithEvents()
@@ -22,7 +24,7 @@ class GeofenceWatchDogHelper(private val repo: RepositoryAreaDB) {
 
             if (listAreas.isEmpty()) {
                 RepositoryDebugLogger.log(appContext, "Watchdog: no hay áreas activas para re-registrar")
-                return
+                return false
             }
 
 
@@ -32,7 +34,7 @@ class GeofenceWatchDogHelper(private val repo: RepositoryAreaDB) {
 
             if (!clearOk) {
                 RepositoryDebugLogger.log(appContext, "Watchdog: fallo clearAllGeofence, NO re-registro")
-                return
+                return false
             }
             */
                 // 3) Vuelvo a registrar una por una
@@ -44,9 +46,10 @@ class GeofenceWatchDogHelper(private val repo: RepositoryAreaDB) {
                     )
                 }
             // 4) "Pinchazo" de ubicación para despertar geofencing
-            refreshLocation(context)
+            refreshLocation(appContext)
 
         }
+        return true
     }
 
     // --------------------------------------------------------------------------
@@ -58,10 +61,10 @@ class GeofenceWatchDogHelper(private val repo: RepositoryAreaDB) {
         try {
             val repoLoc = RepositoryLocation.getInstance(context)
 
-            // 🔥 OPCIÓN 1: Balanced (lo que ya usabas)
+            //OPCIÓN 1: Balanced
             // val loc = repoLoc.getSingleBalancedLocation()
 
-            // 🔥 OPCIÓN 2: High Accuracy (recomendada para Android 15)
+            // OPCIÓN 2: High Accuracy (recomendada para Android 15)
             val loc = repoLoc.getSingleHighAccuracyLocation()
 
             if (loc != null) {

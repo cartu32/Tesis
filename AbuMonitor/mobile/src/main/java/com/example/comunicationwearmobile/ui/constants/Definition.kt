@@ -2,9 +2,7 @@ package com.example.abumonitor.constants
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Application
 import android.graphics.Color
-import android.graphics.Typeface
 
 object Definition {
 
@@ -57,9 +55,9 @@ object Definition {
     //constante que se retorna cuando hay un error al programar una alarma
     const val ERROR_IN_SET_ALARM    = -1
 
-    //constante del id que identifica la alarma de checkeo de asistencia y
-    //de activacion de geofence
+    //constante del id que identifica la alarmas
     const val ALARM_ID_FOR_CHECKS   = 1
+    const val ALARM_ID_FOR_WATCHDOG = 2
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
     val NO_STORED_VALUE: Long =-1L

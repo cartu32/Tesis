@@ -98,7 +98,7 @@ class RepositoryLocation private constructor(appContext: Context) {
     }
 
     // ----------------------------------------------------------------------
-    //  🔹 Helper 1: ubicación puntual BALANCED (puede devolver cache)
+    //   Helper 1: ubicación puntual BALANCED (puede devolver cache)
     // ----------------------------------------------------------------------
     @SuppressLint("MissingPermission")
     suspend fun getSingleBalancedLocation(): Location? =
@@ -115,7 +115,7 @@ class RepositoryLocation private constructor(appContext: Context) {
         }
 
     // ----------------------------------------------------------------------
-    //  🔹 Helper 2: ubicación puntual HIGH_ACCURACY (despierta sensores)
+    //   Helper 2: ubicación puntual HIGH_ACCURACY (despierta sensores)
     //      - Pide updates HIGH_ACCURACY
     //      - Toma el primer fix
     //      - Cancela las updates

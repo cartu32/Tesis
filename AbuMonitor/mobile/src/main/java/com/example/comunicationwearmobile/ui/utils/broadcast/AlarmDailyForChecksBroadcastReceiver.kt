@@ -27,30 +27,37 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
         intent.action?.let { setAlarmForNextTime(context, it) }
     }
 
-    //Hago est afuncion asi para guarda en el sharedpreference la hora de la proxima alarma,
-    //asi para poder mostralo en el menu de configuracion
 
     private fun setAlarmForNextTime(context: Context, action: String) {
-        if (action != Definition.ACTION_ALARM_FOR_CHECKS) {
-            Log.w(Definition.TAG_DEBUG, "Acción desconocida: $action")
-            return
+        val timeNextAlarm:Long
+        val alarmId:Int
+
+        when(action){
+            Definition.ACTION_ALARM_FOR_CHECKS-> {
+                timeNextAlarm=getIntervalForNextChecks(context)
+                alarmId=Definition.ALARM_ID_FOR_CHECKS
+            }
+            Definition.ACTION_GEOFENCE_WATCHDOG->{
+                timeNextAlarm=Definition.INTERVAL_WATCHDOG_MS
+                alarmId=Definition.ALARM_ID_FOR_WATCHDOG
+            }
+            else->{
+                Log.w(Definition.TAG_DEBUG, "Acción desconocida: $action")
+                return
+            }
+
         }
 
-        val repository = RepositoryConfigAppSPref.getInstance(context)
-        //obtengo cada cuanto tiempo se debe hacer el checkeo
-        val timeBetweenChecks = repository.getTimeBetweenChecksSync()
-
-        saveHourMinutesNextAlarm(timeBetweenChecks,repository)
-        if (timeBetweenChecks == Definition.NO_STORED_VALUE) {
+        if (timeNextAlarm == Definition.NO_STORED_VALUE) {
             Log.w(Definition.TAG_DEBUG, "Sin intervalo válido para reprogramar.")
             return
         }
 
         val ok = AlarmHelper.setNextAlarmInXTime(
             context = context,
-            alarmId = Definition.ALARM_ID_FOR_CHECKS,
-            timeBetweenChecks,
-            action = Definition.ACTION_ALARM_FOR_CHECKS,
+            alarmId = alarmId,
+            delayMillis = timeNextAlarm,
+            action = action,
             receiverClass = AlarmDailyForChecksBroadcastReceiver::class.java
         )
 
@@ -61,6 +68,17 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
             Log.d(Definition.TAG_DEBUG, "Fallo reconfiguración")
             Toast.makeText(context, "Fallo reconfiguración", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //Hago est afuncion asi para guarda en el sharedpreference la hora de la proxima alarma,
+    //asi para poder mostralo en el menu de configuracion
+    private fun getIntervalForNextChecks(context: Context): Long {
+        val repository = RepositoryConfigAppSPref.getInstance(context)
+        //obtengo cada cuanto tiempo se debe hacer el checkeo
+        val timeBetweenChecks = repository.getTimeBetweenChecksSync()
+
+        saveHourMinutesNextAlarm(timeBetweenChecks,repository)
+        return timeBetweenChecks
     }
 
 

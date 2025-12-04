@@ -22,12 +22,12 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
         if (geofencingEvent == null) {
-            Log.e(TAG, "GeofencingEvent nulo")
+            Log.e(Definition.TAG_DEBUG, "GeofencingEvent nulo")
             return
         }
 
         if (geofencingEvent.hasError()) {
-            Log.e(TAG, "Error en GeofencingEvent: ${geofencingEvent.errorCode}")
+            Log.e(Definition.TAG_DEBUG, "Error en GeofencingEvent: ${geofencingEvent.errorCode}")
             return
         }
 
@@ -37,7 +37,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
         triggeringIds=triggeringIds.toMutableList()
         if (triggeringIds.isEmpty()) {
-            Log.e(TAG, "No se encontraron IDs de geofence en el evento")
+            Log.e(Definition.TAG_DEBUG, "No se encontraron IDs de geofence en el evento")
             return
         }
 
@@ -73,14 +73,5 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
         ContextCompat.startForegroundService(context, serviceIntent)
 
-        /*GeofenceEventProcessorHelper.handleEvent(
-            triggeringIds,
-            transition,
-            pendingResult
-        )*/
-    }
-
-    companion object {
-        private const val TAG = "GeofenceReceiver"
     }
 }

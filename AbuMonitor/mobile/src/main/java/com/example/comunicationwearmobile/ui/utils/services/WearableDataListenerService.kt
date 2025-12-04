@@ -54,7 +54,7 @@ class SenderToWearableService : Service() {
         val path = intent?.getStringExtra(Definition.PATH_SEND_DATA_TO_WEARABLE) ?: return START_NOT_STICKY
         val msg = intent.getByteArrayExtra(Definition.MSG_TO_WEARABLE) ?: return START_NOT_STICKY
 
-        Log.d("SendToWearableService", "Service iniciado")
+        Log.d(Definition.TAG_DEBUG, "Service iniciado")
 
         scope.launch {
             try {
@@ -81,13 +81,14 @@ class SenderToWearableService : Service() {
             }
 
             for (node in nodes) {
-                Log.d("Wearable", "Nodo ID: ${node.id}, Nombre: ${node.displayName}, Cerca: ${node.isNearby}")
+                Log.d(Definition.TAG_DEBUG, "Nodo ID: ${node.id}, Nombre: ${node.displayName}, Cerca: ${node.isNearby}")
 
                 if (!node.isNearby) continue
 
                 if (node.displayName.contains("Watch", ignoreCase = true) ||
-                    node.displayName.contains("Wear", ignoreCase = true)) {
-
+                    node.displayName.contains("Wear", ignoreCase = true) ||
+                    node.displayName.contains("e705723a",ignoreCase = true)||
+                        node.displayName.contains("e705723a", ignoreCase = true)){
                     Wearable.getMessageClient(context).sendMessage(node.id, path, msg).await()
                     Log.d(Definition.TAG_DEBUG, "Mensaje enviado correctamente a ${node.displayName}")
                 }

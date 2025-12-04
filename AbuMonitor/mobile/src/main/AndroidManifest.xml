@@ -144,13 +144,6 @@
         </receiver>
         <receiver android:name=".ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver" />
         <receiver android:name=".ui.utils.broadcast.NotificationCancelReceiver"/>
-        <receiver
-            android:name=".ui.utils.broadcast.GeofenceWatchdogReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.example.AbuMonitor.ACTION_GEOFENCE_WATCHDOG" />
-            </intent-filter>
-        </receiver>
 
     </application>
 
