@@ -71,7 +71,7 @@ object InitializerApplication {
     private fun initializeAlarms() {
         //initializeAlarmWatchdog()
         //initializeAlarmAssistance()
-        initializeAlarmFallBackGeofence()
+        //initializeAlarmFallBackGeofence()
     }
 
 

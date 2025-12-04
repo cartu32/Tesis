@@ -47,6 +47,7 @@ interface DaoAreaGeofence {
     suspend fun deleteAreaWithId(idArea: Long?):Int
 
     // Actualizar el área (solo actualiza la tabla principal)
+    @Transaction
     @Update
     suspend fun updateArea(areaGeofence: EntityAreaGeofence):Int
 

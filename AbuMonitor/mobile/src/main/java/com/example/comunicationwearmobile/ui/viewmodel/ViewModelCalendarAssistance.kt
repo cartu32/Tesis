@@ -174,7 +174,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     }
 
     private suspend fun insertArea(dataAreaGeofAux: DataAreaGeofAux): Long {
-        return repositoryAreaDB.insertAreaGeofence(dataAreaGeofAux)
+        return repositoryAreaDB.insertAreaGeofence(dataAreaGeofAux,false)
     }
 
     private suspend fun insertAssistance(assistance: EntityScheduledAssistance): Long {

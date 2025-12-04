@@ -82,7 +82,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
     private fun insertAreaGeofComplete(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
         viewModelScope.launch(Dispatchers.IO) {
-            val newAreaId = repositoryAreaDB?.insertAreaGeofence(dataAreaGeofAux)?: Definition.ERROR_INSERT_BD_GEOF
+            val newAreaId = repositoryAreaDB?.insertAreaGeofence(dataAreaGeofAux,true)?: Definition.ERROR_INSERT_BD_GEOF
             var finalId   = newAreaId
 
             //si se pudo insertar correctamente la nueva area en la base de datos
@@ -90,7 +90,8 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
                 dataAreaGeofAux.entityAreaGeofence.id_area = newAreaId
                 //activo el area de geofence
-                val stateActivateGeof = GeofenceActivatorHelper?.activateGeofence(context, dataAreaGeofAux) == true
+                val stateActivateGeof =
+                    GeofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
 
                 // Si falla, eliminamos el registro de la base de datos
                 if (!stateActivateGeof) {
