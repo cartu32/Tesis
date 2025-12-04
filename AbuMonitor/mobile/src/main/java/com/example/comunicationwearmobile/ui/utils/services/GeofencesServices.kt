@@ -123,7 +123,12 @@ class GeofencesServices: Service() {
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
             Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
             Definition.ACTION_GEOFENCE_WATCHDOG -> callGeofenceWatchdog()
+            Definition.ACTION_GEOFENCE_FALLBACK -> callGeofenceFallBack()
         }
+    }
+
+    private fun callGeofenceFallBack() {
+        Log.d(Definition.TAG_DEBUG,"**********Ejecuto Fallback")
     }
 
     private suspend fun callGeofenceEventProcessor(intent: Intent) {

@@ -22,6 +22,8 @@ object Definition {
 
     const val ACTION_ALARM_FOR_CHECKS     = "ACTION_ALARM_FOR_CHECKS"
     const val ACTION_GEOFENCE_WATCHDOG    = "ACTION_GEOFENCE_WATCHDOG"
+    const val ACTION_GEOFENCE_FALLBACK    = "ACTION_GEOFENCE_FALLBACK"
+
 
     const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
     const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
@@ -31,6 +33,9 @@ object Definition {
     // Intervalo entre ejecuciones del watchdog (ej: cada 3 horas)
     const val INTERVAL_WATCHDOG_MS = 15 * 60 * 1000L
     //const val INTERVAL_WATCHDOG_MS = 1 *60 * 60 * 1000L
+
+    // Intervalo entre ejecuciones del fallback (ej: cada 1 minuto)
+    const val INTERVAL_FALLBACK_MS = 1 * 60 * 1000L
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy
@@ -58,6 +63,7 @@ object Definition {
     //constante del id que identifica la alarmas
     const val ALARM_ID_FOR_CHECKS   = 1
     const val ALARM_ID_FOR_WATCHDOG = 2
+    const val ALARM_ID_FOR_FALLBACK = 3
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
     val NO_STORED_VALUE: Long =-1L

@@ -12,7 +12,7 @@ import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
-class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
+class AlarmBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(Definition.TAG_DEBUG, "Alarmas de chequeos ejecutada")
@@ -41,6 +41,10 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
                 timeNextAlarm=Definition.INTERVAL_WATCHDOG_MS
                 alarmId=Definition.ALARM_ID_FOR_WATCHDOG
             }
+            Definition.ACTION_GEOFENCE_FALLBACK->{
+                timeNextAlarm=Definition.INTERVAL_FALLBACK_MS
+                alarmId=Definition.ALARM_ID_FOR_FALLBACK
+            }
             else->{
                 Log.w(Definition.TAG_DEBUG, "Acción desconocida: $action")
                 return
@@ -58,7 +62,7 @@ class AlarmDailyForChecksBroadcastReceiver : BroadcastReceiver() {
             alarmId = alarmId,
             delayMillis = timeNextAlarm,
             action = action,
-            receiverClass = AlarmDailyForChecksBroadcastReceiver::class.java
+            receiverClass = AlarmBroadcastReceiver::class.java
         )
 
         if(ok) {

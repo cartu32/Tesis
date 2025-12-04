@@ -142,7 +142,7 @@
                 <action android:name="com.example.app.ACTION_GEOFENCE_EVENT"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver" />
+        <receiver android:name=".ui.utils.broadcast.AlarmBroadcastReceiver" />
         <receiver android:name=".ui.utils.broadcast.NotificationCancelReceiver"/>
 
     </application>

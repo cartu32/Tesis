@@ -11,7 +11,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAp
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
-import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyForChecksBroadcastReceiver
+import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -272,7 +272,7 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 Definition.ALARM_ID_FOR_CHECKS,
                 dataNextAlarm.millisBetweenCheck,
                 Definition.ACTION_ALARM_FOR_CHECKS,
-                AlarmDailyForChecksBroadcastReceiver::class.java
+                AlarmBroadcastReceiver::class.java
             )
 
             if (okAlarm) {
