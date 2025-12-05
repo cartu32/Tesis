@@ -127,11 +127,17 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
-    suspend fun updateArea(area: EntityAreaGeofence): Int {
+    suspend fun updateAreaGeof(area: EntityAreaGeofence): Int {
         return withContext(Dispatchers.IO) {
             area.let {
                 daoAreaGeofence.updateArea(area)
             }
+        }
+    }
+
+    suspend fun updateAreaState(areaState:EntityAreaRuntimeState):Int{
+        return withContext(Dispatchers.IO){
+            daoAreaRuntimeState.updateAreaState(areaState)
         }
     }
 
@@ -186,10 +192,18 @@ class RepositoryAreaDB (context: Context) {
                 id_priority = row.id_priority
             )
 
+            val entityAreaRuntimeState=EntityAreaRuntimeState(
+                id_area = row.id_area,
+                is_activated_geof = row.is_activated_geof,
+                last_inside_state = row.last_inside_state,
+                last_update_time = row.last_update_time
+            )
+
             DataAreaGeofAux(
                 entityAreaGeofence = entity,
                 listIdEventSelected = events,
-                secZoneTimeRange = null // acá después podés traer la zona segura si querés
+                secZoneTimeRange = null, // acá después podés traer la zona segura si querés
+                entityAreaRuntimeState = entityAreaRuntimeState
             )
         }
     }

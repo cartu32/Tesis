@@ -34,7 +34,7 @@ import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
         EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
         EntitySecurityZoneTimeRange::class, EntityAreaRuntimeState::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

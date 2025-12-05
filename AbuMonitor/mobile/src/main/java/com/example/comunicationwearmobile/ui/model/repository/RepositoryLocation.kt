@@ -15,6 +15,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*    // LocationServices, LocationRequest, etc.
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -28,14 +31,37 @@ class RepositoryLocation private constructor(appContext: Context) {
 
     private var locationCallback: LocationCallback? = null // Para evitar múltiples instancias
 
+    //se usa para enviar las ubicaciones al viewmodel
     private val _locationLiveData = MutableLiveData<Location>()
     val locationLiveData: LiveData<Location> get() = _locationLiveData
 
-    private val locationRequest: LocationRequest = LocationRequest.Builder(
-        Priority.PRIORITY_HIGH_ACCURACY,
-        Definition.INTERVAL_MILLIS_ACTUALIZATION_POS_GPS
-    ).setMinUpdateIntervalMillis(Definition.SETUP_UPDATE_INTERVAL_MILLIS)
+    //se usa para enviar de forma manual las ubicaciones al foregroundservice
+    private val _locationFlow = MutableSharedFlow<Location>(
+        replay = 1,
+        extraBufferCapacity = 10,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val locationFlow: SharedFlow<Location> = _locationFlow
+
+/*    val locationRequest = LocationRequest.Builder(
+        Priority.PRIORITY_HIGH_ACCURACY, // GPS fuerte
+        10_000L                          // cada 10s
+    )
+        .setMinUpdateIntervalMillis(5_000L)     // hasta cada 5s si puede
+        .setMaxUpdateDelayMillis(30_000L)       // agrupa hasta 30s
+        .setMinUpdateDistanceMeters(5f)         // si se movió 5m, mandá
         .build()
+*/
+    val locationRequest = LocationRequest.Builder(
+        Priority.PRIORITY_HIGH_ACCURACY, // GPS fuerte
+        15_000L                          // cada 15s
+    )
+        .setMinUpdateIntervalMillis(10_000L)     // hasta cada 5s si puede
+        .setMaxUpdateDelayMillis(0L)       // agrupa hasta 30s
+        .setMinUpdateDistanceMeters(8f)         // si se movió 5m, mandá
+        .build()
+
 
     private val locationSettingsRequest: LocationSettingsRequest =
         LocationSettingsRequest.Builder()
@@ -66,7 +92,11 @@ class RepositoryLocation private constructor(appContext: Context) {
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     for (location in locationResult.locations) {
+                        //se envia la ubicacion al viewmodel para mostrala por pantalla
                         _locationLiveData.postValue(location)
+                        //se envia la ubicacion al foregroundservice para detectar de forma manual si la persona
+                        //esta dentro o fuera de un area de geofence
+                        _locationFlow.tryEmit(location)
                     }
                 }
             }

@@ -11,5 +11,8 @@ data class AreaGeofenceWithEvents(
     val id_priority: Int,
     val list_id_event: String,
     val dwell_time: Int=0,
-    val description:String=""
+    val description:String="",
+    val is_activated_geof:Boolean=false,
+    val last_inside_state:Boolean=false,
+    val last_update_time:Long=0
 )

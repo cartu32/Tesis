@@ -88,11 +88,12 @@ object SmsHelper {
                 val listContact = repositoryContact.getAllContactList()
 
                 for (contact in listContact) {
+                    // Dejamos respirar al módem / operadora
+                    delay(5_000)
                     Log.d(Definition.TAG_DEBUG, "Enviando SMS al contacto: ${contact.name}")
                     sendSMSToContact(appContext, message, contact.telephone)
 
-                    // Dejamos respirar al módem / operadora
-                    delay(5_000)
+
                 }
             }
         }

@@ -38,23 +38,27 @@ interface DaoScheduledAssistance {
 
     @Query("""
         SELECT 
-            ag.id_area,
+           ag.id_area,
             ag.latitude,
             ag.longitude,
             ag.meters,
-            ag.dwell_time,
+            ag.id_priority,
+            ag.id_type_area,
             ag.description,
-            p.id_priority,
-            ta.id_type_area,
+            ag.dwell_time,
+            ar.is_activated_geof,
+            ar.last_inside_state,
+            ar.last_update_time,
             GROUP_CONCAT(ae.id_event) AS list_id_event
-        FROM Area_Geofence ag
+        FROM Area_Geofence ag, Area_Runtime_State ar
         INNER JOIN Scheduled_Assistance sa ON ag.id_area = sa.id_area
         INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
         INNER JOIN Type_Area ta ON ag.id_type_area = ta.id_type_area
         INNER JOIN Priority p ON ag.id_priority = p.id_priority
+        INNER JOIN Area_Runtime_State ON ag.id_area = ar.id_area
         WHERE sa.date_hour_appointment >= :dateTimeAlarmInitial AND
               sa.date_hour_appointment< :dateTimeAlarmNext              
-        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.dwell_time,p.id_priority,ta.id_type_area,ag.description
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.id_priority,ag.id_type_area,ag.dwell_time,ag.description,ar.is_activated_geof,ar.last_inside_state,ar.last_update_time
     """)
     fun getAreasInsideDateInterval(
         dateTimeAlarmInitial: Long,

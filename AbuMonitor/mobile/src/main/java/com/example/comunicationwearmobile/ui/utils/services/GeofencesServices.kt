@@ -17,6 +17,7 @@ import com.example.comunicationwearmobile.ui.model.extra.GeofenceEventParameter
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceFallBack
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceWatchDogHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
@@ -26,21 +27,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class GeofencesServices: Service() {
+
     // Canal que se utiliza para encolar las peticiones realizadas cada vez que
     // se ejecuta stratservice
-    private var requestChannel: Channel<Intent>? = null
-    private var serviceScope:CoroutineScope? = null
+    private var requestChannel=Channel<Intent>(Channel.UNLIMITED)
+    private var serviceScope=CoroutineScope(Dispatchers.IO + Job())
 
     private var notificationManagerHelper: NotificationHelper?= null
     private var repositoryLocation: RepositoryLocation? = null
-    private var locationObserver :Observer<Location>?=null
 
 
     private lateinit var connectivityManager: ConnectivityManager
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
+    private var mutexLocationUpdate= Mutex()
 
     override fun onCreate() {
         super.onCreate()
@@ -48,38 +55,50 @@ class GeofencesServices: Service() {
         val pid = android.os.Process.myPid()
         RepositoryDebugLogger.log(this, "ForegroundService.onCreate() PID=$pid")
 
-        requestChannel=Channel<Intent>(Channel.UNLIMITED)
-        serviceScope=CoroutineScope(Dispatchers.IO + Job())
+        initializeComponent()
+        showNotificationForeground()
 
-        repositoryLocation = RepositoryLocation.getInstance(application)
+        startLocationUpdates()
 
-        notificationManagerHelper= NotificationHelper.getInstance(applicationContext)
+        channelLector()
 
+    }
+
+    private fun startLocationUpdates() {
+        //empieza a recibir actualizaciones del gps
+        repositoryLocation?.startLocationUpdates()
+
+        serviceScope.launch {
+            repositoryLocation?.locationFlow
+              //  ?.sample(Definition.SAMPLE_TAKE_LOCATION_UPDATE)
+                ?.conflate()
+                ?.collect { location ->
+                    mutexLocationUpdate.withLock {
+                        Log.d(Definition.TAG_DEBUG, "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
+
+                        GeofenceFallBack.callGeofenceFallBack(this@GeofencesServices,location)
+                    }
+                }
+        }
+    }
+
+    private fun showNotificationForeground() {
         val notification = notificationManagerHelper?.createNotificationForegroundService()
 
         notificationManagerHelper?.let {
             startForeground(it.ID_NOTIFICATION_FOREGROUND_SERVICE, notification)
         }
 
+    }
+
+    private fun initializeComponent() {
+        repositoryLocation = RepositoryLocation.getInstance(application)
+        notificationManagerHelper= NotificationHelper.getInstance(applicationContext)
         // Inicializo ConnectivityManager y registro callback
         connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         registerNetworkCallback()
 
-        //empieza a recibir actualizaciones del gps
-       repositoryLocation?.startLocationUpdates()
-
-        channelLector()
-        configOberserverLivedata()
-    }
-
-    private fun configOberserverLivedata() {
-
-        locationObserver = Observer<Location> { location ->
-           // Log.d("LocationService", "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
-        }
-
-        repositoryLocation?.locationLiveData?.observeForever(locationObserver!!)
     }
 
 
@@ -121,7 +140,7 @@ class GeofencesServices: Service() {
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
-            Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
+           // Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
             Definition.ACTION_GEOFENCE_WATCHDOG -> callGeofenceWatchdog()
             Definition.ACTION_GEOFENCE_FALLBACK -> callGeofenceFallBack()
         }
@@ -236,23 +255,17 @@ class GeofencesServices: Service() {
 
             stopForeground(STOP_FOREGROUND_REMOVE)
 
-            //remueve los observer de livedata del repository
-                repositoryLocation?.stopLocationUpdates()
+            repositoryLocation?.stopLocationUpdates()
 
-            locationObserver?.let {
-                repositoryLocation?.locationLiveData?.removeObserver(it)
-            }
 
             // Cancela la corutina cuando el servicio se destruye
-            serviceScope?.cancel()
-            requestChannel?.close()
-            serviceScope=null
+            serviceScope.cancel()
+            requestChannel.close()
 
             // Desregistrar callback de red
             unregisterNetworkCallback()
 
             //libero los recursos
-            requestChannel=null
             notificationManagerHelper=null
             repositoryLocation=null
 

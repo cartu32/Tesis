@@ -22,8 +22,8 @@ import kotlinx.parcelize.Parcelize
     ]
 )
 data class EntityAreaRuntimeState(
-    @PrimaryKey val id_area: Long,
+    @PrimaryKey val id_area: Long=0,
     val is_activated_geof:Boolean=false, //indica si el area esta activa
-    val last_inside_state:Boolean=false, //indica si la persona esta dentro o fuera del area
+    var last_inside_state:Boolean?=null, //indica si la persona esta dentro o fuera del area
     val last_update_time:Long=0, //indica el ultimo tiempo en que se actualizo el estado
 ):Parcelable

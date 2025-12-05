@@ -3,6 +3,7 @@ package com.example.abumonitor.constants
 import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
+import kotlin.time.Duration
 
 object Definition {
 
@@ -162,6 +163,10 @@ object Definition {
     //mapa
     const val INTERVAL_MILLIS_ACTUALIZATION_POS_GPS:Long=5000
     const val SETUP_UPDATE_INTERVAL_MILLIS:Long = 2000
+    //constante que indica cada cuanto tiempo se toma la ultima ubicación del gps que se envia por el flow
+    //se el flow envia 10 ubicaciones en 60 segundos, se toma la ultima ubicación recibida dentro de los 60 segundos
+    const val SAMPLE_TAKE_LOCATION_UPDATE: Long = 10_000 //segundos
+
 
     //rango de cantidad de minutos que se considera salida circunstancial de la zona de seguridad
     //Esto se usa para evitar falsos posirtivos de la zona de seguridad por ejemplo si la persona
