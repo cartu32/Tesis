@@ -22,20 +22,27 @@ object GeofenceFallBack {
     }
 
     private suspend fun proccessFallBack(context: Context, location: Location) {
-        val repoAreas = RepositoryAreaDB.getInstance(context)
-        val activatedAreas=repoAreas.getAllActiveAreasWithEvents()
+        val appContext = context.applicationContext
+        val repoAreas = RepositoryAreaDB.getInstance(appContext)
 
-        if(activatedAreas.isEmpty()) {
-            RepositoryDebugLogger.log(context, "FALLBACK: no hay áreas activas")
+        // 1) Traigo todas las áreas activas
+        val activatedAreas = repoAreas.getAllActiveAreasWithEvents()
+
+        if (activatedAreas.isEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: no hay áreas activas")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: no hay áreas activas")
             return
         }
 
         val enterIds = mutableListOf<Long>()
         val exitIds  = mutableListOf<Long>()
 
-        for (dataArea in activatedAreas){
-            val area=dataArea.entityAreaGeofence
+        // 2) Recorro todas las áreas y calculo si hubo cambio de estado
+        for (dataArea in activatedAreas) {
+            val area = dataArea.entityAreaGeofence
+            val runtimeState = dataArea.entityAreaRuntimeState
 
+            // Ubicación del centro del área
             val areaLocation = Location("fallback_area").apply {
                 latitude = area.latitude.toDouble()
                 longitude = area.longitude.toDouble()
@@ -43,54 +50,74 @@ object GeofenceFallBack {
 
             val distance = location.distanceTo(areaLocation)
             val currentInside = distance <= area.meters.toFloat()
-            val prevState =dataArea.entityAreaRuntimeState.last_inside_state
-
+            val prevState = runtimeState.last_inside_state
 
             when (prevState) {
                 null -> {
                     // Primera vez: inicializo estado pero NO disparo eventos
-                    RepositoryDebugLogger.log(context, "FALLBACK: inicializo estado para área ${area.id_area} (no genero evento)")
-                    Log.d(Definition.TAG_DEBUG, "FALLBACK: inicializo estado para área ${area.id_area} (no genero evento)")
+                    RepositoryDebugLogger.log(
+                        appContext,
+                        "FALLBACK: inicializo estado para área ${area.id_area} (no genero evento)"
+                    )
+                    Log.d(
+                        Definition.TAG_DEBUG,
+                        "FALLBACK: inicializo estado para área ${area.id_area} (no genero evento)"
+                    )
                 }
                 false -> {
-                    // Antes estaba FUERA
+                    // Antes estaba FUERA y ahora está DENTRO → ENTER
                     if (currentInside) {
                         enterIds.add(area.id_area)
                     }
                 }
                 true -> {
-                    // Antes estaba DENTRO
+                    // Antes estaba DENTRO y ahora está FUERA → EXIT
                     if (!currentInside) {
                         exitIds.add(area.id_area)
                     }
                 }
             }
 
-            dataArea.entityAreaRuntimeState.last_inside_state=currentInside
-            // Actualizo estado para la próxima ejecución
-            if(repoAreas.updateAreaState(dataArea.entityAreaRuntimeState)==0) {
-                Log.e(Definition.TAG_DEBUG, "FALLBACK: error al actualizar estado para área ${area.id_area}")
-                RepositoryDebugLogger.log(context, "FALLBACK: error al actualizar estado para área ${area.id_area}")
-                return
+            // 3) Actualizo estado para próxima ejecución
+            runtimeState.last_inside_state = currentInside
+
+            val rows = repoAreas.updateAreaState(runtimeState)
+            if (rows == 0) {
+                Log.e(
+                    Definition.TAG_DEBUG,
+                    "FALLBACK: error al actualizar estado para área ${area.id_area}"
+                )
+                RepositoryDebugLogger.log(
+                    appContext,
+                    "FALLBACK: error al actualizar estado para área ${area.id_area}"
+                )
+                // Podés elegir entre 'continue' o 'return'.
+                // Yo usaría 'continue' para no perder el resto de las áreas:
+                continue
             }
-
-            // 5) Disparo eventos ENTER/EXIT según corresponda
-            if (enterIds.isNotEmpty()) {
-                RepositoryDebugLogger.log(context, "FALLBACK: disparo ENTER para ids=$enterIds")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo ENTER para ids=$enterIds")
-
-                GeofenceEventProcessorHelper.handleEvent(triggeringIds = enterIds, transition = Geofence.GEOFENCE_TRANSITION_ENTER)
-            }
-
-            if (exitIds.isNotEmpty()) {
-                RepositoryDebugLogger.log(context, "FALLBACK: disparo EXIT para ids=$exitIds")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo EXIT para ids=$exitIds")
-
-                GeofenceEventProcessorHelper.handleEvent(triggeringIds = exitIds, transition = Geofence.GEOFENCE_TRANSITION_EXIT)
-            }
-
         }
 
+        // 4) Disparo eventos ENTER para todas las áreas que cambiaron a DENTRO
+        if (enterIds.isNotEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo ENTER para ids=$enterIds")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo ENTER para ids=$enterIds")
+
+            GeofenceEventProcessorHelper.handleEvent(
+                triggeringIds = enterIds,
+                transition = Geofence.GEOFENCE_TRANSITION_ENTER
+            )
+        }
+
+        // 5) Disparo eventos EXIT para todas las áreas que cambiaron a FUERA
+        if (exitIds.isNotEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo EXIT para ids=$exitIds")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo EXIT para ids=$exitIds")
+
+            GeofenceEventProcessorHelper.handleEvent(
+                triggeringIds = exitIds,
+                transition = Geofence.GEOFENCE_TRANSITION_EXIT
+            )
+        }
     }
 
 }

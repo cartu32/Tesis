@@ -20,8 +20,9 @@ object GeofenceActivatorHelper {
 
 
     @SuppressLint("MissingPermission")
-    suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean =
-        suspendCancellableCoroutine { continuation ->
+    suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
+        return true
+        /*suspendCancellableCoroutine { continuation ->
 
         val geofencingClient = LocationServices.getGeofencingClient(context)
         val area = dataAreaGeofAux.entityAreaGeofence
@@ -68,13 +69,13 @@ object GeofenceActivatorHelper {
 
         geofencingClient.addGeofences(geofencingRequest, pendingIntent)
             .addOnSuccessListener {
-                Log.d(Definition.TAG_DEBUG, "Agregada geocerca ${area.id_area}")
+                Log.d(Definition.TAG_DEBUG, "****Agregada geocerca ${area.id_area}")
                 continuation.resume(true)
             }
             .addOnFailureListener {
                 Log.e(Definition.TAG_DEBUG, "Error al agregar geocerca: ${it.message}")
                 continuation.resume(false)
-            }
+            }*/
     }
 
     suspend fun clearAllGeofence(context: Context):Boolean=
@@ -96,7 +97,7 @@ object GeofenceActivatorHelper {
     }
 
     fun desactivateGeofence(context: Context,idArea:String) {
-        val geofencingClient = LocationServices.getGeofencingClient(context)
+        /*val geofencingClient = LocationServices.getGeofencingClient(context)
 
         // Eliminar el geofence usando su ID
         val geofenceRequestIds = listOf(idArea)  // El ID del geofence que quieres eliminar
@@ -109,7 +110,7 @@ object GeofenceActivatorHelper {
             .addOnFailureListener { exception ->
                 // Error al eliminar el geofence
                 Log.e(Definition.TAG_DEBUG, "Failed to remove geofence: ${exception.localizedMessage}")
-            }
+            }*/
     }
 
 

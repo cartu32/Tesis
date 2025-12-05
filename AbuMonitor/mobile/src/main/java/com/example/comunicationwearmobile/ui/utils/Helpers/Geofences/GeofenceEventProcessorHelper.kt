@@ -364,7 +364,7 @@ object GeofenceEventProcessorHelper {
         val id = notificationHelper.showNotificationGeneral(msgForElderly)
 
         // SMS al familiar
-        notifyUserPriorityBaja( originalMsg)
+//        notifyUserPriorityBaja( originalMsg)
 
         // Enviar al reloj con el id de la notificación del móvil
         val msgForWear = msgForElderly.copy(
