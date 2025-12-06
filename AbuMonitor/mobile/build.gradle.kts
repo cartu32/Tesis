@@ -24,7 +24,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            isDebuggable = false // Asegura que no sea modo debug
+            isDebuggable = true // Asegura que no sea modo debug
             isProfileable = true // <-- Esto habilita el profiler sin debug
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

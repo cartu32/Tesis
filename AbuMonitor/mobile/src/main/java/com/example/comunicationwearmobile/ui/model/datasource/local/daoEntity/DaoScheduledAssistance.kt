@@ -47,7 +47,7 @@ interface DaoScheduledAssistance {
             ag.description,
             ag.dwell_time,
             ar.is_activated_geof,
-            ar.last_inside_state,
+            ar.prev_state_machine,
             ar.last_update_time,
             GROUP_CONCAT(ae.id_event) AS list_id_event
         FROM Area_Geofence ag, Area_Runtime_State ar
@@ -58,7 +58,7 @@ interface DaoScheduledAssistance {
         INNER JOIN Area_Runtime_State ON ag.id_area = ar.id_area
         WHERE sa.date_hour_appointment >= :dateTimeAlarmInitial AND
               sa.date_hour_appointment< :dateTimeAlarmNext              
-        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.id_priority,ag.id_type_area,ag.dwell_time,ag.description,ar.is_activated_geof,ar.last_inside_state,ar.last_update_time
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.id_priority,ag.id_type_area,ag.dwell_time,ag.description,ar.is_activated_geof,ar.prev_state_machine,ar.last_update_time
     """)
     fun getAreasInsideDateInterval(
         dateTimeAlarmInitial: Long,

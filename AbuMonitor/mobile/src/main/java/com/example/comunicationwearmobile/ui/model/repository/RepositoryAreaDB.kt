@@ -195,7 +195,7 @@ class RepositoryAreaDB (context: Context) {
             val entityAreaRuntimeState=EntityAreaRuntimeState(
                 id_area = row.id_area,
                 is_activated_geof = row.is_activated_geof,
-                last_inside_state = row.last_inside_state,
+                prev_state_machine = row.prev_state_machine,
                 last_update_time = row.last_update_time
             )
 

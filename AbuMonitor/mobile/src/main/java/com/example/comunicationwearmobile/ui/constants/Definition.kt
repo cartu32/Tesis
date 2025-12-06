@@ -7,7 +7,17 @@ import kotlin.time.Duration
 
 object Definition {
 
+    /********************************************************
+     ******* constante de la maquina de estados de goefence**
+     ********************************************************
+     */
+    const val EVENT_EXIT     =   "EVT_EXIT"
+    const val EVENT_ENTER    =   "EVT_ENTER"
+    const val EVENT_CONTINUE =  "EVT_CONTINUE"
 
+    const val STATE_INIT     =   "ST_INIT"
+    const val STATE_INSIDE   =   "ST_INSIDE"
+    const val STATE_OUTSIDE  =   "ST_OUTSIDE"
 
     /********************************************************
      ******* constante de nombre de usuario por defecto*****

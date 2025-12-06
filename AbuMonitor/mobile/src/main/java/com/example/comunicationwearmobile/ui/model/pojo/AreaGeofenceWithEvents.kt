@@ -13,6 +13,6 @@ data class AreaGeofenceWithEvents(
     val dwell_time: Int=0,
     val description:String="",
     val is_activated_geof:Boolean=false,
-    val last_inside_state:Boolean=false,
+    val prev_state_machine:String,
     val last_update_time:Long=0
 )
