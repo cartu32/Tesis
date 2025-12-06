@@ -10,6 +10,10 @@ import com.google.android.gms.location.Geofence
 
 object GeofenceFallBack {
 
+    // --- Configuración de histeresis ---
+    private const val ENTER_FACTOR = 0.9f   // 90% del radio para considerar "ENTRA"
+    private const val EXIT_FACTOR  = 1.1f   // 110% del radio para considerar "SALE"
+
     suspend fun callGeofenceFallBack(context: Context, location: Location) {
         try {
             RepositoryDebugLogger.log(context, "FALLBACK: inicio ejecución")
@@ -21,6 +25,32 @@ object GeofenceFallBack {
         }
     }
 
+
+    private fun isInsideWithHysteresis(
+        distance: Float,
+        radiusMeters: Float,
+        prevState: Boolean?
+    ): Boolean {
+        val enterRadius = radiusMeters * ENTER_FACTOR
+        val exitRadius  = radiusMeters * EXIT_FACTOR
+
+        return when (prevState) {
+            null -> {
+                // Primera vez: uso el radio "puro"
+                distance <= radiusMeters
+            }
+            false -> {
+                // Estaba FUERA → solo pasa a DENTRO si está bien adentro
+                distance <= enterRadius
+            }
+            true -> {
+                // Estaba DENTRO → solo pasa a FUERA si se va bien afuera
+                distance <= exitRadius   // sigue "inside" mientras no supere exitRadius
+            }
+        }
+    }
+
+    // --- Fallback completo con histeresis ---
     private suspend fun proccessFallBack(context: Context, location: Location) {
         val appContext = context.applicationContext
         val repoAreas = RepositoryAreaDB.getInstance(appContext)
@@ -42,15 +72,28 @@ object GeofenceFallBack {
             val area = dataArea.entityAreaGeofence
             val runtimeState = dataArea.entityAreaRuntimeState
 
-            // Ubicación del centro del área
+            // Centro del área
             val areaLocation = Location("fallback_area").apply {
                 latitude = area.latitude.toDouble()
                 longitude = area.longitude.toDouble()
             }
 
             val distance = location.distanceTo(areaLocation)
-            val currentInside = distance <= area.meters.toFloat()
+            val radiusMeters = area.meters.toFloat()
             val prevState = runtimeState.last_inside_state
+
+            // Aplico histeresis
+            val currentInside = isInsideWithHysteresis(
+                distance = distance,
+                radiusMeters = radiusMeters,
+                prevState = prevState
+            )
+
+            RepositoryDebugLogger.log(
+                appContext,
+                "FALLBACK: área=${area.id_area}, dist=${"%.1f".format(distance)}m, " +
+                        "radio=$radiusMeters, prev=$prevState, now=$currentInside"
+            )
 
             when (prevState) {
                 null -> {
@@ -65,13 +108,13 @@ object GeofenceFallBack {
                     )
                 }
                 false -> {
-                    // Antes estaba FUERA y ahora está DENTRO → ENTER
+                    // Antes estaba FUERA
                     if (currentInside) {
                         enterIds.add(area.id_area)
                     }
                 }
                 true -> {
-                    // Antes estaba DENTRO y ahora está FUERA → EXIT
+                    // Antes estaba DENTRO
                     if (!currentInside) {
                         exitIds.add(area.id_area)
                     }
@@ -91,8 +134,7 @@ object GeofenceFallBack {
                     appContext,
                     "FALLBACK: error al actualizar estado para área ${area.id_area}"
                 )
-                // Podés elegir entre 'continue' o 'return'.
-                // Yo usaría 'continue' para no perder el resto de las áreas:
+                // sigo con las otras áreas, no corto todo
                 continue
             }
         }
@@ -119,5 +161,6 @@ object GeofenceFallBack {
             )
         }
     }
+
 
 }
