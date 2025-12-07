@@ -12,15 +12,14 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLog
 import com.google.android.gms.location.Geofence
 import kotlin.math.max
 import kotlin.math.min
-
 object GeofenceFallBack {
 
     // --- Configuración de histeresis espacial ---
     private const val ENTER_FACTOR = 0.8f   // 80% del radio para considerar "ENTRA" (desde afuera)
     private const val EXIT_FACTOR  = 1.2f   // 120% del radio para considerar "SALE" (desde adentro)
 
-    // --- Tiempo mínimo entre cambios de estado (para evitar rebotes rápidos) ---
-    private const val MIN_STATE_CHANGE_INTERVAL_MS = 15_000L  // 15 segundos (ajustable)
+    // --- Tiempo mínimo entre cambios de estado (para evitar rebotes) ---
+    private const val MIN_STATE_CHANGE_INTERVAL_MS = 15_000L  // 15 segundos (modo caminando)
     private val lastStateChangeTime = mutableMapOf<Long, Long>()
 
     suspend fun callGeofenceFallBack(context: Context, location: Location) {
@@ -64,13 +63,14 @@ object GeofenceFallBack {
         }
 
         // ---- 2) Zona gris cerca del borde, proporcional al radio ----
-        val MIN_BORDER_MARGIN       = 5f          // margen mínimo absoluto
-        val MAX_BORDER_FRACTION     = 0.30f       // como mucho 30% del radio
-        val distanceToBorder        = kotlin.math.abs(distance - radiusMeters)
+        val MIN_BORDER_MARGIN   = 5f      // margen mínimo absoluto
+        val MAX_BORDER_FRACTION = 0.30f   // como mucho 30% del radio
+
+        val distanceToBorder = kotlin.math.abs(distance - radiusMeters)
 
         // Usamos la mitad de la accuracy, pero limitada por el radio
-        val borderMargin = min(
-            max(accuracy * 0.5f, MIN_BORDER_MARGIN),
+        val borderMargin = kotlin.math.min(
+            kotlin.math.max(accuracy * 0.5f, MIN_BORDER_MARGIN),
             radiusMeters * MAX_BORDER_FRACTION
         )
 
@@ -78,7 +78,7 @@ object GeofenceFallBack {
             RepositoryDebugLogger.log(
                 context,
                 "GETEVENT: zona gris distToBorder=$distanceToBorder, " +
-                        "borderMargin=$borderMargin, acc=$accuracy, CONTINUE"
+                           "borderMargin=$borderMargin, acc=$accuracy, CONTINUE"
             )
             return Definition.EVENT_CONTINUE
         }
@@ -159,6 +159,21 @@ object GeofenceFallBack {
         val enterIds = mutableListOf<Long>()
         val exitIds  = mutableListOf<Long>()
 
+        // Velocidad actual (m/s). Sirve para ajustar el intervalo mínimo.
+        val speed = location.speed          // velocidad de la persona
+        val isFast = speed > Definition.LIMIT_SPEED_WALKING //comparo el limite de la velocidad para determinar si va en auto o caminando
+
+        Log.d(Definition.TAG_DEBUG,"Velocidad limite ${Definition.LIMIT_SPEED_WALKING}")
+        if(isFast){
+            RepositoryDebugLogger.log(context,"VELOCIDAD $speed EN AUTO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN AUTO")
+        }
+        else{
+            RepositoryDebugLogger.log(context,"VELOCIDAD $speed EN CAMINANDO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN CAMINANDO")
+        }
+
+
         // 2) Recorro todas las áreas y calculo si hubo cambio de estado
         for (dataArea in activatedAreas) {
             val area = dataArea.entityAreaGeofence
@@ -223,19 +238,26 @@ object GeofenceFallBack {
                 }
             }
 
-            // --- Filtro de tiempo mínimo entre cambios de estado ---
+            // --- Filtro de tiempo mínimo entre cambios de estado (dinámico por velocidad) ---
             if (currentStateArea != prevState) {
                 val now        = System.currentTimeMillis()
                 val lastChange = lastStateChangeTime[area.id_area] ?: 0L
                 val elapsed    = now - lastChange
 
                 val isFirstState =
-                    prevState == null ||
+                            prevState == null ||
                             prevState == Definition.STATE_INIT ||
                             lastChange == 0L
 
-                if (isFirstState || elapsed >= MIN_STATE_CHANGE_INTERVAL_MS) {
-                    // ✅ Acepto el cambio de estado
+                // Ajusto el intervalo mínimo según la velocidad
+                val dynamicMinIntervalMs = when {
+                    isFirstState -> 0L                          // primer cambio siempre permitido
+                    isFast       -> 3_000L                      // en auto: permito cambios cada 3s
+                    else         -> MIN_STATE_CHANGE_INTERVAL_MS // caminando: sigo con 15s
+                }
+
+                if (elapsed >= dynamicMinIntervalMs || isFirstState) {
+                    // Acepto el cambio de estado
                     if (triggerEnter) enterIds.add(area.id_area)
                     if (triggerExit)  exitIds.add(area.id_area)
 
@@ -247,14 +269,15 @@ object GeofenceFallBack {
                     RepositoryDebugLogger.log(
                         context,
                         "FALLBACK: cambio de estado ACEPTADO área=${area.id_area} " +
-                                "prev=$prevState, curr=$currentStateArea, elapsed=${elapsed}ms"
+                                "prev=$prevState, curr=$currentStateArea, elapsed=${elapsed}ms, " +
+                                "speed=$speed, minInterval=$dynamicMinIntervalMs"
                     )
                 } else {
-                    // ❌ Cambio demasiado rápido → ignoro y mantengo prevState
+                    // Cambio demasiado rápido → ignoro y mantengo prevState
                     RepositoryDebugLogger.log(
                         context,
                         "FALLBACK: cambio de estado RECHAZADO área=${area.id_area} " +
-                                "prev=$prevState, curr=$currentStateArea, elapsed=${elapsed}ms < $MIN_STATE_CHANGE_INTERVAL_MS"
+                                "prev=$prevState, curr=$currentStateArea, elapsed=${elapsed}ms < $dynamicMinIntervalMs, speed=$speed"
                     )
                     currentStateArea = prevState
                 }

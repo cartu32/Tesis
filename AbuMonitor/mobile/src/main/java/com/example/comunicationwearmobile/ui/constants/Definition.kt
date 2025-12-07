@@ -7,18 +7,24 @@ import kotlin.time.Duration
 
 object Definition {
 
+
     /********************************************************
      ******* constante de la maquina de estados de goefence**
      ********************************************************
      */
+
     const val EVENT_EXIT     =   "EVT_EXIT"
     const val EVENT_ENTER    =   "EVT_ENTER"
-    const val EVENT_CONTINUE =  "EVT_CONTINUE"
+    const val EVENT_CONTINUE =   "EVT_CONTINUE"
 
     const val STATE_INIT     =   "ST_INIT"
     const val STATE_INSIDE   =   "ST_INSIDE"
     const val STATE_OUTSIDE  =   "ST_OUTSIDE"
 
+    const val KM_PER_HOUR = 30f // ~30 km/h (ajustable)
+    const val CONVESION_METER_PER_SECOND = 3.6f
+    const val LIMIT_SPEED_WALKING = (KM_PER_HOUR / CONVESION_METER_PER_SECOND).toInt()
+    
     /********************************************************
      ******* constante de nombre de usuario por defecto*****
      ********************************************************
