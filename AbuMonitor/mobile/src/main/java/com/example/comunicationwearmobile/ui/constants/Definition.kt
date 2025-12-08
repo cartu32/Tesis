@@ -21,10 +21,28 @@ object Definition {
     const val STATE_INSIDE   =   "ST_INSIDE"
     const val STATE_OUTSIDE  =   "ST_OUTSIDE"
 
+    //constante para determinar la velocidad de la persona para saber si esta caminando o en auto
     const val KM_PER_HOUR = 30f // ~30 km/h (ajustable)
     const val CONVESION_METER_PER_SECOND = 3.6f
-    const val LIMIT_SPEED_WALKING = (KM_PER_HOUR / CONVESION_METER_PER_SECOND).toInt()
-    
+    const val LIMIT_SPEED_WALKING = KM_PER_HOUR / CONVESION_METER_PER_SECOND
+
+    // --- Configuración de zona gris por imprecisión del GPS ---
+    // Esta zona sirve para evitar falsos positivos cuando el usuario
+    // está cerca del borde del geofence y el GPS fluctúa.
+    // El margen se calcula en base a:
+    // 1) Un mínimo fijo absoluto (en metros)
+    // 2) Un máximo relativo al tamaño del radio del área
+
+    val MIN_BORDER_MARGIN   = 5f      // margen mínimo absoluto en metros
+    val MAX_BORDER_FRACTION = 0.30f   // como mucho 30% del radio
+
+    // --- Configuración de histeresis espacial ---
+    const val ENTER_FACTOR = 0.8f   // 80% del radio para considerar "ENTRA" (desde afuera)
+    const val EXIT_FACTOR  = 1.2f   // 120% del radio para considerar "SALE" (desde adentro)
+
+    // --- Tiempo mínimo entre cambios de estado (para evitar rebotes) ---
+    const val MIN_STATE_CHANGE_INTERVAL_MS = 15_000L  // 15 segundos (modo caminando)
+
     /********************************************************
      ******* constante de nombre de usuario por defecto*****
      ********************************************************
