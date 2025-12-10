@@ -25,6 +25,6 @@ import kotlinx.parcelize.Parcelize
 data class EntityAreaRuntimeState(
     @PrimaryKey var id_area: Long=0,
     val is_activated_geof:Boolean=false,                  //indica si el area esta activa
-    var prev_state_machine:String=Definition.STATE_INIT, //Indica el estado en que quedo la maquina de estado de esa area
+    var prev_state_machine:String=Definition.ST_INIT, //Indica el estado en que quedo la maquina de estado de esa area
     val last_update_time:Long=0,                        //indica el ultimo tiempo en que se actualizo el estado
 ):Parcelable

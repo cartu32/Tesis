@@ -18,6 +18,17 @@ interface DaoAreaRuntimeState {
     @Query("SELECT * FROM Area_Runtime_State WHERE id_area = :idArea")
     suspend fun getAreaStateWithId(idArea: Long): EntityAreaRuntimeState
 
-    @Update
-    suspend fun updateAreaState(areaState: EntityAreaRuntimeState):Int
+    @Query("""
+        UPDATE Area_Runtime_State 
+        SET prev_state_machine = :state
+        WHERE id_area = :idArea
+    """)
+    suspend fun updateAreaStateFsm(idArea:Long,state:String):Int
+
+    @Query("""
+        UPDATE Area_Runtime_State 
+        SET is_activated_geof = :isActivated
+        WHERE id_area = :idArea
+    """)
+    fun updateAreaActivated(idArea: Long, isActivated: Boolean):Int
 }

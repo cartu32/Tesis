@@ -12,14 +12,24 @@ object Definition {
      ******* constante de la maquina de estados de goefence**
      ********************************************************
      */
+    //estados de la FSM
+    const val ST_INIT             =   "ST_INIT"
+    const val ST_INSIDE           =   "ST_INSIDE"
+    const val ST_OUTSIDE          =   "ST_OUTSIDE"
 
-    const val EVENT_EXIT     =   "EVT_EXIT"
-    const val EVENT_ENTER    =   "EVT_ENTER"
-    const val EVENT_CONTINUE =   "EVT_CONTINUE"
+    //eventos de la fsm
+    const val EVT_EXIT            =   "EVT_EXIT"
+    const val EVT_ENTER           =   "EVT_ENTER"
+    const val EVT_CONTINUE      =   "EVENT_CONTINUE"
 
-    const val STATE_INIT     =   "ST_INIT"
-    const val STATE_INSIDE   =   "ST_INSIDE"
-    const val STATE_OUTSIDE  =   "ST_OUTSIDE"
+    //acciones que genera la FSM dentro de los eventos de cada estado
+    const val ACT_CONTINUE        =   "ACT_CONTINUE"
+    const val ACT_ENTER_ONLY      =   "ACT_ENTER_ONLY"
+    const val ACT_ENTER_AND_DWELL =   "ACT_ENTER_AND_DWELL"
+    const val ACT_DWELL_ONLY      =   "ACT_DWELL_ONLY"
+    const val ACT_SILENT_ENTER    =   "ACT_SILENT_ENTER"
+    const val ACT_EXIT            =   "ACT_EXIT"
+    const val ACT_SILENT_EXIT     =   "ACT_SILENT_EXIT"
 
     //constante para determinar la velocidad de la persona para saber si esta caminando o en auto
     const val KM_PER_HOUR = 30f // ~30 km/h (ajustable)

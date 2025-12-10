@@ -135,11 +135,22 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
-    suspend fun updateAreaState(areaState:EntityAreaRuntimeState):Int{
+    suspend fun updateAreaStateFSM(areaState:EntityAreaRuntimeState):Int{
         return withContext(Dispatchers.IO){
-            daoAreaRuntimeState.updateAreaState(areaState)
+            val idArea=areaState.id_area
+            val state=areaState.prev_state_machine
+            daoAreaRuntimeState.updateAreaStateFsm(idArea,state)
         }
     }
+
+    suspend fun updateActivatedArea(areaState:EntityAreaRuntimeState):Int{
+        return withContext(Dispatchers.IO){
+            val idArea=areaState.id_area
+            val isActivated:Boolean=areaState.is_activated_geof
+            daoAreaRuntimeState.updateAreaActivated(idArea,isActivated)
+        }
+    }
+
 
     suspend fun getListAreasForMap(): List<AreaGeofenceForMap> {
         return withContext(Dispatchers.IO) {
