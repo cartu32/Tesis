@@ -112,7 +112,6 @@ object GeofenceFSM {
                         EVT_EXIT -> {
                             newState = ST_OUTSIDE
                             if (permissions.exit) {
-                                fireExit = true
                                 action = ACT_EXIT
                             } else {
                                 action = ACT_SILENT_EXIT
