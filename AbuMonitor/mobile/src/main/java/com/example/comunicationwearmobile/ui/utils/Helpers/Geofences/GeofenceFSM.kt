@@ -214,11 +214,6 @@ object GeofenceFSM {
             )
 
             if (accept) {
-                resultFsm.triggerEnter = resultFsm.triggerEnter
-                resultFsm.triggerExit  = resultFsm.triggerExit
-                resultFsm.triggerDwellStart = resultFsm.triggerDwellStart
-                resultFsm.triggerDwellCancel = resultFsm.triggerDwellCancel
-
                 currentStateArea1?.let {
                     updateCurrentStateArea(context, area.id_area, it)
                 }
@@ -271,10 +266,14 @@ object GeofenceFSM {
             longitude = area.longitude.toDouble()
         }
 
+        //obtengo la distancia entre la ubicacion actual y el centro de la zona de geofence
         val distance     = location.distanceTo(areaLocation)
         val radiusMeters = area.meters.toFloat()
         val accuracy     = location.accuracy    // precisión reportada por el GPS
-
+        //la precisión del gps me afectar la medicion dentro un radio determinado.
+        //Si la precisión es de 10 metros, esto quiere decir que desde la ubicación
+        // que me reporta el gps.la ubcación real puede estar al rededor de 10 metros de ese punto
+        // Por lo que la posicion real esta +-10 metros a la redonda..
         val distanceToBorder = kotlin.math.abs(distance - radiusMeters)
 
         // 1) Aplico filtro por accuracy (muy mala)
@@ -286,9 +285,8 @@ object GeofenceFSM {
             return Definition.EVT_CONTINUE
         }
 
-        // 3) Histeresis espacial fija ----
-        val meterForEnter = radiusMeters * Definition.ENTER_FACTOR  // umbral para ENTER (desde afuera)
-        val meterForExit  = radiusMeters * Definition.EXIT_FACTOR   // umbral para EXIT (desde adentro)
+        // 3) Histeresis espacial que depende de la precision del gps
+        val (meterForEnter, meterForExit) = calculateHysteris(accuracy, radiusMeters)
 
         // 4) Determino el evento para la FSM de acuerdo a si la persona se movio adentro o afuera del area
         event = determineEventAccordingPosition(prevState, distance, radiusMeters, meterForExit, meterForEnter)
@@ -306,6 +304,20 @@ object GeofenceFSM {
                 "meterForExit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}")
 
         return event
+    }
+
+    private fun calculateHysteris(
+        accuracy: Float,
+        radiusMeters: Float,
+    ): Pair<Float, Float> {
+        val extraMargin = (accuracy / radiusMeters).coerceAtMost(0.2f)
+
+        val enterFactor = Definition.BASE_ENTER_FACTOR - extraMargin
+        val exitFactor = Definition.BASE_EXIT_FACTOR + extraMargin
+
+        val meterForEnter = radiusMeters * enterFactor  // umbral para ENTER (desde afuera)
+        val meterForExit = radiusMeters * exitFactor   // umbral para EXIT (desde adentro)
+        return Pair(meterForEnter, meterForExit)
     }
 
     private fun determineEventAccordingPosition(
@@ -350,7 +362,7 @@ object GeofenceFSM {
         context: Context,
         area: EntityAreaGeofence,
     ): Boolean {
-        val MAX_BAD_ACCURACY = 50f
+        val MAX_BAD_ACCURACY = 40f
         if (accuracy > MAX_BAD_ACCURACY) {
             RepositoryDebugLogger.log(
                 context,

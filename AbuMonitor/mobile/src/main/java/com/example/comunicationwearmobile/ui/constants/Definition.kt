@@ -47,8 +47,8 @@ object Definition {
     val MAX_BORDER_FRACTION = 0.30f   // como mucho 30% del radio
 
     // --- Configuración de histeresis espacial ---
-    const val ENTER_FACTOR = 0.8f   // 80% del radio para considerar "ENTRA" (desde afuera)
-    const val EXIT_FACTOR  = 1.2f   // 120% del radio para considerar "SALE" (desde adentro)
+    const val BASE_ENTER_FACTOR = 0.8f   // 80% del radio para considerar "ENTRA" (desde afuera)
+    const val BASE_EXIT_FACTOR  = 1.2f   // 120% del radio para considerar "SALE" (desde adentro)
 
     // --- Tiempo mínimo entre cambios de estado (para evitar rebotes) ---
     const val MIN_STATE_CHANGE_INTERVAL_MS = 15_000L  // 15 segundos (modo caminando)
