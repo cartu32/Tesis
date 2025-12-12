@@ -69,30 +69,9 @@ object InitializerApplication {
     }
 
     private fun initializeAlarms() {
-        //initializeAlarmWatchdog()
         //initializeAlarmAssistance()
-        //initializeAlarmFallBackGeofence()
     }
 
-
-    private fun initializeAlarmWatchdog() {
-       val resultAlarm= AlarmHelper.setNextAlarmInXTime(appContext,
-            Definition.ALARM_ID_FOR_WATCHDOG,
-            Definition.INTERVAL_WATCHDOG_MS,
-            Definition.ACTION_GEOFENCE_WATCHDOG,
-            AlarmBroadcastReceiver::class.java)
-
-        showStatusAlarm(resultAlarm,Definition.ACTION_GEOFENCE_WATCHDOG)
-    }
-    private fun initializeAlarmFallBackGeofence() {
-        val resultSetAlarm=AlarmHelper.setNextAlarmInXTime(appContext,
-            Definition.ALARM_ID_FOR_FALLBACK,
-            Definition.INTERVAL_FALLBACK_MS,
-            Definition.ACTION_GEOFENCE_FALLBACK,
-            AlarmBroadcastReceiver::class.java)
-
-            showStatusAlarm(resultSetAlarm,Definition.ACTION_GEOFENCE_FALLBACK)
-    }
 
 
     private fun initAlarmAssistance(intervalToAlarmMS: Long){

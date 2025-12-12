@@ -16,6 +16,7 @@ import com.example.abumonitor.utils.Converters
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoAreaGeofence
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoAreaRuntimeState
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoContact
+import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoDwellTimeZone
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoEvent
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoFirstTimeState
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoPriority
@@ -24,6 +25,7 @@ import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.Da
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoTypeArea
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaRuntimeState
+import com.example.comunicationwearmobile.ui.model.entities.EntityDwellTimeZone
 import com.example.comunicationwearmobile.ui.model.entities.EntitySecurityZoneTimeRange
 import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
 
@@ -32,7 +34,8 @@ import com.example.comunicationwearmobile.ui.model.entities.EntityTypeArea
         EntityAreaGeofence::class, EntityContact::class, EntityTypeArea::class,
         EntityEvent::class, EntityPriority::class, EntityScheduledAssistance::class,
         EntityAreaEventCrossRef::class, EntityFirstTimeState::class,
-        EntitySecurityZoneTimeRange::class, EntityAreaRuntimeState::class
+        EntitySecurityZoneTimeRange::class, EntityAreaRuntimeState::class,
+        EntityDwellTimeZone::class
     ],
     version = 12,
     exportSchema = false
@@ -49,6 +52,7 @@ abstract class AbuMonitorDatabase : RoomDatabase() {
     abstract fun entitySecurityZoneTimeRangeDao(): DaoSecurityZoneTimeRange
     abstract fun entityTypeAreaDao(): DaoTypeArea
     abstract fun entityAreaRuntimeState():DaoAreaRuntimeState
+    abstract fun entityDwellTimeZoneDao(): DaoDwellTimeZone
 
     companion object {
         @Volatile

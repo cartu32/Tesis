@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.common
+package com.example.comunicationwearmobile.ui.model.dto
 
 data class ResultFsm(
     var currentState: String?=null,

@@ -5,9 +5,12 @@ import android.location.Location
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
-import com.example.comunicationwearmobile.ui.common.ResultAreaGenerateEvent
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
+import com.example.comunicationwearmobile.ui.model.dto.ResultAreaGenerateEvent
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
+import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Tools
+import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import com.google.android.gms.location.Geofence
 
 object GeofenceFallBack {
@@ -47,6 +50,14 @@ object GeofenceFallBack {
                     speed = speed
                 )
 
+                if(areaResult.fireDwellStart) {
+                  startAlarmDwell(appContext,areaResult.areaId,dataArea.secZoneDwellTime.dwell_time)
+                }
+
+                if(areaResult.fireDwellCancel){
+                    cancelAlarmDwell(appContext,areaResult.areaId)
+                }
+
                 if (areaResult.fireEnter) {
                     globalEnterIds.add(areaResult.areaId)
                 }
@@ -64,7 +75,31 @@ object GeofenceFallBack {
             }
         }
 
-        private suspend fun processSingleAreaFallback(
+    private fun cancelAlarmDwell(appContext: Context, areaId: Long) {
+        val areaIdForAlarm=Tools.convertLongToInt(areaId,Definition.HASH_TYPE_DWELL)
+
+        AlarmHelper.cancelAlarm(
+            appContext,
+            areaIdForAlarm,
+            Definition.ACTION_ALARM_FOR_DWELL_TIME,
+            AlarmBroadcastReceiver::class.java
+        )
+    }
+
+    private fun startAlarmDwell(appContext: Context, areaId: Long, dwellTime: Long) {
+
+        val areaIdForAlarm=Tools.convertLongToInt(areaId,Definition.HASH_TYPE_DWELL)
+
+        val resultSetAlarm = AlarmHelper.setNextAlarmInXTime(
+            appContext,
+            areaIdForAlarm,
+            dwellTime,
+            Definition.ACTION_ALARM_FOR_DWELL_TIME,
+            AlarmBroadcastReceiver::class.java
+        )
+    }
+
+    private suspend fun processSingleAreaFallback(
             dataArea: DataAreaGeofAux,
             appContext: Context,
             location: Location,
@@ -89,7 +124,9 @@ object GeofenceFallBack {
             return ResultAreaGenerateEvent(
                 areaId = area.id_area,
                 fireEnter = resultFsm.triggerEnter,
-                fireExit = resultFsm.triggerExit
+                fireExit = resultFsm.triggerExit,
+                fireDwellStart = resultFsm.triggerDwellStart,
+                fireDwellCancel = resultFsm.triggerDwellCancel
             )
         }
 

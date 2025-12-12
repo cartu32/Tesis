@@ -65,22 +65,13 @@ object Definition {
      ********************************************************
      */
 
-    const val ACTION_ALARM_FOR_CHECKS     = "ACTION_ALARM_FOR_CHECKS"
-    const val ACTION_GEOFENCE_WATCHDOG    = "ACTION_GEOFENCE_WATCHDOG"
-    const val ACTION_GEOFENCE_FALLBACK    = "ACTION_GEOFENCE_FALLBACK"
+    const val HASH_TYPE_DWELL = 10
 
+    const val ACTION_ALARM_FOR_CHECKS         = "ACTION_ALARM_FOR_CHECKS"
+    const val ACTION_ALARM_FOR_DWELL_TIME     = "ACTION_ALARM_FOR_DWELL_TIME"
 
     const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
     const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
-
-    const val REQUEST_CODE_GEOFENCE_WATCHDOG = 2001
-
-    // Intervalo entre ejecuciones del watchdog (ej: cada 3 horas)
-    const val INTERVAL_WATCHDOG_MS = 15 * 60 * 1000L
-    //const val INTERVAL_WATCHDOG_MS = 1 *60 * 60 * 1000L
-
-    // Intervalo entre ejecuciones del fallback (ej: cada 1 minuto)
-    const val INTERVAL_FALLBACK_MS = 1 * 60 * 1000L
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy
@@ -106,9 +97,8 @@ object Definition {
     const val ERROR_IN_SET_ALARM    = -1
 
     //constante del id que identifica la alarmas
-    const val ALARM_ID_FOR_CHECKS   = 1
-    const val ALARM_ID_FOR_WATCHDOG = 2
-    const val ALARM_ID_FOR_FALLBACK = 3
+    const val ALARM_ID_FOR_CHECKS   = 100
+
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
     val NO_STORED_VALUE: Long =-1L
@@ -144,12 +134,16 @@ object Definition {
     const val COLOR_GRIS = Color.GRAY
     const val COLOR_MAGENTA = Color.MAGENTA
 
-    const val TYPE_AREA_ID_NORMAL = 1
-    const val TYPE_AREA_ID_SECURITY_ZONE = 2
-    const val TYPE_AREA_ID_ASSISTANCE = 3
-    const val TYPE_AREA_DESC_NORMAL="Area Normal"
-    const val TYPE_AREA_DESC_SECURITY_ZONE="Zona de Seguridad"
-    const val TYPE_AREA_DESC_ASSISTANCE="Area de Asistencia"
+    const val TYPE_AREA_ID_NORMAL           = 1
+    const val TYPE_AREA_ID_SECURITY_ZONE    = 2
+    const val TYPE_AREA_ID_ASSISTANCE       = 3
+    const val TYPE_AREA_ID_DWELL_TIME       = 4
+
+    const val TYPE_AREA_DESC_NORMAL         ="Area Normal"
+    const val TYPE_AREA_DESC_SECURITY_ZONE  ="Zona de Seguridad"
+    const val TYPE_AREA_DESC_ASSISTANCE     ="Area de Asistencia"
+    const val TYPE_AREA_DESC_DWELL_TIME     ="Area de Dwell Time"
+
     const val TYPE_AREA_COLOR_NORMAL= COLOR_LIGHT_BLUE
     const val TYPE_AREA_COLOR_SECURITY_ZONE= COLOR_GREEN
     const val TYPE_AREA_COLOR_ASSISTANCE= COLOR_AMBAR

@@ -6,8 +6,8 @@ import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
-import com.example.comunicationwearmobile.ui.common.PermissionsArea
-import com.example.comunicationwearmobile.ui.common.ResultFsm
+import com.example.comunicationwearmobile.ui.model.dto.PermissionsArea
+import com.example.comunicationwearmobile.ui.model.dto.ResultFsm
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaRuntimeState
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
@@ -214,13 +214,13 @@ object GeofenceFSM {
 
 
      private suspend fun updateInBdCurrentStateArea(
-        currentStateArea: String?,
-        prevState: String?,
-        area: EntityAreaGeofence,
-        isFast: Boolean,
-        resultFsm:ResultFsm,
-        context: Context,
-        speed: Float,
+         currentStateArea: String?,
+         prevState: String?,
+         area: EntityAreaGeofence,
+         isFast: Boolean,
+         resultFsm: ResultFsm,
+         context: Context,
+         speed: Float,
     ): String? {
 
         var currentStateArea1 = currentStateArea

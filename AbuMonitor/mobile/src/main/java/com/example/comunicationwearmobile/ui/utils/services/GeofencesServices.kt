@@ -3,32 +3,25 @@ package com.example.comunicationwearmobile.ui.utils.services
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.util.Log
-import androidx.lifecycle.Observer
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
-import com.example.comunicationwearmobile.ui.model.extra.GeofenceEventParameter
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceFallBack
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceWatchDogHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
-import com.example.comunicationwearmobile.ui.utils.Tools.getParcelable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -146,28 +139,11 @@ class GeofencesServices: Service() {
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
-           // Definition.ACTION_GEOFENCE_EVENT_BROADCAST -> callGeofenceEventProcessor(intent)
-            Definition.ACTION_GEOFENCE_WATCHDOG -> callGeofenceWatchdog()
-            Definition.ACTION_GEOFENCE_FALLBACK -> callGeofenceFallBack()
+            Definition.ACTION_ALARM_FOR_DWELL_TIME-> Log.d(Definition.TAG_DEBUG,"!!!!Alarma de Dwell Time")
         }
     }
 
-    private fun callGeofenceFallBack() {
-        Log.d(Definition.TAG_DEBUG,"**********Ejecuto Fallback")
-    }
 
-    private suspend fun callGeofenceEventProcessor(intent: Intent) {
-        val parameter = intent.getParcelable<GeofenceEventParameter>(Definition.PARAMETER_SERVICE)
-
-        parameter?.let {
-            GeofenceEventProcessorHelper.handleEvent(it.triggeringIds, it.transition)
-        }
-    }
-
-    private suspend fun callGeofenceWatchdog() {
-
-        GeofenceWatchDogHelper.reRegisterAllActiveGeofences(this)
-    }
     private fun registerNetworkCallback() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)

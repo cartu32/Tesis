@@ -10,9 +10,9 @@ data class AreaGeofenceWithEvents(
     val id_type_area: Int,
     val id_priority: Int,
     val list_id_event: String,
-    val dwell_time: Int=0,
     val description:String="",
     val is_activated_geof:Boolean=false,
     val prev_state_machine:String,
-    val last_update_time:Long=0
+    val last_update_time:Long=0,
+    val dwell_time:Long=0
 )

@@ -9,6 +9,7 @@ import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaRuntimeState
+import com.example.comunicationwearmobile.ui.model.entities.EntityDwellTimeZone
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +20,7 @@ class RepositoryAreaDB (context: Context) {
     private val daoAreaGeofence = database.entityAreaGeofenceDao()
     private val daoSecurityZoneTimeRange = database.entitySecurityZoneTimeRangeDao()
     private val daoAreaRuntimeState = database.entityAreaRuntimeState()
+    private val daoDwellTimeZone = database.entityDwellTimeZoneDao()
 
     companion object {
         @Volatile private var INSTANCE: RepositoryAreaDB? = null
@@ -79,6 +81,10 @@ class RepositoryAreaDB (context: Context) {
         }
         //si inserto bien el area, inserto el time range
         newAreaId.let {
+            //si el area es una zona dedwell time, se guarda en la tabla de dwell time
+            insertDwellTimeZone(data, newAreaId)
+
+            //si el area es una zona segura, se guarda en la tabla de security zone
             insertSecurityZone(data, newAreaId)
 
             //creo el registro asociado al estado del area
@@ -120,6 +126,21 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
+    private suspend fun insertDwellTimeZone(data: DataAreaGeofAux,newAreaId: Long){
+        with(data.secZoneDwellTime) {
+            //si es dwell time y esta inicializado,
+            // entonces se guarda el tiempo de permanencia en la tabla de dwell time
+            if (dwell_time != 0.toLong()) {
+                id_area = newAreaId
+                daoDwellTimeZone.insertDwellTimeZone(this)
+            }
+        }
+    }
+    suspend fun getDwellTimeZone(idArea: Long): Int? {
+        return withContext(Dispatchers.IO) {
+            daoDwellTimeZone.getDwellTimeZoneWithId(idArea)
+        }
+    }
 
     suspend fun deleteAreaWithId(idArea: Long?): Int? {
         return withContext(Dispatchers.IO) {
@@ -197,7 +218,6 @@ class RepositoryAreaDB (context: Context) {
                 latitude = row.latitude,
                 longitude = row.longitude,
                 meters = row.meters,
-                dwell_time = row.dwell_time,
                 description = row.description,
                 id_type_area = row.id_type_area,
                 id_priority = row.id_priority
@@ -210,11 +230,16 @@ class RepositoryAreaDB (context: Context) {
                 last_update_time = row.last_update_time
             )
 
+            val entityDwellTimeZone=EntityDwellTimeZone(
+                id_area = row.id_area,
+                dwell_time = row.dwell_time
+            )
             DataAreaGeofAux(
                 entityAreaGeofence = entity,
                 listIdEventSelected = events,
                 secZoneTimeRange = null, // acá después podés traer la zona segura si querés
-                entityAreaRuntimeState = entityAreaRuntimeState
+                entityAreaRuntimeState = entityAreaRuntimeState,
+                secZoneDwellTime = entityDwellTimeZone
             )
         }
     }

@@ -37,13 +37,9 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
                 timeNextAlarm=getIntervalForNextChecks(context)
                 alarmId=Definition.ALARM_ID_FOR_CHECKS
             }
-            Definition.ACTION_GEOFENCE_WATCHDOG->{
-                timeNextAlarm=Definition.INTERVAL_WATCHDOG_MS
-                alarmId=Definition.ALARM_ID_FOR_WATCHDOG
-            }
-            Definition.ACTION_GEOFENCE_FALLBACK->{
-                timeNextAlarm=Definition.INTERVAL_FALLBACK_MS
-                alarmId=Definition.ALARM_ID_FOR_FALLBACK
+            Definition.ACTION_ALARM_FOR_DWELL_TIME->{
+                timeNextAlarm=Definition.NO_STORED_VALUE
+                alarmId=Definition.ERROR_IN_SET_ALARM
             }
             else->{
                 Log.w(Definition.TAG_DEBUG, "Acción desconocida: $action")

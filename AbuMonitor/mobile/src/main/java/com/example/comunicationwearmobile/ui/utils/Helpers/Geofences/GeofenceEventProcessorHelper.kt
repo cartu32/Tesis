@@ -82,7 +82,7 @@ object GeofenceEventProcessorHelper {
 
     private suspend  fun analizeNormalZone(areaGeof: JoinAreaGeofence?, transition: Int) {
         val msg = areaGeof?.areaGeofence?.let {
-            createMsg(transition, it.description, it.dwell_time)
+            createMsg(transition, it.description, areaGeof.secDwellTimeZone?.dwell_time ?: 0)
         } ?: return
         determineRecipientByPriority(areaGeof.areaGeofence.id_priority, msg)
     }
@@ -300,7 +300,7 @@ object GeofenceEventProcessorHelper {
     }
 
 
-    private fun createMsg(transition: Int?, description: String?, dwellTime: Int): SharedData.MsgNotification {
+    private fun createMsg(transition: Int?, description: String?, dwellTime: Long): SharedData.MsgNotification {
 
         val completeMsg = SharedData.MsgNotification().apply {
             hour = Tools.getHour(LocalTime.now())

@@ -362,4 +362,10 @@ object Tools {
             this.getParcelableExtra(key)
         }
     }
+
+    fun convertLongToInt(areaId: Long, type: Int): Int {
+        val base = (areaId xor (areaId ushr 32)).toInt()
+        return base * 31 + type
+    }
+
 }

@@ -56,6 +56,8 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     private var lblMinHour:TextView?=null
     private var lblMaxHour:TextView?=null
 
+    private var isDwellTime=false
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,7 +128,6 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
 
         with(dato?.areaGeofence) {
             txtDescription?.setText(this?.description)
-            txtDwellTime?.setText("Tiempo de permanencia " + this?.dwell_time.toString() + " (min)")
             spPriority?.setSelection((this?.id_priority?.toInt() ?: 1) - 1)
 
             if (this?.id_type_area == Definition.TYPE_AREA_ID_SECURITY_ZONE) {
@@ -137,6 +138,9 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
                 chkSecurityZone?.isChecked=false
             }
         }
+        val dwellTimeInMinute=Tools.convertMillisToMinutes(dato?.secDwellTimeZone?.dwell_time ?: 0)
+        txtDwellTime?.setText("Tiempo de permanencia " + dwellTimeInMinute + " (min)")
+
         val listIdEventSelected=dato?.events?.map{it.id_event}
         listIdEventSelected?.let {
             spEventsAdapter?.setSelectedItemsByPositions(it)
@@ -265,8 +269,10 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
     override fun onCheckboxClicked(position: Int, isChecked: Boolean) {
         val indexCheckBoxDweelTime=3
 
-        if(position==indexCheckBoxDweelTime){
+        if(position==indexCheckBoxDweelTime) {
             changeVisibiblityDwellTime(isChecked)
+            //marco una bandera que indica que el area es dwelltime
+            isDwellTime = isChecked
         }
     }
 
@@ -302,8 +308,6 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
 
 
     private fun actionSave() {
-        //por el momento hardcodeo estos el color y el tipo de area
-        val color_blue=1
         var thereEventSelected = false
         var dataAreaGeofAux=DataAreaGeofAux()
 
@@ -327,19 +331,11 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
 
 
         with(dataAreaGeofAux) {
-            //me fijo que eventos estan seleccionados en el spinner
-            for (event in listSpEvents) {
-                if (event.selected) {
-                    dataAreaGeofAux.listIdEventSelected.add(listSpEvents.indexOf(event))
-                    thereEventSelected=true
-                }
-            }
 
             //me fijo que datos estan en la pantalla
             with(entityAreaGeofence) {
                 //como la posicion seleccionada empieza en 0, entonces le sumo 1 para que coincida con el valor de la BD
                 id_priority = spPriority?.selectedItemPosition?.plus(1) ?: 0
-                dwell_time = txtDwellTime?.text.toString().toIntOrNull() ?: 0
                 description = txtDescription?.text.toString()
 
                 val security_zone = chkSecurityZone?.isChecked == true
@@ -348,6 +344,29 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
                     id_type_area = Definition.TYPE_AREA_ID_NORMAL
                 else
                     id_type_area = Definition.TYPE_AREA_ID_SECURITY_ZONE
+            }
+
+
+
+            //me fijo que eventos estan seleccionados en el spinner
+            for (event in listSpEvents) {
+                if (event.selected) {
+                    dataAreaGeofAux.listIdEventSelected.add(listSpEvents.indexOf(event))
+                    thereEventSelected=true
+                }
+            }
+
+            //pregunto si el area es dwelltime
+            if (isDwellTime) {
+                if (txtDwellTime?.text.toString() != 0.toString() &&
+                    txtDwellTime.toString().isNotEmpty()
+                ) {
+                    val dwellTimeInMillis=Tools.convertMinutesToMillis(txtDwellTime?.text.toString().toLong())
+                    dataAreaGeofAux.secZoneDwellTime.dwell_time = dwellTimeInMillis
+                }else{
+                    Toast.makeText(this@PropertiesGeofenceActivity,"Debe ingresar el tiempo de permanencia mayor a 0",Toast.LENGTH_SHORT).show()
+                    return
+                }
             }
         }
 
