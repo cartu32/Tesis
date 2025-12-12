@@ -4,17 +4,13 @@ import android.content.Context
 import android.location.Location
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.repository.RepositoryAreaDB
-import com.example.comunicationwearmobile.ui.common.PermissionsArea
 import com.example.comunicationwearmobile.ui.common.ResultAreaGenerateEvent
-import com.example.comunicationwearmobile.ui.common.ResultFsm
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.example.comunicationwearmobile.ui.model.entities.EntityAreaRuntimeState
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.google.android.gms.location.Geofence
 
-    object GeofenceFallBack {
+object GeofenceFallBack {
 
         suspend fun callGeofenceFallBack(context: Context, location: Location) {
             try {

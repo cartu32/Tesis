@@ -49,6 +49,12 @@ class GeofencesServices: Service() {
 
     private var mutexLocationUpdate= Mutex()
 
+    companion object {
+        // Mínimo intervalo entre pedidos de ubicación provocados por cambios de red
+        private const val MIN_NETWORK_REFRESH_INTERVAL_MS = 30_000L // 30s, ajustable
+        private var lastNetworkRefreshTimeMs: Long = 0L
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -97,7 +103,7 @@ class GeofencesServices: Service() {
         // Inicializo ConnectivityManager y registro callback
         connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        registerNetworkCallback()
+       // registerNetworkCallback()
 
     }
 
@@ -165,24 +171,24 @@ class GeofencesServices: Service() {
     private fun registerNetworkCallback() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            // Si quisieras solo WiFi, podrías agregar:
+            // .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
 
         networkCallback = object : ConnectivityManager.NetworkCallback() {
 
             override fun onAvailable(network: Network) {
-                // Se conectó a una red (WiFi o datos)
                 RepositoryDebugLogger.log(
                     this@GeofencesServices,
-                    "NETWORK_CHANGE: onAvailable -> pido ubicación puntual"
+                    "NETWORK_CHANGE: onAvailable net=${network.hashCode()} -> pido ubicación puntual"
                 )
                 refreshLocationAfterNetworkChange()
             }
 
             override fun onLost(network: Network) {
-                // Se perdió una red (ej: apagaste WiFi)
                 RepositoryDebugLogger.log(
                     this@GeofencesServices,
-                    "NETWORK_CHANGE: onLost -> pido ubicación puntual"
+                    "NETWORK_CHANGE: onLost net=${network.hashCode()} -> pido ubicación puntual"
                 )
                 refreshLocationAfterNetworkChange()
             }
@@ -198,15 +204,28 @@ class GeofencesServices: Service() {
             // por si ya estaba unregister
         }
     }
-
     private fun refreshLocationAfterNetworkChange() {
         val appContext = applicationContext
 
+        // --- 0) Anti-spam por flapping de red ---
+        val now = System.currentTimeMillis()
+        val elapsed = now - lastNetworkRefreshTimeMs
+
+        if (elapsed < MIN_NETWORK_REFRESH_INTERVAL_MS) {
+            RepositoryDebugLogger.log(
+                appContext,
+                "NETWORK_CHANGE: ignorado (solo pasaron ${elapsed}ms; min=$MIN_NETWORK_REFRESH_INTERVAL_MS)"
+            )
+            return
+        }
+        lastNetworkRefreshTimeMs = now
+
+        // --- 1) Lógica original ---
         serviceScope?.launch {
             try {
                 // 1) Ver si tiene sentido hacer algo (que haya áreas activas)
                 val repoAreas = RepositoryAreaDB.getInstance(appContext)
-                val activeAreas = repoAreas.getAllActiveAreasWithEvents() // usa tu método real
+                val activeAreas = repoAreas.getAllActiveAreasWithEvents()
 
                 if (activeAreas.isEmpty()) {
                     RepositoryDebugLogger.log(
@@ -226,8 +245,7 @@ class GeofencesServices: Service() {
                         "NETWORK_CHANGE: ubicación puntual -> " +
                                 "lat=${loc.latitude}, lon=${loc.longitude}, acc=${loc.accuracy}"
                     )
-                    // El solo hecho de obtener esta ubicación ya "despierta" al proveedor
-                    // y hace recalcular las geofences
+                    // Con esto ya "despertás" el proveedor y refrescás geofences
                 } else {
                     RepositoryDebugLogger.log(
                         appContext,

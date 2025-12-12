@@ -19,7 +19,6 @@ object GeofenceFSM {
     private val lastStateChangeTime = mutableMapOf<Long, Long>()
     private val stateChangeMutex = Mutex()
 
-
     suspend fun proccessFSM(
         dataArea: DataAreaGeofAux,
         appContext: Context,
@@ -27,52 +26,77 @@ object GeofenceFSM {
         location: Location,
         isFast: Boolean,
         speed: Float,
-    ):ResultFsm {
-
+    ): ResultFsm {
         // 3.1) Estado previo de la FSM para esta área
         val prevState: String? = getPrevState(dataArea)
 
         // 3.2) Evento actual según posición + histeresis + filtros
         val currentEventArea = getEvent(appContext, area, location, prevState)
 
-        // Arranco asumiendo que sigo en el mismo estado
-        var currentStateArea: String? = prevState
-
         // 3.3) Permisos configurados para esta área (ENTER / EXIT / DWELL)
         val permissions = getPermissionGrantes(dataArea.listIdEventSelected)
 
-        // 4) Aplico la máquina de estados (FSM)
-        //    OJO: esta versión de FSM asume firma sin triggerEnter/triggerExit de entrada:
-        //    private fun FSM(
-        //        currentStateArea: String?,
-        //        currentEventArea: String,
-        //        context: Context,
-        //        permissionsGranted: PermissionsArea
-        //    ): ResultFsm
+        // si es CONTINUE no llamo a la FSM
+        if (currentEventArea == Definition.EVT_CONTINUE) {
+            return ResultFsm(
+                currentState = prevState,
+                triggerEnter = false,
+                triggerExit = false,
+                triggerDwellStart = false,
+                triggerDwellCancel = false,
+                action = null
+            )
+        }
+
+        // 4) Aplico la máquina de estados (FSM) solo cuando hay evento real
         val resultFsm = FSM(
-            prevState = currentStateArea,
+            prevState = prevState,
             event = currentEventArea,
             permissions = permissions,
             appContext = appContext
         )
 
+        // retorno si no hubo transición real en la fsm
+        val noOp =
+            (resultFsm.currentState == prevState) &&
+                    (resultFsm.action == null) &&
+                    !resultFsm.triggerEnter &&
+                    !resultFsm.triggerExit &&
+                    !resultFsm.triggerDwellStart &&
+                    !resultFsm.triggerDwellCancel
 
-        // De la FSM obtengo el nuevo estado y los triggers
-        currentStateArea = resultFsm.currentState
+        if (noOp) {
+            return resultFsm
+        }
 
-        // 5) Aplico filtro de tiempo mínimo entre cambios de estado (dinámico por velocidad)
-        updateInBdCurrentStateArea(
-            currentStateArea = currentStateArea,
+        // Logueo solo si realmente “pasó algo”
+        RepositoryDebugLogger.log(
+            appContext,
+            "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action}" +
+                    "|triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}"
+        )
+        Log.d(
+            Definition.TAG_DEBUG,
+            "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action}" +
+                    " | triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}"
+        )
+
+        // 5) Solo si hay cambio potencial, aplico el filtro de tiempo mínimo + update DB
+        val newState = updateInBdCurrentStateArea(
+            currentStateArea = resultFsm.currentState,
             prevState = prevState,
             area = area,
             isFast = isFast,
-            resultFsm,
+            resultFsm = resultFsm,
             context = appContext,
             speed = speed
         )
 
+        resultFsm.currentState = newState
+
         return resultFsm
     }
+
 
     fun FSM(
         prevState: String?,
