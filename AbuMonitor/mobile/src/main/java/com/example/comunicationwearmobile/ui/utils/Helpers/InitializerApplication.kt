@@ -11,6 +11,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAp
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationManager
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
@@ -29,9 +30,14 @@ object InitializerApplication {
         initilizeSPRememberAppointment()
         initSmsHelper()
         initGeofenceEventProcessorHelper()
+        initNotificationMannager()
         configLeakCanary()
 
 
+    }
+
+    private fun initNotificationMannager() {
+        NotificationManager.init(appContext)
     }
 
     private fun initSmsHelper() {

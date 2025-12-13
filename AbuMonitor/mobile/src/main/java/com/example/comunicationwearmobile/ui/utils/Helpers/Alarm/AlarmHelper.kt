@@ -18,6 +18,7 @@ object AlarmHelper {
         alarmId: Int,
         triggerAtMillis: Long,
         type: Int,
+        areaId: Long? =null,
         action: String,
         receiverClass: Class<out BroadcastReceiver>
     ): Boolean {
@@ -25,10 +26,13 @@ object AlarmHelper {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
                 ?: return false
 
+
             val intent = Intent(context, receiverClass).apply {
                 this.action = action
                 putExtra(Definition.INTENT_ALARM_ID, alarmId)
                 putExtra(Definition.INTENT_ALARM_TIME, triggerAtMillis)
+                if(areaId!=null)
+                    putExtra(Definition.INTENT_ALARM_PARAM1,areaId)
             }
 
             val pi = PendingIntent.getBroadcast(
@@ -109,7 +113,7 @@ object AlarmHelper {
     // Alarma relativa (en X milisegundos) usando ELAPSED_REALTIME_WAKEUP
     // se usa para activar la alarma para que se active cada determinado tiempo
     // por ejemplo:cada 3 minutos, cada 5 minutos, etc.
-    fun setNextAlarmInXTime(context: Context, alarmId: Int, delayMillis: Long, action: String, receiverClass: Class<out BroadcastReceiver>): Boolean {
+    fun setNextAlarmInXTime(context: Context, alarmId: Int, delayMillis: Long, action: String, receiverClass: Class<out BroadcastReceiver>,areaId: Long?=null): Boolean {
         val triggerAtElapsed = SystemClock.elapsedRealtime() + delayMillis
 
         //cancelo la alrma si anteriormente esta configurada
@@ -122,6 +126,7 @@ object AlarmHelper {
             triggerAtMillis = triggerAtElapsed,
             type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
             action = action,
+            areaId = areaId,
             receiverClass = receiverClass
         )
     }

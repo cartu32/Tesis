@@ -3,19 +3,23 @@ package com.example.comunicationwearmobile.ui.utils.services
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceFallBack
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
+import com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_DWELL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,7 +73,7 @@ class GeofencesServices: Service() {
 
         serviceScope.launch {
             repositoryLocation?.locationFlow
-              //  ?.sample(Definition.SAMPLE_TAKE_LOCATION_UPDATE)
+                //  ?.sample(Definition.SAMPLE_TAKE_LOCATION_UPDATE)
                 ?.conflate()
                 ?.collect { location ->
                     mutexLocationUpdate.withLock {
@@ -96,7 +100,7 @@ class GeofencesServices: Service() {
         // Inicializo ConnectivityManager y registro callback
         connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-       // registerNetworkCallback()
+        // registerNetworkCallback()
 
     }
 
@@ -139,9 +143,65 @@ class GeofencesServices: Service() {
 
         when(intent?.action){
             Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
-            Definition.ACTION_ALARM_FOR_DWELL_TIME-> Log.d(Definition.TAG_DEBUG,"!!!!Alarma de Dwell Time")
+            Definition.ACTION_ALARM_FOR_DWELL_TIME->executeActionsOfAlarmDwell(intent)
+
         }
     }
+
+    private suspend fun executeActionsOfAlarmDwell(intent: Intent) {
+        val areaId = intent.extras?.getLong(Definition.INTENT_ALARM_PARAM1) ?: return
+
+        try {
+            // 1) Obtener área desde DB
+            val repoAreas = RepositoryAreaDB.getInstance(applicationContext)
+            val areaJoin = repoAreas.getJoinAreaGeofence(areaId) ?: run {
+                RepositoryDebugLogger.log(applicationContext, "DWELL: area inexistente id=$areaId -> descarto")
+                return
+            }
+            val area = areaJoin.areaGeofence
+
+            // 2) Pedir UNA ubicación puntual para revalidar (evita dwell falso)
+            val repoLoc = RepositoryLocation.getInstance(applicationContext)
+            val loc = repoLoc.getSingleBalancedLocation() ?: run {
+                RepositoryDebugLogger.log(applicationContext, "DWELL: sin ubicación puntual -> descarto area=$areaId")
+                return
+            }
+
+            // 3) Distancia al centro
+            val center = Location("dwell_center").apply {
+                latitude = area.latitude.toDouble()
+                longitude = area.longitude.toDouble()
+            }
+
+            val dist = loc.distanceTo(center)
+            val radius = area.meters.toFloat()
+
+            // 4) Margen por accuracy (simple pero efectivo)
+            val margin = kotlin.math.max(5f, loc.accuracy * 0.5f)
+
+            // Adentro si está suficientemente lejos del borde hacia dentro
+            val inside = dist <= (radius - margin)
+
+            if (!inside) {
+                RepositoryDebugLogger.log(
+                    applicationContext,
+                    "DWELL: revalidación FAIL area=$areaId dist=${dist} r=$radius acc=${loc.accuracy} margin=$margin -> NO disparo"
+                )
+                return
+            }
+
+            RepositoryDebugLogger.log(
+                applicationContext,
+                "DWELL: revalidación OK area=$areaId dist=${dist} r=$radius acc=${loc.accuracy} margin=$margin -> DISPARO"
+            )
+
+            GeofenceEventProcessorHelper.handleEvent(mutableListOf(areaId), GEOFENCE_TRANSITION_DWELL)
+
+        } finally {
+            Log.d(Definition.TAG_DEBUG, "!!!!Alarma de Dwell Time (procesada)")
+        }
+    }
+
 
 
     private fun registerNetworkCallback() {

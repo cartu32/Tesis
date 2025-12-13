@@ -359,7 +359,7 @@ class PropertiesGeofenceActivity: AppCompatActivity(), OnCheckboxClickListener {
             //pregunto si el area es dwelltime
             if (isDwellTime) {
                 if (txtDwellTime?.text.toString() != 0.toString() &&
-                    txtDwellTime.toString().isNotEmpty()
+                    txtDwellTime?.text.toString().isNotEmpty()
                 ) {
                     val dwellTimeInMillis=Tools.convertMinutesToMillis(txtDwellTime?.text.toString().toLong())
                     dataAreaGeofAux.secZoneDwellTime.dwell_time = dwellTimeInMillis

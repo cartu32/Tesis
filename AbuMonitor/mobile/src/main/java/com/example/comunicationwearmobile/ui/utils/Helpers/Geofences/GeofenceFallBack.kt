@@ -15,68 +15,108 @@ import com.google.android.gms.location.Geofence
 
 object GeofenceFallBack {
 
-        suspend fun callGeofenceFallBack(context: Context, location: Location) {
-            try {
-                RepositoryDebugLogger.log(context, "FALLBACK: inicio ejecución")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: inicio ejecución")
+    // ---- Anti-rearmado (RAM) ----
+    private val scheduledDwell = mutableSetOf<Long>()
 
-                proccessFallBack(context, location)
-            } catch (e: Exception) {
-                RepositoryDebugLogger.log(context, "FALLBACK: error ${e.message}")
+    // ---- Persistencia mínima (sobrevive proceso muerto) ----
+    private const val DWELL_PREFS = "DWELL_PREFS"
+    private const val KEY_DWELL_SCHEDULED_PREFIX = "DWELL_SCHEDULED_"
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences(DWELL_PREFS, Context.MODE_PRIVATE)
+
+    private fun isDwellScheduledPersisted(context: Context, areaId: Long): Boolean =
+        prefs(context).getBoolean(KEY_DWELL_SCHEDULED_PREFIX + areaId, false)
+
+    private fun setDwellScheduledPersisted(context: Context, areaId: Long, value: Boolean) {
+        prefs(context).edit().putBoolean(KEY_DWELL_SCHEDULED_PREFIX + areaId, value).apply()
+    }
+
+    suspend fun callGeofenceFallBack(context: Context, location: Location) {
+        try {
+            RepositoryDebugLogger.log(context, "FALLBACK: inicio ejecución")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: inicio ejecución")
+
+            proccessFallBack(context, location)
+        } catch (e: Exception) {
+            RepositoryDebugLogger.log(context, "FALLBACK: error ${e.message}")
+        }
+    }
+
+    private suspend fun proccessFallBack(context: Context, location: Location) {
+        val appContext = context.applicationContext
+
+        val activatedAreas = getActiveAreas(appContext)
+        if (activatedAreas.isEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: no hay áreas activas")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: no hay áreas activas")
+            return
+        }
+
+        val globalEnterIds = mutableListOf<Long>()
+        val globalExitIds = mutableListOf<Long>()
+
+        val (speed, isFast) = determineSpeedElderly(location, appContext)
+
+        for (dataArea in activatedAreas) {
+            val areaResult = processSingleAreaFallback(
+                dataArea = dataArea,
+                appContext = appContext,
+                location = location,
+                isFast = isFast,
+                speed = speed
+            )
+
+            val areaId = areaResult.areaId
+
+            // --- DWELL: anti-rearmado + persistencia ---
+            // Si la FSM pide START pero ya estaba armada → NO reprogrames.
+            if (areaResult.fireDwellStart) {
+                val alreadyScheduled =
+                    scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
+
+                if (!alreadyScheduled) {
+                    startAlarmDwell(appContext, areaId, dataArea.secZoneDwellTime.dwell_time)
+                    scheduledDwell.add(areaId)
+                    setDwellScheduledPersisted(appContext, areaId, true)
+                    RepositoryDebugLogger.log(appContext, "DWELL: alarma armada area=$areaId")
+                } else {
+                    RepositoryDebugLogger.log(appContext, "DWELL: ya armada, no reprog area=$areaId")
+                }
+            }
+
+            // Cancelá DWELL tanto por CANCEL como por EXIT (si saliste, no hay dwell posible)
+            if (areaResult.fireDwellCancel || areaResult.fireExit) {
+                val wasScheduled =
+                    scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
+
+                if (wasScheduled) {
+                    cancelAlarmDwell(appContext, areaId)
+                    scheduledDwell.remove(areaId)
+                    setDwellScheduledPersisted(appContext, areaId, false)
+                    RepositoryDebugLogger.log(appContext, "DWELL: alarma cancelada area=$areaId")
+                }
+            }
+
+            if (areaResult.fireEnter) {
+                globalEnterIds.add(areaId)
+            }
+            if (areaResult.fireExit) {
+                globalExitIds.add(areaId)
             }
         }
 
-        private suspend fun proccessFallBack(context: Context, location: Location) {
-            val appContext = context.applicationContext
-
-            val activatedAreas = getActiveAreas(appContext)
-            if (activatedAreas.isEmpty()) {
-                RepositoryDebugLogger.log(appContext, "FALLBACK: no hay áreas activas")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: no hay áreas activas")
-                return
-            }
-
-            val globalEnterIds = mutableListOf<Long>()
-            val globalExitIds  = mutableListOf<Long>()
-
-            val (speed, isFast) = determineSpeedElderly(location, appContext)
-
-            for (dataArea in activatedAreas) {
-                val areaResult = processSingleAreaFallback(
-                    dataArea = dataArea,
-                    appContext = appContext,
-                    location = location,
-                    isFast = isFast,
-                    speed = speed
-                )
-
-                if(areaResult.fireDwellStart) {
-                  startAlarmDwell(appContext,areaResult.areaId,dataArea.secZoneDwellTime.dwell_time)
-                }
-
-                if(areaResult.fireDwellCancel){
-                    cancelAlarmDwell(appContext,areaResult.areaId)
-                }
-
-                if (areaResult.fireEnter) {
-                    globalEnterIds.add(areaResult.areaId)
-                }
-                if (areaResult.fireExit) {
-                    globalExitIds.add(areaResult.areaId)
-                }
-            }
-
-            if (globalEnterIds.isNotEmpty()) {
-                triggerActionAreaEntry(globalEnterIds, appContext)
-            }
-
-            if (globalExitIds.isNotEmpty()) {
-                triggerActionAreaExit(globalExitIds, appContext)
-            }
+        if (globalEnterIds.isNotEmpty()) {
+            triggerActionAreaEntry(globalEnterIds, appContext)
         }
+
+        if (globalExitIds.isNotEmpty()) {
+            triggerActionAreaExit(globalExitIds, appContext)
+        }
+    }
 
     private fun cancelAlarmDwell(appContext: Context, areaId: Long) {
-        val areaIdForAlarm=Tools.convertLongToInt(areaId,Definition.HASH_TYPE_DWELL)
+        val areaIdForAlarm = Tools.convertLongToInt(areaId, Definition.HASH_TYPE_DWELL)
 
         AlarmHelper.cancelAlarm(
             appContext,
@@ -87,101 +127,97 @@ object GeofenceFallBack {
     }
 
     private fun startAlarmDwell(appContext: Context, areaId: Long, dwellTime: Long) {
+        val areaIdForAlarm = Tools.convertLongToInt(areaId, Definition.HASH_TYPE_DWELL)
 
-        val areaIdForAlarm=Tools.convertLongToInt(areaId,Definition.HASH_TYPE_DWELL)
-
-        val resultSetAlarm = AlarmHelper.setNextAlarmInXTime(
-            appContext,
-            areaIdForAlarm,
-            dwellTime,
-            Definition.ACTION_ALARM_FOR_DWELL_TIME,
-            AlarmBroadcastReceiver::class.java
+        AlarmHelper.setNextAlarmInXTime(
+            context = appContext,
+            alarmId = areaIdForAlarm,
+            delayMillis = dwellTime, // (ms)
+            action = Definition.ACTION_ALARM_FOR_DWELL_TIME,
+            areaId = areaId,
+            receiverClass = AlarmBroadcastReceiver::class.java
         )
     }
 
     private suspend fun processSingleAreaFallback(
-            dataArea: DataAreaGeofAux,
-            appContext: Context,
-            location: Location,
-            isFast: Boolean,
-            speed: Float
-        ): ResultAreaGenerateEvent {
+        dataArea: DataAreaGeofAux,
+        appContext: Context,
+        location: Location,
+        isFast: Boolean,
+        speed: Float
+    ): ResultAreaGenerateEvent {
 
-            val area = dataArea.entityAreaGeofence
+        val area = dataArea.entityAreaGeofence
 
-            RepositoryDebugLogger.log(appContext,"Area Id: ${area.id_area} | descripcion: ${area.description}")
-            Log.d(Definition.TAG_DEBUG,"Area Id: ${area.id_area} | descripcion: ${area.description}")
+        RepositoryDebugLogger.log(appContext, "Area Id: ${area.id_area} | descripcion: ${area.description}")
+        Log.d(Definition.TAG_DEBUG, "Area Id: ${area.id_area} | descripcion: ${area.description}")
 
-            val resultFsm = GeofenceFSM.proccessFSM(
-                dataArea = dataArea,
-                appContext = appContext,
-                area = area,
-                location = location,
-                isFast = isFast,
-                speed = speed
-            )
+        val resultFsm = GeofenceFSM.proccessFSM(
+            dataArea = dataArea,
+            appContext = appContext,
+            area = area,
+            location = location,
+            isFast = isFast,
+            speed = speed
+        )
 
-            return ResultAreaGenerateEvent(
-                areaId = area.id_area,
-                fireEnter = resultFsm.triggerEnter,
-                fireExit = resultFsm.triggerExit,
-                fireDwellStart = resultFsm.triggerDwellStart,
-                fireDwellCancel = resultFsm.triggerDwellCancel
-            )
-        }
-
-
-        private suspend fun triggerActionAreaExit(
-            exitIds: MutableList<Long>,
-            appContext: Context,
-        ) {
-            if (exitIds.isNotEmpty()) {
-                RepositoryDebugLogger.log(appContext, "FALLBACK: disparo EXIT para ids=$exitIds")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo EXIT para ids=$exitIds")
-
-                GeofenceEventProcessorHelper.handleEvent(
-                    triggeringIds = exitIds,
-                    transition = Geofence.GEOFENCE_TRANSITION_EXIT
-                )
-            }
-        }
-
-        private suspend fun triggerActionAreaEntry(
-            enterIds: MutableList<Long>,
-            appContext: Context,
-        ) {
-            if (enterIds.isNotEmpty()) {
-                RepositoryDebugLogger.log(appContext, "FALLBACK: disparo ENTER para ids=$enterIds")
-                Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo ENTER para ids=$enterIds")
-
-                GeofenceEventProcessorHelper.handleEvent(
-                    triggeringIds = enterIds,
-                    transition = Geofence.GEOFENCE_TRANSITION_ENTER
-                )
-            }
-        }
-
-        private fun determineSpeedElderly(location: Location, context: Context): Pair<Float, Boolean> {
-            // Velocidad actual (m/s). Sirve para ajustar el intervalo mínimo.
-            val speed = location.speed          // velocidad de la persona
-            val isFast =
-                speed > Definition.LIMIT_SPEED_WALKING //comparo el limite de la velocidad para determinar si va en auto o caminando
-
-            Log.d(Definition.TAG_DEBUG, "Velocidad limite ${Definition.LIMIT_SPEED_WALKING}")
-            if (isFast) {
-                RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN AUTO")
-                Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN AUTO")
-            } else {
-                RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN CAMINANDO")
-                Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN CAMINANDO")
-            }
-            return Pair(speed, isFast)
-        }
-
-        private suspend fun getActiveAreas(appContext: Context): List<DataAreaGeofAux> {
-            val repoAreas = RepositoryAreaDB.getInstance(appContext)
-            return repoAreas.getAllActiveAreasWithEvents()
-        }
-
-
+        return ResultAreaGenerateEvent(
+            areaId = area.id_area,
+            fireEnter = resultFsm.triggerEnter,
+            fireExit = resultFsm.triggerExit,
+            fireDwellStart = resultFsm.triggerDwellStart,
+            fireDwellCancel = resultFsm.triggerDwellCancel
+        )
     }
+
+    private suspend fun triggerActionAreaExit(
+        exitIds: MutableList<Long>,
+        appContext: Context,
+    ) {
+        if (exitIds.isNotEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo EXIT para ids=$exitIds")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo EXIT para ids=$exitIds")
+
+            GeofenceEventProcessorHelper.handleEvent(
+                triggeringIds = exitIds,
+                transition = Geofence.GEOFENCE_TRANSITION_EXIT
+            )
+        }
+    }
+
+    private suspend fun triggerActionAreaEntry(
+        enterIds: MutableList<Long>,
+        appContext: Context,
+    ) {
+        if (enterIds.isNotEmpty()) {
+            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo ENTER para ids=$enterIds")
+            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo ENTER para ids=$enterIds")
+
+            GeofenceEventProcessorHelper.handleEvent(
+                triggeringIds = enterIds,
+                transition = Geofence.GEOFENCE_TRANSITION_ENTER
+            )
+        }
+    }
+
+    private fun determineSpeedElderly(location: Location, context: Context): Pair<Float, Boolean> {
+        val speed = location.speed
+        val isFast = speed > Definition.LIMIT_SPEED_WALKING
+
+        Log.d(Definition.TAG_DEBUG, "Velocidad limite ${Definition.LIMIT_SPEED_WALKING}")
+        if (isFast) {
+            RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN AUTO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN AUTO")
+        } else {
+            RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN CAMINANDO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN CAMINANDO")
+        }
+        return Pair(speed, isFast)
+    }
+
+    private suspend fun getActiveAreas(appContext: Context): List<DataAreaGeofAux> {
+        val repoAreas = RepositoryAreaDB.getInstance(appContext)
+        return repoAreas.getAllActiveAreasWithEvents()
+    }
+}
+

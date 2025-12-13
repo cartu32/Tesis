@@ -8,6 +8,7 @@ import kotlin.time.Duration
 object Definition {
 
 
+
     /********************************************************
      ******* constante de la maquina de estados de goefence**
      ********************************************************
@@ -72,6 +73,9 @@ object Definition {
 
     const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
     const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
+    const val INTENT_ALARM_PARAM1              = "INTENT_ALARM_PARAM1"
+
+
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy

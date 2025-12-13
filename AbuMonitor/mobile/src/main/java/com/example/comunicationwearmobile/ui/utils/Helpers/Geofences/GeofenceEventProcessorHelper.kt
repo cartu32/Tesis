@@ -6,11 +6,9 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationManager
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
@@ -23,18 +21,16 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 object GeofenceEventProcessorHelper {
 
-    private var mutex=Mutex()
-    private var geofLatitude: String=""
-    private var geofLongitude: String=""
+    // Mutex por área para evitar carreras (ENTER/EXIT en paralelo del mismo id)
+    private val areaMutexes: ConcurrentHashMap<Long, Mutex> = ConcurrentHashMap()
+    private fun mutexFor(areaId: Long): Mutex = areaMutexes.getOrPut(areaId) { Mutex() }
+
 
     private lateinit var appContext: Context
-
-    private val repositoryConfigAppSPref: RepositoryConfigAppSPref by lazy {
-        RepositoryConfigAppSPref(appContext)
-    }
 
 
     fun init(context: Context) {
@@ -42,6 +38,11 @@ object GeofenceEventProcessorHelper {
     }
 
     suspend fun handleEvent(triggeringIds: MutableList<Long>, transition: Int) {
+        if (!::appContext.isInitialized) {
+            Log.e(Definition.TAG_DEBUG, "GeofenceEventProcessorHelper no fue inicializado. Llamá init(context) antes de usarlo")
+            return
+        }
+
         try {
             processGeofenceEvent(triggeringIds, transition)
         } catch (e: TimeoutCancellationException) {
@@ -51,146 +52,135 @@ object GeofenceEventProcessorHelper {
         }
     }
 
-    private suspend fun processGeofenceEvent(
-        triggeringIds: List<Long>,
-        transition: Int
-    ) {
-
+    private suspend fun processGeofenceEvent(triggeringIds: List<Long>, transition: Int) {
         val repository = RepositoryAreaDB(appContext)
 
         for (idAreaGeofence in triggeringIds) {
-            val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence)
+            mutexFor(idAreaGeofence).withLock {
+                val areaGeof = repository.getJoinAreaGeofence(idAreaGeofence) ?: return@withLock
 
-            //alamaceno la longitud y latitud del area de geofence detectada
-            mutex.withLock {
-                geofLongitude = areaGeof?.areaGeofence?.longitude.toString()
-                geofLatitude = areaGeof?.areaGeofence?.latitude.toString()
+
+                Log.d(Definition.TAG_DEBUG, "transicion: $transition")
+
+                when (areaGeof.areaGeofence.id_type_area) {
+                    Definition.TYPE_AREA_ID_NORMAL -> analizeNormalZone(areaGeof, transition)
+                    Definition.TYPE_AREA_ID_SECURITY_ZONE -> analizeSecurityZone(areaGeof, transition)
+                    Definition.TYPE_AREA_ID_ASSISTANCE -> analizeAssistanceZone(areaGeof.areaGeofence.id_area, transition,areaGeof.areaGeofence.latitude,areaGeof.areaGeofence.longitude)
+                }
             }
 
-            Log.d(Definition.TAG_DEBUG,"transicion: $transition")
-
-            when(areaGeof?.areaGeofence?.id_type_area){
-                Definition.TYPE_AREA_ID_NORMAL -> analizeNormalZone(areaGeof, transition)
-                Definition.TYPE_AREA_ID_SECURITY_ZONE -> analizeSecurityZone(areaGeof, transition)
-                Definition.TYPE_AREA_ID_ASSISTANCE -> analizeAssistanceZone( areaGeof.areaGeofence.id_area, transition)
-            }
+            //esto evita que el map crezca para siempre cada vez que se crean y borran areas
+            areaMutexes.remove(idAreaGeofence)
         }
-
     }
 
-
-
-    private suspend  fun analizeNormalZone(areaGeof: JoinAreaGeofence?, transition: Int) {
+    suspend fun analizeNormalZone(areaGeof: JoinAreaGeofence?, transition: Int) {
         val msg = areaGeof?.areaGeofence?.let {
-            createMsg(transition, it.description, areaGeof.secDwellTimeZone?.dwell_time ?: 0)
+            NotificationManager.createMsg(transition, it.description, areaGeof.secDwellTimeZone?.dwell_time ?: 0)
         } ?: return
-        determineRecipientByPriority(areaGeof.areaGeofence.id_priority, msg)
+
+        NotificationManager.determineRecipientByPriority(
+            areaGeof.areaGeofence.id_priority,
+            msg,
+            areaGeof.areaGeofence.latitude,
+            areaGeof.areaGeofence.longitude
+        )
     }
 
     private suspend fun analizeSecurityZone(areaGeof: JoinAreaGeofence, transition: Int) {
-
         when (transition) {
-            Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                processEnterSecurityZone(areaGeof.areaGeofence.description)
-            }
-            Geofence.GEOFENCE_TRANSITION_EXIT -> {
-                processExitSecurityZone(
-                    areaGeof.areaGeofence.description,
-                    areaGeof.securityZoneTimeRange?.min_hour,
-                    areaGeof.securityZoneTimeRange?.max_hour
-                )
-            }
+            Geofence.GEOFENCE_TRANSITION_ENTER -> processEnterSecurityZone(
+                areaGeof.areaGeofence.description,
+                areaGeof.areaGeofence.latitude,
+                areaGeof.areaGeofence.longitude
+            )
+            Geofence.GEOFENCE_TRANSITION_EXIT -> processExitSecurityZone(
+                areaGeof.areaGeofence.description,
+                areaGeof.securityZoneTimeRange?.min_hour,
+                areaGeof.securityZoneTimeRange?.max_hour,
+                areaGeof.areaGeofence.latitude,
+                areaGeof.areaGeofence.longitude
+            )
         }
     }
 
-    private suspend fun analizeAssistanceZone(idArea: Long, transition: Int) {
-
-
+    private suspend fun analizeAssistanceZone(idArea: Long, transition: Int, lat: String, lon: String) {
         when (transition) {
-            Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                processEnterAssistenceZone(idArea)
-            }
-
-            Geofence.GEOFENCE_TRANSITION_EXIT -> {
-                proccessExitAssistanceZone(idArea)
-            }
+            Geofence.GEOFENCE_TRANSITION_ENTER -> processEnterAssistenceZone(idArea)
+            Geofence.GEOFENCE_TRANSITION_EXIT -> proccessExitAssistanceZone(idArea, lat, lon)
         }
     }
 
     private suspend fun processEnterAssistenceZone(idArea: Long) {
-        val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
-        val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
-
-        with(entityAssistance){
-            //pregunto si la persona ya asistio a la cita
-            if(went_appointment){
-                Log.d(Definition.TAG_DEBUG,"Ya asistio a la cita")
+        val repositoryScheduleAssistance = RepositoryScheduleAssistance(appContext)
+        val entityAssistance = repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
+            ?: run {
+                Log.w(Definition.TAG_DEBUG, "No se encontró asistencia para idArea=$idArea")
                 return
             }
-
-            //pregunto si la fecha de la cita es para el dia de hoy
-            if(!Tools.isToday(date_hour_appointment)){
-                Log.e(Definition.TAG_DEBUG,"Error en la fecha de la cita")
-                return
-            }
-
-            //si es para el dia hoy, pregunto si esta la persona dentro del horario de la cita
-            if(!Tools.isTimeEnterAssistanceCorrect(date_hour_appointment)){
-                Log.d(Definition.TAG_DEBUG,"Se descarta la entrada porque no esta dentro del horario de la cita")
-                return
-            }
-
-            date_hour_enter_assistance= System.currentTimeMillis()
-
-            val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
-
-            if(respUpdate==1){
-                Log.d(Definition.TAG_DEBUG,"Hora de entrada de la cita actualizada")
-            }else{
-                Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
-            }
-        }
-    }
-
-    private suspend fun proccessExitAssistanceZone( idArea: Long) {
-
-        val repositoryScheduleAssistance= RepositoryScheduleAssistance(appContext)
-        val entityAssistance=repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
-        val minuteInMillis=60000L
 
         with(entityAssistance) {
-            //pregunto si la persona ya asistio a la cita
             if (went_appointment) {
                 Log.d(Definition.TAG_DEBUG, "Ya asistio a la cita")
                 return
             }
-            //si la persona todavia no ingreso en el horario que debia ingresar se descarta el evento
-            if(date_hour_enter_assistance==0L){
-                Log.d(Definition.TAG_DEBUG,"La persona todavia no ingreso a la zona de asistencia en el horario agendado")
+
+            if (!Tools.isToday(date_hour_appointment)) {
+                Log.e(Definition.TAG_DEBUG, "Error en la fecha de la cita")
                 return
             }
 
-            val hourExit= System.currentTimeMillis()
-            //conveirto el tiempo que estuvo en la zona de asistencia a minutos
-            val timeInAssitanceZone = (hourExit - date_hour_enter_assistance)/minuteInMillis
-
-            //si la persona menos de un minuto en la zona de asistencia descartamos el evento
-            if(timeInAssitanceZone< Definition.TIME_MIN_IN_ASSISTANCE_ZONE){
-                Log.d(Definition.TAG_DEBUG,"Se descarta la salida porque estuvo menos de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos")
+            if (!Tools.isTimeEnterAssistanceCorrect(date_hour_appointment)) {
+                Log.d(Definition.TAG_DEBUG, "Se descarta la entrada porque no esta dentro del horario de la cita")
                 return
             }
 
-            //si la persona estuvo mas de un minuto en la zona de asistencia se lo considera como que asistio a la cita
-            Log.d(Definition.TAG_DEBUG,"La persona asistio a la cita, estuvo mas de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos en la zona de asistencia")
+            date_hour_enter_assistance = System.currentTimeMillis()
 
-            //guardo en la base de datos la hora de salida de la cita e indico que asistio a la cita
-            date_hour_exit_assistance=hourExit
-            went_appointment=true
-            is_activated_geof =false
-            val respUpdate=repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+            val respUpdate = repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+            if (respUpdate == 1) Log.d(Definition.TAG_DEBUG, "Hora de entrada de la cita actualizada")
+            else Log.e(Definition.TAG_DEBUG, "Error no se pudo actualizar la cita")
+        }
+    }
 
-            if(respUpdate==1){
-                //notifico al contacto de que el abuelo asistio a la cita
+    private suspend fun proccessExitAssistanceZone(idArea: Long, lat: String, lon: String) {
+        val repositoryScheduleAssistance = RepositoryScheduleAssistance(appContext)
+        val entityAssistance = repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
+            ?: run {
+                Log.w(Definition.TAG_DEBUG, "No se encontró asistencia para idArea=$idArea")
+                return
+            }
+
+        val minuteInMillis = 60000L
+
+        with(entityAssistance) {
+            if (went_appointment) {
+                Log.d(Definition.TAG_DEBUG, "Ya asistio a la cita")
+                return
+            }
+
+            if (date_hour_enter_assistance == 0L) {
+                Log.d(Definition.TAG_DEBUG, "La persona todavia no ingreso a la zona de asistencia en el horario agendado")
+                return
+            }
+
+            val hourExit = System.currentTimeMillis()
+            val timeInAssitanceZone = (hourExit - date_hour_enter_assistance) / minuteInMillis
+
+            if (timeInAssitanceZone < Definition.TIME_MIN_IN_ASSISTANCE_ZONE) {
+                Log.d(Definition.TAG_DEBUG, "Se descarta la salida porque estuvo menos de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos")
+                return
+            }
+
+            Log.d(Definition.TAG_DEBUG, "La persona asistio a la cita, estuvo mas de ${Definition.TIME_MIN_IN_ASSISTANCE_ZONE} minutos en la zona de asistencia")
+
+            date_hour_exit_assistance = hourExit
+            went_appointment = true
+            is_activated_geof = false
+
+            val respUpdate = repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+
+            if (respUpdate == 1) {
                 val msg = SharedData.MsgNotification().apply {
                     typeNotification = SharedData.TypeNotification.Alert
                     title = "Notificacion de Asistencia!"
@@ -198,20 +188,17 @@ object GeofenceEventProcessorHelper {
                     hour = Tools.getHour(LocalTime.now())
                     date = Tools.getDate(LocalDate.now())
                 }
-                notifyUserPriorityBaja(msg)
+                NotificationManager.notifyUserPriorityBaja(msg, lat, lon)
 
-                //como ya se asitio a la cita desactivo el area de geofence
                 GeofenceActivatorHelper.desactivateGeofence(appContext, id_area.toString())
-                Log.d(Definition.TAG_DEBUG,"Hora de salida de la cita actualizada")
-            }else{
-                Log.e(Definition.TAG_DEBUG,"Error no se pudo actualizar la cita")
+                Log.d(Definition.TAG_DEBUG, "Hora de salida de la cita actualizada")
+            } else {
+                Log.e(Definition.TAG_DEBUG, "Error no se pudo actualizar la cita")
             }
-
         }
-
     }
 
-    private suspend  fun processEnterSecurityZone(description: String) {
+    private suspend fun processEnterSecurityZone(description: String, lat: String, lon: String) {
         val msg = SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
@@ -220,183 +207,52 @@ object GeofenceEventProcessorHelper {
             date = Tools.getDate(LocalDate.now())
         }
 
-        RepositorySecurityZoneSPref.getInstance(appContext).saveEnteredHour(System.currentTimeMillis())
-        notifyUserPriorityBaja(msg)
+
+       RepositorySecurityZoneSPref.getInstance(appContext).saveEnteredHour(System.currentTimeMillis())
+
+
+        NotificationManager.notifyUserPriorityBaja(msg, lat, lon)
     }
 
-    /********************************************************************
-     * Método que se ejecuta al salir de una zona segura:
-     *
-     * 1) Si estuvo menos de 1 minuto → se descarta el evento.
-     * 2) Si estuvo entre X y Z minutos → se notifica salida inesperada.
-     * 3) Si estuvo más de Z minutos:
-     *   a) Si salió fuera del horario seguro → se notifica salida fuera de horario.
-     *   b) Si salió dentro del horario seguro → se notifica salida dentro del horario.
-     ********************************************************************/
-
-    private suspend fun processExitSecurityZone( description: String, minHour: String?, maxHour: String?) {
+    private suspend fun processExitSecurityZone(
+        description: String,
+        minHour: String?,
+        maxHour: String?,
+        lat: String,
+        lon: String
+    ) {
         val prefs = RepositorySecurityZoneSPref.getInstance(appContext)
-        val entryHour = prefs.getEnteredHour()
-        val exitHour = System.currentTimeMillis()
-        var msgSMS=""
-        var msg: SharedData.MsgNotification
 
+        //Lectura protegida
+        val entryHour = prefs.getEnteredHour()
         if (entryHour == -1L) return
 
+        val exitHour = System.currentTimeMillis()
         val durationMin = Duration.ofMillis(exitHour - entryHour).toMinutes()
-        Log.d(Definition.TAG_DEBUG,"entra en processExitSecurityZone")
+        Log.d(Definition.TAG_DEBUG, "entra en processExitSecurityZone")
 
-        //si estuvo menos de 1 minuto descartamos el evento
         if (durationMin < Definition.TIME_MIN_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
-            Log.d(Definition.TAG_DEBUG, "No cumplio el quantum.El abuelo ha salido de la zona segura $description dentro del rango horario norma")
+            Log.d(Definition.TAG_DEBUG, "No cumplio el quantum. Salida descartada. durationMin=$durationMin")
             return
         }
-        //si estuvo mas de 1 minuto y menor a 3 minutos notificamos la salida inesperada
-        if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
 
-            msgSMS="ha salido inesperadamente de la zona segura $description"
-            msg= createMsgSecurityZone(msgSMS)
-
+        val msgSMS: String = if (durationMin < Definition.TIME_MAX_CIRCUMSTANTIAL_DURATION_SECURITY_ZONE) {
+            "ha salido inesperadamente de la zona segura $description"
         } else {
             val exitTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(exitHour))
             val isOutOfRange = Tools.isOutsideTimeRange(exitTime, minHour.toString(), maxHour.toString())
-
-            //si estuvo mas de 3 minutos y esta fuera de horario notificamos la salida fuera de horario
             if (isOutOfRange) {
-                msgSMS="ha salido de la zona segura $description fuera del rango horario normal"
-                Log.d(Definition.TAG_DEBUG,msgSMS)
-
-                msg= createMsgSecurityZone(msgSMS)
-
+                "ha salido de la zona segura $description fuera del rango horario normal"
             } else {
-                //si estuvo mas de 3 minutos y esta dentro de horario notificamos la salida dentro de horario
-                msgSMS="ha salido de la zona segura $description dentro del rango horario normal"
-                Log.d(Definition.TAG_DEBUG,msgSMS)
-
-                msg= createMsgSecurityZone(msgSMS)
+                "ha salido de la zona segura $description dentro del rango horario normal"
             }
         }
 
-        //enviamos la notificacion por sms
-        notifyUserPriorityBaja( msg)
+        val msg = NotificationManager.createMsgSecurityZone(msgSMS)
+        NotificationManager.notifyUserPriorityBaja(msg, lat, lon)
+
         prefs.clearSharedPreferences()
 
-        Log.d(Definition.TAG_DEBUG,msgSMS)
-    }
-
-
-
-
-
-    private fun createMsgSecurityZone(msg: String): SharedData.MsgNotification {
-
-        return SharedData.MsgNotification().apply {
-            typeNotification = SharedData.TypeNotification.Alert
-            title = "¡Alerta de Seguridad!"
-            message = msg
-            hour = Tools.getHour(LocalTime.now())
-            date = Tools.getDate(LocalDate.now())
-        }
-    }
-
-
-    private fun createMsg(transition: Int?, description: String?, dwellTime: Long): SharedData.MsgNotification {
-
-        val completeMsg = SharedData.MsgNotification().apply {
-            hour = Tools.getHour(LocalTime.now())
-            date = Tools.getDate(LocalDate.now())
-            typeNotification = SharedData.TypeNotification.Alert
-            title = "¡Alerta de Geofence!"
-            message = when (transition) {
-                Geofence.GEOFENCE_TRANSITION_ENTER -> "ha entrado en la zona $description "
-                Geofence.GEOFENCE_TRANSITION_EXIT -> "ha salido de la zona $description "
-                Geofence.GEOFENCE_TRANSITION_DWELL -> "estuvo mas de $dwellTime min. en la zona $description "
-                else -> "Evento desconocido en zona $description"
-            }
-        }
-        return completeMsg
-    }
-    // PRIORIDAD BAJA: solo SMS al familiar
-    private suspend fun notifyUserPriorityBaja(originalMsg: SharedData.MsgNotification) {
-
-        // Mensaje adaptado para el familiar
-        val msgForCustomUser = originalMsg.copy(
-            message = getMessageForCustomName(originalMsg.message)
-        )
-
-        mutex.withLock {
-            SmsHelper.sendSMSNotifyGeofence(
-                appContext,
-                msgForCustomUser,
-                geofLatitude,
-                geofLongitude
-            )
-        }
-    }
-
-    // PRIORIDAD MEDIA: notificación al abuelo + SMS al familiar
-    private suspend fun notifyUserPriorityMedia(originalMsg: SharedData.MsgNotification): Int? {
-        val notificationHelper = NotificationHelper.getInstance(appContext) ?: return null
-
-        // Mensaje para el abuelo
-        val msgForElderly = originalMsg.copy(
-            message = getMessageForElderly(originalMsg.message)
-        )
-
-        val id = notificationHelper.showNotificationGeneral(msgForElderly)
-
-        // Además, aviso al familiar por SMS
-        notifyUserPriorityBaja(originalMsg)
-
-        return id
-    }
-
-    // PRIORIDAD ALTA: media + envío al reloj
-    private suspend fun notifyUserPriorityAlta(originalMsg: SharedData.MsgNotification) {
-        val notificationHelper = NotificationHelper.getInstance(appContext) ?: return
-
-        // Mensaje para el abuelo
-        val msgForElderly = originalMsg.copy(
-            message = getMessageForElderly(originalMsg.message)
-        )
-
-        // Notificación en el celu
-        val id = notificationHelper.showNotificationGeneral(msgForElderly)
-
-        // SMS al familiar
-        notifyUserPriorityBaja( originalMsg)
-
-        // Enviar al reloj con el id de la notificación del móvil
-        val msgForWear = msgForElderly.copy(
-            idMsgMobile = id
-        )
-
-        RepositoryDispatcherWearable.sendDataToWearable(
-            appContext,
-            SharedData.PATH_ADD_NOTIFICATION_GENERAL,
-            msgForWear
-        )
-    }
-
-
-    private suspend fun determineRecipientByPriority( idPriority: Int?, msg: SharedData.MsgNotification) {
-        when (idPriority) {
-            Definition.PRIORITY_ID_LOW -> notifyUserPriorityBaja( msg)
-            Definition.PRIORITY_ID_MEDIUM -> notifyUserPriorityMedia(msg)
-            Definition.PRIORITY_ID_HIGH -> notifyUserPriorityAlta(msg)
-            else -> Log.e(Definition.TAG_DEBUG, "No se encontró el id de prioridad")
-        }
-    }
-
-    //funcion que concatena el nombre del usuario con el mensaje
-    //para ser enviado al familiar
-    suspend fun getMessageForCustomName(message: String): String {
-        val nameUser= repositoryConfigAppSPref?.getNameUser()
-        return "$nameUser $message"
-    }
-
-    //funcion que concatena el mensaje para que lo pueda ver el abuelo
-    fun getMessageForElderly(message: String):String{
-        return "Usted $message"
+        Log.d(Definition.TAG_DEBUG, msgSMS)
     }
 }
