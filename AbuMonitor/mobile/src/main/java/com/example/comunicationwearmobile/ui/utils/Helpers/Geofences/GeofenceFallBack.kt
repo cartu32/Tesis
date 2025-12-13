@@ -201,18 +201,24 @@ object GeofenceFallBack {
     }
 
     private fun determineSpeedElderly(location: Location, context: Context): Pair<Float, Boolean> {
-        val speed = location.speed
-        val isFast = speed > Definition.LIMIT_SPEED_WALKING
+        val speedMps = location.speed
+        val isFast = speedMps > Definition.LIMIT_SPEED_WALKING
 
-        Log.d(Definition.TAG_DEBUG, "Velocidad limite ${Definition.LIMIT_SPEED_WALKING}")
+        val speedInKmH=speedMps*Definition.CONVESION_METER_PER_SECOND
+
+        val speedKmhNoDecimals = "%.0f".format(speedInKmH)
+
+        Log.d(Definition.TAG_DEBUG, "Velocidad limite %.0f KM/H".format(Definition.LIMIT_SPEED_WALKING * Definition.CONVESION_METER_PER_SECOND))
+
         if (isFast) {
-            RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN AUTO")
-            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN AUTO")
+            RepositoryDebugLogger.log(context, "VELOCIDAD $speedKmhNoDecimals KM/H EN AUTO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speedKmhNoDecimals KM/H EN AUTO")
         } else {
-            RepositoryDebugLogger.log(context, "VELOCIDAD $speed EN CAMINANDO")
-            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speed EN CAMINANDO")
+            RepositoryDebugLogger.log(context, "VELOCIDAD $speedKmhNoDecimals KM/H EN CAMINANDO")
+            Log.d(Definition.TAG_DEBUG, "VELOCIDAD $speedKmhNoDecimals KM/H EN CAMINANDO")
         }
-        return Pair(speed, isFast)
+
+        return Pair(speedMps, isFast)
     }
 
     private suspend fun getActiveAreas(appContext: Context): List<DataAreaGeofAux> {

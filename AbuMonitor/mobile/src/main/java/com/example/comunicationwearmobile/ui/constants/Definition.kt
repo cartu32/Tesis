@@ -33,7 +33,7 @@ object Definition {
     const val ACT_SILENT_EXIT     =   "ACT_SILENT_EXIT"
 
     //constante para determinar la velocidad de la persona para saber si esta caminando o en auto
-    const val KM_PER_HOUR = 30f // ~30 km/h (ajustable)
+    const val KM_PER_HOUR = 15f // ~15 km/h (velocidad maxima en que puede correr una persona)
     const val CONVESION_METER_PER_SECOND = 3.6f
     const val LIMIT_SPEED_WALKING = KM_PER_HOUR / CONVESION_METER_PER_SECOND
 
