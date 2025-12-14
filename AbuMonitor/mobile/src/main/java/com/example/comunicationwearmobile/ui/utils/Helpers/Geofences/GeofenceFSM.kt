@@ -19,6 +19,100 @@ object GeofenceFSM {
     private val lastStateChangeTime = mutableMapOf<Long, Long>()
     private val stateChangeMutex = Mutex()
 
+
+
+    private data class AreaTrack(
+        var lastEventAt: Long = 0L,
+        var lastFlipAt: Long = 0L,
+        var lastLocAt: Long = 0L,
+        var lastLat: Double = 0.0,
+        var lastLon: Double = 0.0,
+        var stationarySince: Long = 0L,
+        var stationaryAccumMove: Float = 0f,
+        var insideStreak: Int = 0,
+        var outsideStreak: Int = 0,
+        var lastDistToCenter: Float = -1f
+    )
+
+    private val track = mutableMapOf<Long, AreaTrack>()
+    private val trackMutex = Mutex()
+
+    // Debounce (lecturas consecutivas requeridas)
+    private const val ENTER_CONFIRM_COUNT = 1
+    private const val EXIT_CONFIRM_COUNT  = 1
+
+    // Anti-spam / anti-oscilación
+    private const val MIN_EVENT_GAP_MS =  10_000L  // no repetir enter/exit cada pocos segundos
+
+    // Estacionario
+    private const val STATIONARY_WINDOW_MS    = 90_000L
+    private const val STATIONARY_MAX_MOVE_M   = 8f
+    private const val STATIONARY_MAX_SPEED_MS = 0.4f
+
+    private suspend fun <T> withTrack(areaId: Long, block: (AreaTrack) -> T): T {
+        return trackMutex.withLock {
+            val t = track.getOrPut(areaId) { AreaTrack() }
+            block(t)
+        }
+    }
+
+    private fun accuracyAbsLimit(radiusMeters: Float): Float {
+        // Más estricto en radios chicos (20-30m diámetro), más laxo en radios grandes.
+        return when {
+            radiusMeters <= 10f -> 12f     // diam <= 20m
+            radiusMeters <= 15f -> 18f     // diam <= 30m
+            radiusMeters <= 25f -> 25f     // diam <= 50m
+            else -> 35f                    // radios grandes
+        }
+    }
+
+    private fun isAccuracyTooBad(accuracy: Float, radiusMeters: Float): Boolean {
+        val absLimit = accuracyAbsLimit(radiusMeters)
+        val ratioLimit = radiusMeters * 0.60f
+        // si el radio es grande, el ratio puede ser muy alto, por eso usamos ambos (ABS + ratio)
+        return (accuracy > absLimit) || (accuracy > ratioLimit)
+    }
+
+    private fun isStationaryUpdate(t: AreaTrack, location: Location, now: Long): Boolean {
+        if (t.lastLocAt == 0L) {
+            t.lastLocAt = now
+            t.lastLat = location.latitude
+            t.lastLon = location.longitude
+            t.stationarySince = now
+            t.stationaryAccumMove = 0f
+            return false
+        }
+
+        val prev = Location("prev").apply {
+            latitude = t.lastLat
+            longitude = t.lastLon
+        }
+        val d = location.distanceTo(prev)
+
+        t.stationaryAccumMove += d
+        t.lastLocAt = now
+        t.lastLat = location.latitude
+        t.lastLon = location.longitude
+
+        if (t.stationaryAccumMove > STATIONARY_MAX_MOVE_M) {
+            t.stationarySince = now
+            t.stationaryAccumMove = 0f
+            return false
+        }
+
+        val speedOk = (!location.hasSpeed()) || (location.speed <= STATIONARY_MAX_SPEED_MS)
+        val timeOk  = (now - t.stationarySince) >= STATIONARY_WINDOW_MS
+        return speedOk && timeOk
+    }
+
+    private fun flipCooldownMs(isFast: Boolean, stationary: Boolean): Long {
+        return when {
+            stationary -> 8 * 60_000L   // quieto: súper duro (8 minuots)
+            isFast     -> 5_000L       // auto: no frenes la salida/entrada real(10 segundos)
+            else       -> 10_000L   // caminando: moderado (30 segundos)
+        }
+    }
+
     suspend fun proccessFSM(
         dataArea: DataAreaGeofAux,
         appContext: Context,
@@ -31,7 +125,7 @@ object GeofenceFSM {
         val prevState: String? = getPrevState(dataArea)
 
         // 3.2) Evento actual según posición + histeresis + filtros
-        val currentEventArea = getEvent(appContext, area, location, prevState)
+        val currentEventArea = getEvent(appContext, area, location, prevState, isFast, speed)
 
         // 3.3) Permisos configurados para esta área (ENTER / EXIT / DWELL)
         val permissions = getPermissionGrantes(dataArea.listIdEventSelected)
@@ -69,17 +163,9 @@ object GeofenceFSM {
             return resultFsm
         }
 
-        // Logueo solo si realmente “pasó algo”
-        RepositoryDebugLogger.log(
-            appContext,
-            "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action}" +
-                    "|triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}"
-        )
-        Log.d(
-            Definition.TAG_DEBUG,
-            "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action}" +
-                    " | triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}"
-        )
+        // Logueo solo si realmente paso algo
+        RepositoryDebugLogger.log(appContext, "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action}|triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}")
+        Log.d(Definition.TAG_DEBUG, "FSM: newState=${resultFsm.currentState} | event=$currentEventArea | action=${resultFsm.action} | triggerEnter=${resultFsm.triggerEnter} | triggerExit=${resultFsm.triggerExit}")
 
         // 5) Solo si hay cambio potencial, aplico el filtro de tiempo mínimo + update DB
         val newState = updateInBdCurrentStateArea(
@@ -194,8 +280,7 @@ object GeofenceFSM {
                 }
             }
         }
-        RepositoryDebugLogger.log(appContext, "FSM: newState=$newState | event=$event | action=$action|triggerEnter=$fireEnter | triggerExit=$fireExit")
-        Log.d(Definition.TAG_DEBUG, "FSM: newState=$newState | event=$event | action=$action | triggerEnter=$fireEnter | triggerExit=$fireExit")
+
 
         return ResultFsm(
             currentState      = newState,
@@ -213,14 +298,14 @@ object GeofenceFSM {
     }
 
 
-     private suspend fun updateInBdCurrentStateArea(
-         currentStateArea: String?,
-         prevState: String?,
-         area: EntityAreaGeofence,
-         isFast: Boolean,
-         resultFsm: ResultFsm,
-         context: Context,
-         speed: Float,
+    private suspend fun updateInBdCurrentStateArea(
+        currentStateArea: String?,
+        prevState: String?,
+        area: EntityAreaGeofence,
+        isFast: Boolean,
+        resultFsm: ResultFsm,
+        context: Context,
+        speed: Float,
     ): String? {
 
         var currentStateArea1 = currentStateArea
@@ -234,8 +319,10 @@ object GeofenceFSM {
                 currentState = currentStateArea1,
                 isFast = isFast,
                 speed = speed,
+                radiusMeters = area.meters.toFloat(),
                 context = context
             )
+
 
             if (accept) {
                 currentStateArea1?.let {
@@ -275,14 +362,17 @@ object GeofenceFSM {
     }
 
 
-    fun getEvent(
+
+    suspend fun getEvent(
         context: Context,
         area: EntityAreaGeofence,
         location: Location,
-        prevState: String?
+        prevState: String?,
+        isFast: Boolean,
+        speed: Float
     ): String {
 
-        var event = Definition.EVT_CONTINUE
+        val now = System.currentTimeMillis()
 
         // Centro del área
         val areaLocation = Location("fallback_area").apply {
@@ -290,45 +380,193 @@ object GeofenceFSM {
             longitude = area.longitude.toDouble()
         }
 
-        //obtengo la distancia entre la ubicacion actual y el centro de la zona de geofence
-        val distance     = location.distanceTo(areaLocation)
+        val distance = location.distanceTo(areaLocation)
         val radiusMeters = area.meters.toFloat()
-        val accuracy     = location.accuracy    // precisión reportada por el GPS
-        //la precisión del gps me afectar la medicion dentro un radio determinado.
-        //Si la precisión es de 10 metros, esto quiere decir que desde la ubicación
-        // que me reporta el gps.la ubcación real puede estar al rededor de 10 metros de ese punto
-        // Por lo que la posicion real esta +-10 metros a la redonda..
+        val accuracy = location.accuracy
         val distanceToBorder = kotlin.math.abs(distance - radiusMeters)
 
-        // 1) Aplico filtro por accuracy (muy mala)
-        if (applyAccuracyFilter(accuracy, context, area))
-            return Definition.EVT_CONTINUE
+        // Track + stationary (actualiza historial de ubicaciones)
+        val stationary = withTrack(area.id_area) { t ->
+            isStationaryUpdate(t, location, now)
+        }
 
-        // 2) Zona gris cerca del borde, proporcional al radio
-        if (isInGrayZone(context, radiusMeters, location.accuracy,distanceToBorder)) {
+        // 1) Filtro por accuracy (ABS + ratio vs radio)
+        if (isAccuracyTooBad(accuracy, radiusMeters)) {
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_BLIND: BLOCK accuracy area=${area.id_area} acc=${"%.1f".format(accuracy)} " +
+                        "absLimit=${"%.1f".format(accuracyAbsLimit(radiusMeters))} ratioLimit=${"%.1f".format(radiusMeters * 0.60f)}"
+            )
             return Definition.EVT_CONTINUE
         }
 
-        // 3) Histeresis espacial que depende de la precision del gps
+        // 2) Zona gris cerca del borde (tu lógica)
+        if (isInGrayZone(context, radiusMeters, accuracy, distanceToBorder)) {
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_BLIND: BLOCK grayzone area=${area.id_area} distToBorder=${"%.1f".format(distanceToBorder)}"
+            )
+            return Definition.EVT_CONTINUE
+        }
+
+        // 3) Histeresis espacial
         val (meterForEnter, meterForExit) = calculateHysteris(accuracy, radiusMeters)
 
-        // 4) Determino el evento para la FSM de acuerdo a si la persona se movio adentro o afuera del area
-        event = determineEventAccordingPosition(prevState, distance, radiusMeters, meterForExit, meterForEnter)
+        // 4) Candidato según posición
+        val candidate = determineEventAccordingPosition(
+            prevState = prevState,
+            distance = distance,
+            radiusMeters = radiusMeters,
+            meterForExit = meterForExit,
+            meterForEnter = meterForEnter
+        )
+
+        if (candidate == Definition.EVT_CONTINUE) {
+            // reset suave de streaks cuando no hay transición candidata
+            withTrack(area.id_area) { t ->
+                t.insideStreak = 0
+                t.outsideStreak = 0
+            }
+            return Definition.EVT_CONTINUE
+        }
+
+        // 5) Anti-spam (no repetir eventos demasiado seguido)
+        val spamBlocked = withTrack(area.id_area) { t ->
+            (now - t.lastEventAt) < MIN_EVENT_GAP_MS
+        }
+        if (spamBlocked) {
+            RepositoryDebugLogger.log(context, "GETEVENT_BLIND: BLOCK spam area=${area.id_area}")
+            return Definition.EVT_CONTINUE
+        }
+
+        // 6) Cooldown anti flip dinámico (auto/caminando/quieto)
+        val minFlip = flipCooldownMs(isFast = isFast, stationary = stationary)
+        val flipBlocked = withTrack(area.id_area) { t ->
+            (now - t.lastFlipAt) < minFlip
+        }
+
+        // "escape hatch": si estás MUY afuera del umbral de salida, permito exit aunque haya cooldown
+        val farOutside = (candidate == Definition.EVT_EXIT) &&
+                (distance >= (meterForExit + maxOf(accuracy * 1.5f, radiusMeters * 0.5f, 10f)))
+
+        val lastFlipAt = withTrack(area.id_area) { it.lastFlipAt }
+        if (flipBlocked && !farOutside) {
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_BLIND: BLOCK flipCooldown area=${area.id_area} elapsed=${now - lastFlipAt}ms " +
+                        "minFlip=$minFlip stationary=$stationary isFast=$isFast"
+            )
+            return Definition.EVT_CONTINUE
+        }
+
+        if (stationary && candidate == Definition.EVT_EXIT) {
+            // Exijo que sea una salida "clara"
+            // salida clara = más allá del umbral de salida + margen por precisión (o mínimo fijo)
+            val clearExitMargin = maxOf(accuracy, 5f)
+            val clearExit = distance >= (meterForExit + clearExitMargin)
+
+            if (!clearExit) {
+                RepositoryDebugLogger.log(
+                    context,
+                    "GETEVENT_BLIND: BLOCK stationaryExit(notClear) area=${area.id_area} " +
+                            "dist=${"%.1f".format(distance)} meterForExit=${"%.1f".format(meterForExit)} " +
+                            "margin=${"%.1f".format(clearExitMargin)}"
+                )
+                withTrack(area.id_area) { t -> t.outsideStreak = 0 }
+                return Definition.EVT_CONTINUE
+            }
+        }
+
+        // --- Heurística anti-teleport para EXIT (sin subir EXIT_CONFIRM_COUNT global) ---
+        val lastDist = withTrack(area.id_area) { it.lastDistToCenter }
+        val jump = if (lastDist >= 0f) kotlin.math.abs(distance - lastDist) else 0f
+        val overshoot = distance - meterForExit // qué tanto te pasaste del umbral de salida
+
+        // EXIT sospechoso si la precisión es “grande” para el radio o si hay salto fuerte en 1 tick
+        val suspiciousExit =
+            candidate == Definition.EVT_EXIT && (
+                    accuracy > radiusMeters * 0.35f ||                 // en R=28 => >9.8m
+                            (lastDist >= 0f && jump > maxOf(accuracy * 2f, 25f)) // teleport típico
+                    )
+
+        // Si estás MUY afuera, no pidas 2 (así no perdés EXIT reales)
+        val strongExit =
+            candidate == Definition.EVT_EXIT &&
+                    overshoot >= maxOf(accuracy * 1.2f, 12f)
+
+        // Confirmaciones requeridas solo para EXIT
+        val requiredExitConfirm = when {
+            strongExit -> 1
+            suspiciousExit -> 2
+            else -> EXIT_CONFIRM_COUNT   // dejalo en 1 normalmente
+        }
+
+        if (candidate == Definition.EVT_EXIT && suspiciousExit && !strongExit) {
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_BLIND: EXIT requires2 area=${area.id_area} " +
+                        "acc=${"%.1f".format(accuracy)} jump=${"%.1f".format(jump)} overshoot=${"%.1f".format(overshoot)}"
+            )
+        }
+
+
+
+        // 8) Debounce por lecturas consecutivas
+        val confirmed = withTrack(area.id_area) { t ->
+            when (candidate) {
+                Definition.EVT_ENTER -> {
+                    t.insideStreak += 1
+                    t.outsideStreak = 0
+                    t.insideStreak >= ENTER_CONFIRM_COUNT
+                }
+                Definition.EVT_EXIT -> {
+                    t.outsideStreak += 1
+                    t.insideStreak = 0
+                    t.outsideStreak >= requiredExitConfirm
+                }
+
+                else -> false
+            }
+        }
+
+        if (!confirmed) {
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_BLIND: WAIT confirm area=${area.id_area} cand=$candidate " +
+                        "insideStreak=${withTrack(area.id_area){it.insideStreak}} outsideStreak=${withTrack(area.id_area){it.outsideStreak}}"
+            )
+            return Definition.EVT_CONTINUE
+        }
+
+        // 9) Acepto evento: actualizo track
+        withTrack(area.id_area) { t ->
+            t.lastEventAt = now
+            t.lastFlipAt = now
+            t.lastDistToCenter = distance
+            t.insideStreak = 0
+            t.outsideStreak = 0
+        }
 
         RepositoryDebugLogger.log(
             context,
-            "GETEVENT: área=${area.id_area}, prevState=$prevState, event=$event, " +
+            "GETEVENT_BLIND: área=${area.id_area}, prevState=$prevState, event=$candidate, " +
                     "dist=${"%.1f".format(distance)}m, radius=${"%.1f".format(radiusMeters)}m, " +
-                    "acc=${"%.1f".format(accuracy)}m, meterForEnter=${"%.1f".format(meterForEnter)}m, " +
-                    "meterForExit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}"
+                    "acc=${"%.1f".format(accuracy)}m, enter=${"%.1f".format(meterForEnter)}m, " +
+                    "exit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}m, " +
+                    "stationary=$stationary isFast=$isFast speed=${"%.2f".format(speed)}"
         )
-        Log.d(Definition.TAG_DEBUG,"GETEVENT: área=${area.id_area}, prevState=$prevState, event=$event, " +
-                "dist=${"%.1f".format(distance)}m, radius=${"%.1f".format(radiusMeters)}m, " +
-                "acc=${"%.1f".format(accuracy)}m, meterForEnter=${"%.1f".format(meterForEnter)}m, " +
-                "meterForExit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}")
+        Log.d(
+            Definition.TAG_DEBUG,
+            "GETEVENT_BLIND: área=${area.id_area}, prevState=$prevState, event=$candidate, " +
+                    "dist=${"%.1f".format(distance)}m, radius=${"%.1f".format(radiusMeters)}m, " +
+                    "acc=${"%.1f".format(accuracy)}m, enter=${"%.1f".format(meterForEnter)}m, " +
+                    "exit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}m, " +
+                    "stationary=$stationary isFast=$isFast speed=${"%.2f".format(speed)}"
+        )
 
-        return event
+        return candidate
     }
+
 
     private fun calculateHysteris(
         accuracy: Float,
@@ -404,24 +642,23 @@ object GeofenceFSM {
         distanceToBorder: Float
     ): Boolean {
 
-        // Se toma la mitad de la precisión del GPS, pero limitada
-        // entre un mínimo fijo y un máximo proporcional al radio
+        // En radios chicos, la gray-zone no puede comerse medio geofence
+        val maxFraction = if (radiusMeters <= 15f) 0.15f else Definition.MAX_BORDER_FRACTION
+
+        // margen basado en accuracy, pero acotado fuerte
         val borderMargin = kotlin.math.min(
-            kotlin.math.max(accuracy * 0.5f, Definition.MIN_BORDER_MARGIN),
-            radiusMeters * Definition.MAX_BORDER_FRACTION
+            kotlin.math.max(accuracy * 0.35f, 3f),              // 35% de acc, mínimo 3m
+            kotlin.math.min(radiusMeters * maxFraction, 6f)     // cap: fracción y 6m absoluto
         )
 
-        // Si la distancia al borde cae dentro de esta zona gris,
-        // se ignora el evento para evitar falsas entradas/salidas
         if (distanceToBorder <= borderMargin) {
             RepositoryDebugLogger.log(
                 context,
-                "GETEVENT: zona gris distToBorder=$distanceToBorder, " +
-                        "borderMargin=$borderMargin, acc=$accuracy, CONTINUE"
+                "GETEVENT: zona gris distToBorder=${"%.1f".format(distanceToBorder)}, " +
+                        "borderMargin=${"%.1f".format(borderMargin)}, acc=${"%.1f".format(accuracy)}, CONTINUE"
             )
             return true
         }
-
         return false
     }
 
@@ -431,9 +668,9 @@ object GeofenceFSM {
         currentState: String?,
         isFast: Boolean,
         speed: Float,
+        radiusMeters: Float,   // <--- NUEVO
         context: Context
     ): Boolean {
-
         return stateChangeMutex.withLock {
 
             val now = System.currentTimeMillis()
@@ -445,38 +682,36 @@ object GeofenceFSM {
                         prevState == Definition.ST_INIT ||
                         lastChange == 0L
 
-            // Ajusto el intervalo mínimo según la velocidad
+            // ✅ Intervalo mínimo dinámico (clave para NO perder eventos en radios chicos)
             val dynamicMinIntervalMs = when {
-                isFirstState -> 0L                          // primer cambio siempre permitido
-                isFast       -> 3_000L                      // en auto: permito cambios cada 3s
-                else         -> Definition.MIN_STATE_CHANGE_INTERVAL_MS // caminando: 15s, por ej.
+                isFirstState -> 0L
+                isFast       -> 2_000L
+                radiusMeters <= 15f -> 4_000L       // radios chicos: NO clavar 15s
+                radiusMeters <= 25f -> 6_000L
+                else         -> 8_000L
             }
 
             val accept = elapsed >= dynamicMinIntervalMs || isFirstState
 
             if (accept) {
-                // Actualizo el timestamp acá, dentro del mutex
                 lastStateChangeTime[areaId] = now
-
                 RepositoryDebugLogger.log(
                     context,
-                    "FALLBACK: cambio de estado ACEPTADO área=$areaId " +
-                            "prev=$prevState, curr=$currentState, " +
-                            "elapsed=${elapsed}ms, speed=$speed, " +
-                            "minInterval=$dynamicMinIntervalMs"
+                    "FALLBACK: cambio de estado ACEPTADO área=$areaId prev=$prevState curr=$currentState " +
+                            "elapsed=${elapsed}ms speed=$speed radius=$radiusMeters minInterval=$dynamicMinIntervalMs"
                 )
             } else {
                 RepositoryDebugLogger.log(
                     context,
-                    "FALLBACK: cambio de estado RECHAZADO área=$areaId " +
-                            "prev=$prevState, curr=$currentState, " +
-                            "elapsed=${elapsed}ms < $dynamicMinIntervalMs, speed=$speed"
+                    "FALLBACK: cambio de estado RECHAZADO área=$areaId prev=$prevState curr=$currentState " +
+                            "elapsed=${elapsed}ms < $dynamicMinIntervalMs speed=$speed radius=$radiusMeters"
                 )
             }
 
             accept
         }
     }
+
 
     private fun getPermissionGrantes(listIdEventSelected: List<Int>): PermissionsArea {
         val permissions = PermissionsArea()
