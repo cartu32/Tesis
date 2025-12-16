@@ -259,7 +259,7 @@ object SmsHelper {
                 }
             }
 
-            // Fallback: envío multipart normal
+            // MANUAL_STRATEGY: envío multipart normal
             smsManager.sendMultipartTextMessage(
                 telephoneNumber,
                 null,

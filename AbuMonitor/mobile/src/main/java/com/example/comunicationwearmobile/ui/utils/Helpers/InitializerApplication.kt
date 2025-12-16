@@ -75,7 +75,7 @@ object InitializerApplication {
     }
 
     private fun initializeAlarms() {
-        //initializeAlarmAssistance()
+        initializeAlarmAssistance()
     }
 
 

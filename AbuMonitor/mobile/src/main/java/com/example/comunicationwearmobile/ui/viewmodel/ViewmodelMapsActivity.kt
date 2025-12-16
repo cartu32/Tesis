@@ -12,7 +12,7 @@ import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceActivatorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.PlayServiceGeofenceStrategyHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -91,7 +91,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
                 dataAreaGeofAux.entityAreaGeofence.id_area = newAreaId
                 //activo el area de geofence
                 val stateActivateGeof =
-                    GeofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
+                    PlayServiceGeofenceStrategyHelper.activateGeofence(context, dataAreaGeofAux)
 
                 // Si falla, eliminamos el registro de la base de datos
                 if (!stateActivateGeof) {
@@ -151,7 +151,7 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
             if (result!=error)
             {
                 //desactivo el area de geofence
-                GeofenceActivatorHelper.desactivateGeofence(context,idArea.toString())
+                PlayServiceGeofenceStrategyHelper.desactivateGeofence(context,idArea.toString())
 
 
                 //le aviso a la view que borre el circulo del mapa grafico

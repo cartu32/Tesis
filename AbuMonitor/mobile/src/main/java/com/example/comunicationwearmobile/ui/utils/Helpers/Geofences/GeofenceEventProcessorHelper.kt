@@ -5,7 +5,6 @@ import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationManager
@@ -190,7 +189,7 @@ object GeofenceEventProcessorHelper {
                 }
                 NotificationManager.notifyUserPriorityBaja(msg, lat, lon)
 
-                GeofenceActivatorHelper.desactivateGeofence(appContext, id_area.toString())
+                PlayServiceGeofenceStrategyHelper.desactivateGeofence(appContext, id_area.toString())
                 Log.d(Definition.TAG_DEBUG, "Hora de salida de la cita actualizada")
             } else {
                 Log.e(Definition.TAG_DEBUG, "Error no se pudo actualizar la cita")

@@ -96,7 +96,7 @@ object AlarmHelper {
                 if (alarmManager.canScheduleExactAlarms()) {
                     alarmManager.setExactAndAllowWhileIdle(type, triggerAtMillis, pendingIntent)
                 } else {
-                    // Fallback: inexacta (podría demorarse por batching)
+                    // Manual strategy: inexacta (podría demorarse por batching)
                     alarmManager.set(type, triggerAtMillis, pendingIntent)
                     Log.w(Definition.TAG_DEBUG, "Sin permiso de alarmas exactas. Usando inexacta")
                 }

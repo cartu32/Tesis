@@ -9,11 +9,12 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.dto.ResultAreaGenerateEvent
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceFSM
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import com.google.android.gms.location.Geofence
 
-object GeofenceFallBack {
+object ManualGeofenceStrategyHelper {
 
     // ---- Anti-rearmado (RAM) ----
     private val scheduledDwell = mutableSetOf<Long>()
@@ -32,24 +33,24 @@ object GeofenceFallBack {
         prefs(context).edit().putBoolean(KEY_DWELL_SCHEDULED_PREFIX + areaId, value).apply()
     }
 
-    suspend fun callGeofenceFallBack(context: Context, location: Location) {
+    suspend fun callGeofenceManualStrategy(context: Context, location: Location) {
         try {
-            RepositoryDebugLogger.log(context, "FALLBACK: inicio ejecución")
-            Log.d(Definition.TAG_DEBUG, "FALLBACK: inicio ejecución")
+            RepositoryDebugLogger.log(context, "MANUAL_STRATEGY: inicio ejecución")
+            Log.d(Definition.TAG_DEBUG, "MANUAL_STRATEGY: inicio ejecución")
 
-            proccessFallBack(context, location)
+            proccessManualStrategy(context, location)
         } catch (e: Exception) {
-            RepositoryDebugLogger.log(context, "FALLBACK: error ${e.message}")
+            RepositoryDebugLogger.log(context, "MANUAL_STRATEGY: error ${e.message}")
         }
     }
 
-    private suspend fun proccessFallBack(context: Context, location: Location) {
+    private suspend fun proccessManualStrategy(context: Context, location: Location) {
         val appContext = context.applicationContext
 
         val activatedAreas = getActiveAreas(appContext)
         if (activatedAreas.isEmpty()) {
-            RepositoryDebugLogger.log(appContext, "FALLBACK: no hay áreas activas")
-            Log.d(Definition.TAG_DEBUG, "FALLBACK: no hay áreas activas")
+            RepositoryDebugLogger.log(appContext, "MANUAL_STRATEGY: no hay áreas activas")
+            Log.d(Definition.TAG_DEBUG, "MANUAL_STRATEGY: no hay áreas activas")
             return
         }
 
@@ -59,7 +60,7 @@ object GeofenceFallBack {
         val (speed, isFast) = determineSpeedElderly(location, appContext)
 
         for (dataArea in activatedAreas) {
-            val areaResult = processSingleAreaFallback(
+            val areaResult = processSingleAreaManualStrategy(
                 dataArea = dataArea,
                 appContext = appContext,
                 location = location,
@@ -139,7 +140,7 @@ object GeofenceFallBack {
         )
     }
 
-    private suspend fun processSingleAreaFallback(
+    private suspend fun processSingleAreaManualStrategy(
         dataArea: DataAreaGeofAux,
         appContext: Context,
         location: Location,
@@ -175,8 +176,8 @@ object GeofenceFallBack {
         appContext: Context,
     ) {
         if (exitIds.isNotEmpty()) {
-            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo EXIT para ids=$exitIds")
-            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo EXIT para ids=$exitIds")
+            RepositoryDebugLogger.log(appContext, "MANUAL_STRATEGY: disparo EXIT para ids=$exitIds")
+            Log.d(Definition.TAG_DEBUG, "MANUAL_STRATEGY: disparo EXIT para ids=$exitIds")
 
             GeofenceEventProcessorHelper.handleEvent(
                 triggeringIds = exitIds,
@@ -190,8 +191,8 @@ object GeofenceFallBack {
         appContext: Context,
     ) {
         if (enterIds.isNotEmpty()) {
-            RepositoryDebugLogger.log(appContext, "FALLBACK: disparo ENTER para ids=$enterIds")
-            Log.d(Definition.TAG_DEBUG, "FALLBACK: disparo ENTER para ids=$enterIds")
+            RepositoryDebugLogger.log(appContext, "MANUAL_STRATEGY: disparo ENTER para ids=$enterIds")
+            Log.d(Definition.TAG_DEBUG, "MANUAL_STRATEGY: disparo ENTER para ids=$enterIds")
 
             GeofenceEventProcessorHelper.handleEvent(
                 triggeringIds = enterIds,

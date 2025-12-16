@@ -16,7 +16,7 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceActivatorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.PlayServiceGeofenceStrategyHelper
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Tools
@@ -186,7 +186,7 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     }
 
     private suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
-        return GeofenceActivatorHelper.activateGeofence(context, dataAreaGeofAux)
+        return PlayServiceGeofenceStrategyHelper.activateGeofence(context, dataAreaGeofAux)
     }
 
     // Configura los datos para el área geográfica

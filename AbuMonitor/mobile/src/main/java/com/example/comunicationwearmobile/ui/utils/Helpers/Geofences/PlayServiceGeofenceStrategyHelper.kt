@@ -9,12 +9,11 @@ import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.utils.broadcast.GeofenceBroadcastReceiver
 import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-object GeofenceActivatorHelper {
+object PlayServiceGeofenceStrategyHelper {
 
     private var geofencePendingIntent: PendingIntent? = null
 

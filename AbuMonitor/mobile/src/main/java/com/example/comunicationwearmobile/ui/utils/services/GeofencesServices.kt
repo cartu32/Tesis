@@ -10,13 +10,12 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceFallBack
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.ManualGeofenceStrategyHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_DWELL
@@ -79,7 +78,7 @@ class GeofencesServices: Service() {
                     mutexLocationUpdate.withLock {
                         Log.d(Definition.TAG_DEBUG, "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
 
-                        GeofenceFallBack.callGeofenceFallBack(this@GeofencesServices,location)
+                        ManualGeofenceStrategyHelper.callGeofenceManualStrategy(this@GeofencesServices,location)
                     }
                 }
         }

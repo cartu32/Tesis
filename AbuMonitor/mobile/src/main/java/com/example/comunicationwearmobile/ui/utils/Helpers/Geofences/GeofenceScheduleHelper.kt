@@ -121,7 +121,7 @@ class GeofenceScheduleHelper(mContext:Context) {
                 if(repositoryScheduleAssistance.updateIsActivatedGeofence(areaScheduled.id_area,true)==0){
                     //si no se pudo registro como que ya activada, entonces la desactivo
                     //ya que hubo un error
-                    GeofenceActivatorHelper.desactivateGeofence(context,areaScheduled.id_area.toString())
+                    PlayServiceGeofenceStrategyHelper.desactivateGeofence(context,areaScheduled.id_area.toString())
                     allGeofencesActivated=false
 
                     Log.d(Definition.TAG_DEBUG,"No se pudo activar la geofence id: ${areaScheduled.id_area}")
@@ -161,7 +161,7 @@ class GeofenceScheduleHelper(mContext:Context) {
             secZoneTimeRange = null // o como lo necesites
         )
         //activo el area de geofence y si hay algun error lo indico en allGeofencesActivated
-        result= GeofenceActivatorHelper.activateGeofence(context,areaForActivate)
+        result= PlayServiceGeofenceStrategyHelper.activateGeofence(context,areaForActivate)
 
         return result
     }
@@ -198,7 +198,7 @@ class GeofenceScheduleHelper(mContext:Context) {
 
             with(area) {
                 //desactivo primero el area de geofence de la cita
-                GeofenceActivatorHelper.desactivateGeofence(context, id_area.toString())
+                PlayServiceGeofenceStrategyHelper.desactivateGeofence(context, id_area.toString())
 
                 Log.d(Definition.TAG_DEBUG,"**udpaete tiempo prev ${Tools.getMillisToHourMinutes(dateTimeAlarmInitial)} - ${Tools.getMillisToHourMinutes(dateTimeAlarmNext)}")
                 Log.d(Definition.TAG_DEBUG, "**update grabadsa ${Tools.getMillisToHourMinutes(date_hour_appointment + time_duration_activation_appointment)}")
