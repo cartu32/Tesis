@@ -11,6 +11,8 @@ import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.PlayServiceGeofenceStrategyHelper
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import kotlinx.coroutines.launch
 
 class AssistanceDetailViewModel(application: Application) : AndroidViewModel(application) {
@@ -34,13 +36,13 @@ class AssistanceDetailViewModel(application: Application) : AndroidViewModel(app
 
     fun deleteAreaById(context: Context, idArea: Long, onComplete: (result:Boolean) -> Unit) {
         viewModelScope.launch {
-            repositoryAreaDB.deleteAreaWithId(idArea)
             val error=-1
             val result = repositoryAreaDB.deleteAreaWithId(idArea)
 
             if (result!=error) {
-                //desactivo el area de geofence
-                PlayServiceGeofenceStrategyHelper.desactivateGeofence(context, idArea.toString())
+
+                //elimino el mutex asociado al area asociado para procesar los eventos
+                GeofenceEventProcessorHelper.removeAreaMutexSafely(idArea)
 
                 //si se pudo eliminar la area de geofence le aviso a a la activity
                 //enviandole true como parametro de la funcion callback onComplete

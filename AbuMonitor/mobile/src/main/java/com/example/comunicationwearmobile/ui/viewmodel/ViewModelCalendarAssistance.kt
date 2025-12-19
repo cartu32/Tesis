@@ -14,6 +14,7 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
@@ -22,6 +23,7 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
@@ -40,6 +42,9 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     val selectedDateMillis = MutableLiveData<Long>()
 
     private var timeBetweenChecksSaved: Long = 0
+
+
+
 
     /*aca se uso un switchMap para observar los cambios en la fecha seleccionada
     en la view. Esto se hizo para que cada vez que se hace click en una fecha,
@@ -82,44 +87,57 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         }
     }
 
-    //este metodo realiza toda la insercion de datos en la base de datos y su activacion
+    // Este método realiza toda la inserción de datos en la base de datos y su activación
     private suspend fun handleInsertionDateAssistance(
         context: Context,
         assistance: EntityScheduledAssistance,
         latitude: String,
         longitude: String,
         meters: Int
-    ): Long {
+    ): Long=SharedVariables.mutexAssistanceDateAlarm.withLock {
 
         val now = System.currentTimeMillis()
-        var isNewAlarm=false
 
-        // Próxima cita existente (desde ahora)
-        val currentNextAppointment: Long? = repoAssistance.getNextAppointmentTime(initIntervalAlarma = now)
+        val startDateAppointment = assistance.date_hour_appointment
+        val endDateAppointment = startDateAppointment + assistance.time_duration_activation_appointment
 
-        // La nueva cita es la más próxima si:
-        // - no había ninguna futura, o
-        // - la nueva es anterior a la próxima existente
-        if ((currentNextAppointment == null) || (assistance.date_hour_appointment < currentNextAppointment))
-            isNewAlarm=true
-
-        // Guardo en BD (área + cita)
+        // 1) creo la nueva cita de asitencia y la guardo en la base de datos
         val newAreaGeofAux = createAreaGeof(latitude, longitude, meters)
         val idAreaAssistance = repoAssistance.insertScheduledAssistance(assistance, newAreaGeofAux)
 
-        if (isNewAlarm) {
-            //si es una nueva alarma programada, la programo
+        // 2) Reconsulto mínimos reales de inicio y fin de las citas desde DB (ya con la nueva cita incluida)
+        val nextStartNow = repoAssistance.getStartTimeOfNextAppointment(initIntervalAlarma = now)
+        val nextEndNow = repoAssistance.getEndTimeOfNextAppointment(initIntervalAlarma = now)
+
+        // 3) Programo SOLAMENTE si el comienzo del nueva cita quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de inicio
+        if (nextStartNow != null && nextStartNow == startDateAppointment) {
             setNextAlarmAtExactTime(
                 context,
                 alarmId = Definition.ALARM_ID_FOR_ACTIVATION_AREAS,
-                triggerAtMillis = assistance.date_hour_appointment,
+                triggerAtMillis = nextStartNow,
                 action = Definition.ACTION_ALARM_FOR_ACTIVATION_AREA,
                 receiverClass = AlarmBroadcastReceiver::class.java
             )
         }
 
+        // 4) Programo SOLAMENTE si el fin del nueva cita quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de fin
+        if (nextEndNow != null && nextEndNow == endDateAppointment) {
+            setNextAlarmAtExactTime(
+                context,
+                alarmId = Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
+                triggerAtMillis = nextEndNow,
+                action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        }
+
         return idAreaAssistance
+
     }
+
+
 
 
 

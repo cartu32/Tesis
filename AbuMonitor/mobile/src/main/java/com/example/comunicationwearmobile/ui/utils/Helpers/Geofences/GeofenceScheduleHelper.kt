@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
@@ -27,11 +28,6 @@ class GeofenceScheduleHelper(mContext:Context) {
     private var repositoryConfigAppSPref: RepositoryConfigAppSPref
     private var repositoryAreaDB:RepositoryAreaDB
 
-    //Como puede haber varias instancias de GeofenSchedulerHelper, creo un mutex comun
-    //a todas ellas.
-    companion object {
-        private val mutex = Mutex()
-    }
 
     init {
         repositoryScheduleAssistance=RepositoryScheduleAssistance.getInstance(context)
@@ -39,21 +35,44 @@ class GeofenceScheduleHelper(mContext:Context) {
         repositoryAreaDB=RepositoryAreaDB.getInstance(context)
     }
 
-    suspend fun activateGeofenceScheduled(timeCurrentAlarm: Long) {
+    suspend fun activateGeofenceScheduled(timeCurrentAlarm: Long)=
+        SharedVariables.mutexAssistanceDateAlarm.withLock {
 
         // 1) Activo las áreas cuya cita es exactamente la de esta alarma (pueden ser varias)
         activateGeofence(timeCurrentAlarm)
 
         // 2) Reprogramo la próxima alarma usando como ancla el horario lógico de esta alarma,
-        scheduledNextNewAlarmAppointment(timeCurrentAlarm)
+        scheduledNextStartAlarmAppointment(timeCurrentAlarm)
     }
 
 
-    private suspend fun scheduledNextNewAlarmAppointment(lastAlarmTime: Long) {
+    suspend fun deactivateGeofenceScheduled(timeCurrentAlarm: Long)=
+        SharedVariables.mutexAssistanceDateAlarm.withLock {
+        // 1) Desactivo las áreas cuya cita es exactamente la de esta alarma (pueden ser varias)
+        desactivateGeofence(timeCurrentAlarm)
+
+        // 2) Reprogramo la próxima alarma usando como ancla el horario lógico de esta alarma,
+        scheduledNextEndAlarmAppointment(timeCurrentAlarm)
+    }
+
+    private suspend fun scheduledNextEndAlarmAppointment(lastAlarmTime: Long) {
+        val nextEnd =repositoryScheduleAssistance.getEndTimeOfNextAppointment(initIntervalAlarma = lastAlarmTime)
+                ?: return
+
+        setNextAlarmAtExactTime(
+            context = context,
+            alarmId = Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
+            triggerAtMillis = nextEnd,
+            action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
+            receiverClass = AlarmBroadcastReceiver::class.java
+        )
+    }
+
+    private suspend fun scheduledNextStartAlarmAppointment(lastAlarmTime: Long) {
 
         // Busco la próxima cita estrictamente posterior a la que acabo de procesar
         val timeNextAppointment =
-            repositoryScheduleAssistance.getNextAppointmentTime(lastAlarmTime)
+            repositoryScheduleAssistance.getStartTimeOfNextAppointment(lastAlarmTime)
                 ?: return
 
         setNextAlarmAtExactTime(
@@ -70,7 +89,7 @@ class GeofenceScheduleHelper(mContext:Context) {
         Log.d(Definition.TAG_DEBUG,"Alarma de activacion de geofences programadas ejecutada")
 
 
-        val resultUpdate=repositoryScheduleAssistance.updateUpcomingAreasActivation(true,timeCurrentAlarm)
+        val resultUpdate=repositoryScheduleAssistance.activateNextAppointmentArea(timeCurrentAlarm)
 
         if (resultUpdate==0)
             return false
@@ -78,7 +97,21 @@ class GeofenceScheduleHelper(mContext:Context) {
 
     }
 
-      suspend fun reportInassistanceScheduled(listAppointWithoutAssisntace:List<EntityScheduledAssistance>) {
+
+    private suspend fun desactivateGeofence(timeCurrentAlarm: Long):Boolean{
+        Log.d(Definition.TAG_DEBUG,"Alarma de desactivacion de geofences programadas ejecutada")
+
+
+        val resultUpdate=repositoryScheduleAssistance.desactivateNextAppointmentArea(timeCurrentAlarm)
+
+        if (resultUpdate==0)
+            return false
+        return true
+
+    }
+
+
+    suspend fun reportInassistanceScheduled(listAppointWithoutAssisntace:List<EntityScheduledAssistance>) {
 
         //se genera un resumen de las citas a la que no asistio la persona en el dia de la fecha
         val msg=generateMessageInTable(listAppointWithoutAssisntace)

@@ -13,6 +13,7 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.PlayServiceGeofenceStrategyHelper
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
@@ -162,6 +163,9 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
                     Definition.ACTION_ALARM_FOR_DWELL_TIME,
                     AlarmBroadcastReceiver::class.java
                 )
+
+                //borro los mutex asociados a la area que lo protegen cuando ocurren eventos de geofence
+                GeofenceEventProcessorHelper.removeAreaMutexSafely(idArea)
 
                 //le aviso a la view que borre el circulo del mapa grafico
                 _isDeleteArea?.postValue(idArea)

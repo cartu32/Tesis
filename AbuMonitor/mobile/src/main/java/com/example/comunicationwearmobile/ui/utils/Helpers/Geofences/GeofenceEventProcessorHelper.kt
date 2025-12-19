@@ -70,10 +70,18 @@ object GeofenceEventProcessorHelper {
                 }
             }
 
-            //esto evita que el map crezca para siempre cada vez que se crean y borran areas
-            areaMutexes.remove(idAreaGeofence)
+
         }
     }
+
+    suspend fun removeAreaMutexSafely(areaId: Long) {
+        val m = mutexFor(areaId)
+        m.withLock {
+            areaMutexes.remove(areaId)
+        }
+    }
+
+
 
     suspend fun analizeNormalZone(areaGeof: JoinAreaGeofence?, transition: Int) {
         val msg = areaGeof?.areaGeofence?.let {

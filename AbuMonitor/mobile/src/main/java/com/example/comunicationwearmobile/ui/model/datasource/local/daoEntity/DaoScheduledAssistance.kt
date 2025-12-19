@@ -88,7 +88,14 @@ interface DaoScheduledAssistance {
         FROM   scheduled_assistance sa2
         WHERE  sa2.date_hour_appointment > :initIntervalAlarm
     """)
-    fun getNextAppointmentTime(initIntervalAlarm: Long): Long?
+    fun getStartTimeOfNextAppointment(initIntervalAlarm: Long): Long?
+
+    @Query("""
+        SELECT MIN(sa2.date_hour_appointment+sa2.time_duration_activation_appointment)
+        FROM   scheduled_assistance sa2
+        WHERE  (sa2.date_hour_appointment+sa2.time_duration_activation_appointment) > :initIntervalAlarm
+    """)
+    fun getEndTimeOfNextAppointment(initIntervalAlarm: Long): Long?
 
 
     @Query("""
@@ -100,9 +107,24 @@ interface DaoScheduledAssistance {
               WHERE sa.date_hour_appointment = :timeCurrentAlarm
             )
     """)
-    suspend fun updateUpcomingAreasActivation(
-        activated: Boolean,
-        timeCurrentAlarm: Long
+    suspend fun activateNextAppointmentArea(
+        timeCurrentAlarm: Long ,
+        activated: Boolean=true
+    ): Int
+
+
+    @Query("""
+        UPDATE Area_Runtime_State
+        SET is_activated_geof = :activated
+        WHERE id_area IN (
+              SELECT sa.id_area
+              FROM scheduled_assistance sa
+              WHERE sa.date_hour_appointment +sa.time_duration_activation_appointment= :timeCurrentAlarm
+            )
+    """)
+    suspend fun desactivateNextAppointmentArea(
+        timeCurrentAlarm: Long ,
+        activated: Boolean=false
     ): Int
 
     @Query("""

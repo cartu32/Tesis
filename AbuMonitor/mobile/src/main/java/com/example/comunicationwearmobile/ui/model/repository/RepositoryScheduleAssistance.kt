@@ -100,12 +100,18 @@ class RepositoryScheduleAssistance(context: Context) {
     }
 
 
-    suspend fun updateUpcomingAreasActivation(valueIsActivatedGeof: Boolean,timeCurrentAlarm: Long): Int {
+    suspend fun activateNextAppointmentArea(timeCurrentAlarm: Long): Int {
         return withContext(Dispatchers.IO) {
-            daoAssistance.updateUpcomingAreasActivation(valueIsActivatedGeof,timeCurrentAlarm)
+            daoAssistance.activateNextAppointmentArea(timeCurrentAlarm)
         }
     }
 
+
+    suspend fun desactivateNextAppointmentArea(timeCurrentAlarm: Long): Int {
+        return withContext(Dispatchers.IO){
+            daoAssistance.desactivateNextAppointmentArea(timeCurrentAlarm)
+        }
+    }
 
     suspend fun getAreasWithAppointmentRemember(timePreviousRemember: Long, dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
         return withContext(Dispatchers.IO){
@@ -114,11 +120,19 @@ class RepositoryScheduleAssistance(context: Context) {
 
     }
 
-    //metodo que retorna la hora y fecha de la proxima cita de asistencia
-    suspend fun getNextAppointmentTime(initIntervalAlarma:Long=0):Long? {
+    //metodo que retorna la hora y fecha de inicio de la proxima cita de asistencia
+    suspend fun getStartTimeOfNextAppointment(initIntervalAlarma:Long=0):Long? {
         return withContext(Dispatchers.IO){
-            daoAssistance.getNextAppointmentTime(initIntervalAlarma)
+            daoAssistance.getStartTimeOfNextAppointment(initIntervalAlarma)
         }
     }
+
+    //metodo que retorna la hora y fecha de fin de la proxima cita de asistencia
+    suspend fun getEndTimeOfNextAppointment(initIntervalAlarma:Long=0):Long? {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getEndTimeOfNextAppointment(initIntervalAlarma)
+        }
+    }
+
 
 }
