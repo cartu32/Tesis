@@ -2,9 +2,13 @@ package com.example.comunicationwearmobile.ui.model.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.room.withTransaction
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.dto.AreaNextAppointmentRow
+import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
 import com.example.comunicationwearmobile.ui.utils.Tools
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +18,7 @@ class RepositoryScheduleAssistance(context: Context) {
 
     private val database = AbuMonitorDatabase.getDatabase(context)
     private val daoAssistance = database.entityScheduledAssistanceDao()
+    private val repositoryAreaDB=RepositoryAreaDB.getInstance(context)
 
     companion object {
         @Volatile
@@ -28,22 +33,31 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
-    suspend fun insertScheduledAssistance(assistance: EntityScheduledAssistance): Long {
-        return withContext(Dispatchers.IO) {
-            try {
-                val idAssistance = daoAssistance.insertScheduledAssistance(assistance)
+    suspend fun insertScheduledAssistance(assistance: EntityScheduledAssistance, newAreaGeof: DataAreaGeofAux):Long{
+        return withContext(Dispatchers.IO){
+            try{
+                database.withTransaction {
 
-                if (idAssistance != -1L)
-                    idAssistance
-                else
-                    Definition.ERROR_INSERT_BD_GEOF
-            } catch (e: Exception) {
+                    val idArea=repositoryAreaDB.insertArea(newAreaGeof,false)
+
+                    if (idArea==Definition.ERROR_INSERT_BD_GEOF)
+                        throw IllegalStateException("Error insertando área")
+
+                    assistance.id_area = idArea
+                    val idAssistance = daoAssistance.insertScheduledAssistance(assistance)
+                    if (idAssistance == -1L) {
+                        throw IllegalStateException("Error insertando cita de asistencia")
+                    }
+                    idArea
+                }
+            }catch (e:Exception){
                 e.printStackTrace()
                 Definition.ERROR_INSERT_BD_GEOF
             }
         }
-    }
 
+
+    }
 
     fun getAllScheduleAssitance(): LiveData<List<EntityScheduledAssistance>> {
         return daoAssistance.getAllScheduleAssitance()
@@ -66,37 +80,32 @@ class RepositoryScheduleAssistance(context: Context) {
     }
 
 
-    suspend fun getAssistanceWithAreaId(idArea: Long): EntityScheduledAssistance {
+    suspend fun getAssistanceWithAreaId(idArea: Long): EntityScheduledAssistance? {
         return withContext(Dispatchers.IO) {
-            daoAssistance.getAppointmetByIdArea(idArea)
+            daoAssistance.getAppointmentActivatedByIdArea(idArea)
         }
     }
 
     suspend fun updateScheduleAssistance(assistance: EntityScheduledAssistance): Int {
-        return withContext(Dispatchers.IO) {
-            daoAssistance.updateScheduledAssistance(assistance)
+       return daoAssistance.updateScheduledAssistance(assistance)
+    }
+
+    suspend fun updateScheduledAssitanceAndDesactivateArea(assistance: EntityScheduledAssistance): Int {
+        return database.withTransaction {
+            updateScheduleAssistance(assistance)
+
+            daoAssistance.updateActivationAreaWithId(false, assistance.id_area)
+
         }
     }
 
 
-    suspend fun getAreasInsideDateInterval(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<AreaGeofenceWithEvents> {
+    suspend fun updateUpcomingAreasActivation(valueIsActivatedGeof: Boolean,timeCurrentAlarm: Long): Int {
         return withContext(Dispatchers.IO) {
-            daoAssistance.getAreasInsideDateInterval(dateTimeAlarmInitial, dateTimeAlarmNext)
+            daoAssistance.updateUpcomingAreasActivation(valueIsActivatedGeof,timeCurrentAlarm)
         }
     }
 
-    suspend fun updateIsActivatedGeofence(idArea: Long, valueIsActivatedGeof: Boolean): Int {
-        return withContext(Dispatchers.IO) {
-            daoAssistance.updateIsActivatedGeofence(idArea, valueIsActivatedGeof)
-        }
-    }
-
-    suspend fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
-        return withContext(Dispatchers.IO) {
-            daoAssistance.getAreasWithAppointmentActivated(dateTimeAlarmInitial, dateTimeAlarmNext)
-        }
-
-    }
 
     suspend fun getAreasWithAppointmentRemember(timePreviousRemember: Long, dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
         return withContext(Dispatchers.IO){
@@ -104,4 +113,12 @@ class RepositoryScheduleAssistance(context: Context) {
         }
 
     }
+
+    //metodo que retorna la hora y fecha de la proxima cita de asistencia
+    suspend fun getNextAppointmentTime(initIntervalAlarma:Long=0):Long? {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getNextAppointmentTime(initIntervalAlarma)
+        }
+    }
+
 }

@@ -121,8 +121,8 @@ class GeofencesServices: Service() {
     private fun channelLector() {
         // Lector del Channel: consume las solicitudes encoladas
 
-        serviceScope?.launch {
-            requestChannel?.let { channel ->
+        serviceScope.launch {
+            requestChannel.let { channel ->
                 for (intent in channel) {
                     try {
                         handleIntent(intent) // Procesa cada intent
@@ -141,16 +141,22 @@ class GeofencesServices: Service() {
         val geofenceHelper= GeofenceScheduleHelper(this)
 
         when(intent?.action){
-            Definition.ACTION_ALARM_FOR_CHECKS-> geofenceHelper.executeActionsOfAlarm()
-            Definition.ACTION_ALARM_FOR_DWELL_TIME->executeActionsOfAlarmDwell(intent)
-
+            Definition.ACTION_ALARM_FOR_DWELL_TIME->{
+                val areaId=intent.extras?.getLong(Definition.INTENT_ALARM_ID)?:0
+                executeActionsOfAlarmDwell(areaId)
+            }
+            Definition.ACTION_ALARM_FOR_ACTIVATION_AREA->{
+                val timeCurrentAlarm=intent.extras?.getLong(Definition.INTENT_ALARM_TIME)?:0
+                geofenceHelper.activateGeofenceScheduled(timeCurrentAlarm)
+            }
         }
     }
 
-    private suspend fun executeActionsOfAlarmDwell(intent: Intent) {
-        val areaId = intent.extras?.getLong(Definition.INTENT_ALARM_PARAM1) ?: return
-
+    private suspend fun executeActionsOfAlarmDwell(areaId:Long) {
         try {
+
+
+
             // 1) Obtener área desde DB
             val repoAreas = RepositoryAreaDB.getInstance(applicationContext)
             val areaJoin = repoAreas.getJoinAreaGeofence(areaId) ?: run {

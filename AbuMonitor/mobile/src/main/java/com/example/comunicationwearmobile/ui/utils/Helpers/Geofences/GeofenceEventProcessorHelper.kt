@@ -11,9 +11,11 @@ import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.Notifica
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.shared_library.SharedData
 import com.google.android.gms.location.Geofence
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.LocalDate
@@ -111,10 +113,11 @@ object GeofenceEventProcessorHelper {
     }
 
     private suspend fun processEnterAssistenceZone(idArea: Long) {
+        var respUpdate:Int
         val repositoryScheduleAssistance = RepositoryScheduleAssistance(appContext)
         val entityAssistance = repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
             ?: run {
-                Log.w(Definition.TAG_DEBUG, "No se encontró asistencia para idArea=$idArea")
+                Log.w(Definition.TAG_DEBUG, "El area no se encuentra activada idArea=$idArea")
                 return
             }
 
@@ -136,21 +139,25 @@ object GeofenceEventProcessorHelper {
 
             date_hour_enter_assistance = System.currentTimeMillis()
 
-            val respUpdate = repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+            withContext(Dispatchers.IO) {
+                respUpdate = repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+            }
             if (respUpdate == 1) Log.d(Definition.TAG_DEBUG, "Hora de entrada de la cita actualizada")
             else Log.e(Definition.TAG_DEBUG, "Error no se pudo actualizar la cita")
         }
     }
 
     private suspend fun proccessExitAssistanceZone(idArea: Long, lat: String, lon: String) {
+        var respUpdate:Int
+        val minuteInMillis = 60000L
+
         val repositoryScheduleAssistance = RepositoryScheduleAssistance(appContext)
         val entityAssistance = repositoryScheduleAssistance.getAssistanceWithAreaId(idArea)
             ?: run {
-                Log.w(Definition.TAG_DEBUG, "No se encontró asistencia para idArea=$idArea")
+                Log.w(Definition.TAG_DEBUG, "El area no se encuentra activada idArea=$idArea")
                 return
             }
 
-        val minuteInMillis = 60000L
 
         with(entityAssistance) {
             if (went_appointment) {
@@ -175,9 +182,10 @@ object GeofenceEventProcessorHelper {
 
             date_hour_exit_assistance = hourExit
             went_appointment = true
-            is_activated_geof = false
 
-            val respUpdate = repositoryScheduleAssistance.updateScheduleAssistance(entityAssistance)
+            withContext(Dispatchers.IO) {
+                respUpdate =repositoryScheduleAssistance.updateScheduledAssitanceAndDesactivateArea(entityAssistance)
+            }
 
             if (respUpdate == 1) {
                 val msg = SharedData.MsgNotification().apply {

@@ -30,8 +30,15 @@ interface DaoScheduledAssistance {
            "date_hour_appointment <= :dayDateEnd")
     fun getAppointmetByDate(dayDateStart: Long, dayDateEnd: Long): LiveData<List<EntityScheduledAssistance>>
 
-    @Query("SELECT * FROM scheduled_assistance WHERE id_area = :idArea")
-    fun getAppointmetByIdArea(idArea: Long): EntityScheduledAssistance
+    @Query("""
+            SELECT sch.*
+            FROM scheduled_assistance sch
+            INNER JOIN area_runtime_state ar ON sch.id_area = ar.id_area
+            WHERE sch.id_area = :idArea
+              AND ar.is_activated_geof = 1
+            LIMIT 1 
+        """)
+    fun getAppointmentActivatedByIdArea(idArea: Long): EntityScheduledAssistance?
 
     @Update
     suspend fun updateScheduledAssistance(assistance: EntityScheduledAssistance):Int
@@ -50,12 +57,12 @@ interface DaoScheduledAssistance {
             ar.last_update_time,
             COALESCE(dt.dwell_time, 0) AS dwell_time,
             GROUP_CONCAT(ae.id_event) AS list_id_event
-        FROM Area_Geofence ag, Area_Runtime_State ar
+        FROM Area_Geofence ag
         INNER JOIN Scheduled_Assistance sa ON ag.id_area = sa.id_area
         INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
         INNER JOIN Type_Area ta ON ag.id_type_area = ta.id_type_area
         INNER JOIN Priority p ON ag.id_priority = p.id_priority
-        INNER JOIN Area_Runtime_State ON ag.id_area = ar.id_area
+        INNER JOIN Area_Runtime_State ar ON ag.id_area = ar.id_area
         LEFT JOIN DwellTimeZone dt ON ag.id_area = dt.id_area
         WHERE sa.date_hour_appointment >= :dateTimeAlarmInitial AND
               sa.date_hour_appointment< :dateTimeAlarmNext              
@@ -66,22 +73,6 @@ interface DaoScheduledAssistance {
         dateTimeAlarmNext: Long
     ):List<AreaGeofenceWithEvents>
 
-    @Query("""
-        update scheduled_assistance 
-        SET  is_activated_geof=:valueIsActivatedGeof
-        WHERE id_area = :idArea
-    """)
-    fun updateIsActivatedGeofence(idArea: Long,valueIsActivatedGeof:Boolean):Int
-
-
-    @Query("""
-        SELECT *
-        FROM scheduled_assistance sa
-        WHERE sa.is_activated_geof = true
-          AND sa.date_hour_appointment + sa.time_duration_activation_appointment >= :dateTimeAlarmInitial
-          AND sa.date_hour_appointment + sa.time_duration_activation_appointment < :dateTimeAlarmNext
-    """)
-    fun getAreasWithAppointmentActivated(dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance>
 
 
     @Query("""
@@ -92,4 +83,37 @@ interface DaoScheduledAssistance {
     """)
     fun getAreasWithAppointmentRemember(timePreviousRemember: Long,dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance>
 
+    @Query("""
+        SELECT MIN(sa2.date_hour_appointment)
+        FROM   scheduled_assistance sa2
+        WHERE  sa2.date_hour_appointment > :initIntervalAlarm
+    """)
+    fun getNextAppointmentTime(initIntervalAlarm: Long): Long?
+
+
+    @Query("""
+        UPDATE Area_Runtime_State
+        SET is_activated_geof = :activated
+        WHERE id_area IN (
+              SELECT sa.id_area
+              FROM scheduled_assistance sa
+              WHERE sa.date_hour_appointment = :timeCurrentAlarm
+            )
+    """)
+    suspend fun updateUpcomingAreasActivation(
+        activated: Boolean,
+        timeCurrentAlarm: Long
+    ): Int
+
+    @Query("""
+        UPDATE Area_Runtime_State
+        SET is_activated_geof = :activated
+        WHERE id_area = :idArea
+    """)
+    suspend fun updateActivationAreaWithId(
+        activated: Boolean,
+        idArea: Long
+    ): Int
+
 }
+

@@ -23,68 +23,8 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
         }
 
         ContextCompat.startForegroundService(context, serviceIntent)
-
-        intent.action?.let { setAlarmForNextTime(context, it) }
     }
 
 
-    private fun setAlarmForNextTime(context: Context, action: String) {
-        val timeNextAlarm:Long
-        val alarmId:Int
-
-        when(action){
-            Definition.ACTION_ALARM_FOR_CHECKS-> {
-                timeNextAlarm=getIntervalForNextChecks(context)
-                alarmId=Definition.ALARM_ID_FOR_CHECKS
-            }
-            else->{
-                Log.w(Definition.TAG_DEBUG, "Acción desconocida: $action")
-                return
-            }
-
-        }
-
-        if (timeNextAlarm == Definition.NO_STORED_VALUE) {
-            Log.w(Definition.TAG_DEBUG, "Sin intervalo válido para reprogramar.")
-            return
-        }
-
-        val ok = AlarmHelper.setNextAlarmInXTime(
-            context = context,
-            alarmId = alarmId,
-            delayMillis = timeNextAlarm,
-            action = action,
-            receiverClass = AlarmBroadcastReceiver::class.java
-        )
-
-        if(ok) {
-            Log.d(Definition.TAG_DEBUG, "Alarma reconfigurada")
-            Toast.makeText(context, "Alarma reconfigurada", Toast.LENGTH_SHORT).show()
-        }else {
-            Log.d(Definition.TAG_DEBUG, "Fallo reconfiguración")
-            Toast.makeText(context, "Fallo reconfiguración", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    //Hago est afuncion asi para guarda en el sharedpreference la hora de la proxima alarma,
-    //asi para poder mostralo en el menu de configuracion
-    private fun getIntervalForNextChecks(context: Context): Long {
-        val repository = RepositoryConfigAppSPref.getInstance(context)
-        //obtengo cada cuanto tiempo se debe hacer el checkeo
-        val timeBetweenChecks = repository.getTimeBetweenChecksSync()
-
-        saveHourMinutesNextAlarm(timeBetweenChecks,repository)
-        return timeBetweenChecks
-    }
-
-
-    private fun saveHourMinutesNextAlarm(timeBetweenChecks: Long, repository: RepositoryConfigAppSPref) {
-        //calculo la hora de la proxima alarma
-        val aux=System.currentTimeMillis()+timeBetweenChecks
-        val millisNextAlarm=Tools.extractHourOfDateInMillis(aux)
-
-        //guardo en el sharedpreference la hora de la proxima alarma
-        repository.saveTimeNextAlarmSync(millisNextAlarm)
-    }
 }
 

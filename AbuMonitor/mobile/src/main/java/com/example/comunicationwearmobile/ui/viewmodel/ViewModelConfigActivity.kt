@@ -173,9 +173,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
                 _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
                 return@launch
             }
-            if (isChangedBetween) {
-                allOk = allOk && saveAlarmBetweenCheckInternal(dataNextAlarm)
-            }
 
             if (isChangedRemeber) {
                 allOk = allOk && saveTimeRememberInternal(dataTimeReminder)
@@ -254,43 +251,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
             mn=mnAux
         }
         return dataNextAlarm
-    }
-
-    private suspend fun saveAlarmBetweenCheckInternal(dataNextAlarm: dataNextAlarm): Boolean {
-        return try {
-
-            // guardo configuración en SharedPreferences
-            withContext(Dispatchers.IO) {
-                repo.saveTimeBetweenChecks(dataNextAlarm.millisBetweenCheck)
-                repo.saveTimeNextAlarm(dataNextAlarm.millisNextAlarm)
-            }
-
-
-            // programo nueva alarma
-            val okAlarm = AlarmHelper.setNextAlarmInXTime(
-                getApplication(),
-                Definition.ALARM_ID_FOR_CHECKS,
-                dataNextAlarm.millisBetweenCheck,
-                Definition.ACTION_ALARM_FOR_CHECKS,
-                AlarmBroadcastReceiver::class.java
-            )
-
-            if (okAlarm) {
-                // activo/desactivo geofences según la nueva ventana
-                geofenceScheduleHelper.executeActionsOfAlarm()
-
-                // actualizo en la vista el horario de la próxima alarma
-                updateTimeNextAlarm(dataNextAlarm.hn, dataNextAlarm.mn)
-                true
-            } else {
-                _toastMessage.value = "No se pudo configurar la alarma"
-                false
-            }
-
-        } catch (t: Throwable) {
-            _toastMessage.value = "Error al guardar: ${t.message ?: "desconocido"}"
-            false
-        }
     }
 
     fun onToastShown() { _toastMessage.value = null }

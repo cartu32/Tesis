@@ -10,7 +10,6 @@ import com.example.comunicationwearmobile.ui.model.dto.ResultAreaGenerateEvent
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceFSM
-import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import com.google.android.gms.location.Geofence
 
@@ -117,25 +116,24 @@ object ManualGeofenceStrategyHelper {
     }
 
     private fun cancelAlarmDwell(appContext: Context, areaId: Long) {
-        val areaIdForAlarm = Tools.convertLongToInt(areaId, Definition.HASH_TYPE_DWELL)
 
         AlarmHelper.cancelAlarm(
             appContext,
-            areaIdForAlarm,
+            areaId,
             Definition.ACTION_ALARM_FOR_DWELL_TIME,
             AlarmBroadcastReceiver::class.java
         )
     }
 
     private fun startAlarmDwell(appContext: Context, areaId: Long, dwellTime: Long) {
-        val areaIdForAlarm = Tools.convertLongToInt(areaId, Definition.HASH_TYPE_DWELL)
+
+        val listAreaId=ArrayList<Long>().apply { add(areaId) }
 
         AlarmHelper.setNextAlarmInXTime(
             context = appContext,
-            alarmId = areaIdForAlarm,
+            alarmId = areaId,
             delayMillis = dwellTime, // (ms)
             action = Definition.ACTION_ALARM_FOR_DWELL_TIME,
-            areaId = areaId,
             receiverClass = AlarmBroadcastReceiver::class.java
         )
     }

@@ -68,29 +68,23 @@ object Definition {
 
     const val HASH_TYPE_DWELL = 10
 
-    const val ACTION_ALARM_FOR_CHECKS         = "ACTION_ALARM_FOR_CHECKS"
-    const val ACTION_ALARM_FOR_DWELL_TIME     = "ACTION_ALARM_FOR_DWELL_TIME"
+    const val ACTION_ALARM_FOR_DWELL_TIME      = "ACTION_ALARM_FOR_DWELL_TIME"
+    const val ACTION_ALARM_FOR_ACTIVATION_AREA = "ACTION_ALARM_FOR_ACTIVATION_AREA"
 
     const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
     const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
-    const val INTENT_ALARM_PARAM1              = "INTENT_ALARM_PARAM1"
+    const val INTENT_INIT_INTERVAL_ALARMA      = "INTENT_INIT_INTERVAL_ALARMA"
 
 
 
     //constantes que indican cada cuanto tiempo se hace el checkeo de asistencia.
     //ademas de activar y desactivar las areas de geofence del dia de hoy
 
-    const val DEFAULT_HOUR_ALARM_BETWEEN_CHECKS       = 0
-    const val DEFAULT_MINUTE_ALARM_BETWEEN_CHECKS     = 3
-
     const val DEFAULT_HOUR_REMEMER_APPOINTMENT        = 0
     const val DEFAULT_MINUTE_REMEMER_APPOINTMENT      = 10
 
     const val MAX_HOUR_DTPICKER_ALARMCHECKS: Int      = 2
     const val MAX_HOUR_DTPICKER_REMEMBER: Int         = 5
-
-    const val ACTION_ALARM_DAILY_CHECK_ASSISTANCE      = "ACTION_ALARM_DAILY_CHECK_ASSISTANCE"
-    const val ACTION_ALARM_DAILY_CHECKS                = "ACTION_ALARM_DAILY_CHECKS"
 
 
     //constante que indica la cuanto tiempo se debe mantener activa la geofence para una cita
@@ -101,7 +95,7 @@ object Definition {
     const val ERROR_IN_SET_ALARM    = -1
 
     //constante del id que identifica la alarmas
-    const val ALARM_ID_FOR_CHECKS   = 100
+    const val ALARM_ID_FOR_ACTIVATION_AREAS:Long   = 900L
 
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference

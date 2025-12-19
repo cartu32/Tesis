@@ -18,7 +18,6 @@ import kotlinx.parcelize.Parcelize
     )],
     indices = [
         Index(value = ["id_area"], unique = true),//con unique aseguro que la reacion sea 1 a 1
-        Index(value = ["is_activated_geof"]),
         Index(value = ["date_hour_appointment"]),
         Index(value = ["time_duration_activation_appointment"])
     ]
@@ -28,7 +27,6 @@ import kotlinx.parcelize.Parcelize
     var title: String = "",
     var description:String="",
     var went_appointment:Boolean=false, //indica si fue a la cita
-    var is_activated_geof:Boolean=false, //indica si esta activada la geofence de la cita
     var date_hour_appointment:Long=0, //dia y hora en que tiene la cita
     var date_hour_enter_assistance:Long=0, //dia y hora en que realmente asisto a la cita
     var date_hour_exit_assistance:Long=0,  //dia y hora en que realmente salio de la cita

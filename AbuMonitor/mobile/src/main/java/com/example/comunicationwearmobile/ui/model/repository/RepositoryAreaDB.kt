@@ -72,7 +72,7 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
-    private suspend fun insertArea(data: DataAreaGeofAux?, isActivate: Boolean): Long {
+    suspend fun insertArea(data: DataAreaGeofAux?, isActivate: Boolean): Long {
         if (data == null)
             throw IllegalStateException("Error data es null")
 
@@ -164,11 +164,9 @@ class RepositoryAreaDB (context: Context) {
         }
     }
 
-    suspend fun updateActivatedArea(areaState:EntityAreaRuntimeState):Int{
+    suspend fun updateActivatedArea(listAreasId:List<Long>,areActivated:Boolean):Int{
         return withContext(Dispatchers.IO){
-            val idArea=areaState.id_area
-            val isActivated:Boolean=areaState.is_activated_geof
-            daoAreaRuntimeState.updateAreaActivated(idArea,isActivated)
+            daoAreaRuntimeState.updateAreaActivated(listAreasId,areActivated)
         }
     }
 

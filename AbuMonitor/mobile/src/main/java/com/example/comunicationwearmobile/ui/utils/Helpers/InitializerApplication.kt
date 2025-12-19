@@ -75,11 +75,11 @@ object InitializerApplication {
     }
 
     private fun initializeAlarms() {
-        initializeAlarmAssistance()
+       // initializeAlarmAssistance()
     }
 
 
-
+/*
     private fun initAlarmAssistance(intervalToAlarmMS: Long){
 
         val resultSetAlarm = AlarmHelper.setNextAlarmInXTime(
@@ -143,7 +143,7 @@ object InitializerApplication {
         }
     }
 
-
+*/
     fun onTerminate() {
         SmsHelper.onDestroy()
         NotificationHelper.getInstance(appContext)?.cancelCorutineInit()

@@ -9,16 +9,19 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.abumonitor.data.model.EntityScheduledAssistance
+import com.example.comunicationwearmobile.ui.model.dto.AreaNextAppointmentRow
+import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
+import java.util.ArrayList
 
 object AlarmHelper {
 
 
     private fun setAlarmInternal(
         context: Context,
-        alarmId: Int,
+        alarmId: Long,
         triggerAtMillis: Long,
         type: Int,
-        areaId: Long? =null,
         action: String,
         receiverClass: Class<out BroadcastReceiver>
     ): Boolean {
@@ -31,13 +34,12 @@ object AlarmHelper {
                 this.action = action
                 putExtra(Definition.INTENT_ALARM_ID, alarmId)
                 putExtra(Definition.INTENT_ALARM_TIME, triggerAtMillis)
-                if(areaId!=null)
-                    putExtra(Definition.INTENT_ALARM_PARAM1,areaId)
+
             }
 
             val pi = PendingIntent.getBroadcast(
                 context,
-                alarmId,
+                alarmId.hashCode(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -55,7 +57,7 @@ object AlarmHelper {
      */
     fun cancelAlarm(
         context: Context,
-        alarmId: Int,
+        alarmId: Long,
         action: String,
         receiverClass: Class<out BroadcastReceiver>
     ): Boolean {
@@ -65,7 +67,7 @@ object AlarmHelper {
         // Verifica si existe la alarma
         val existingPi = PendingIntent.getBroadcast(
             context,
-            alarmId,
+            alarmId.hashCode(),
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
@@ -113,7 +115,7 @@ object AlarmHelper {
     // Alarma relativa (en X milisegundos) usando ELAPSED_REALTIME_WAKEUP
     // se usa para activar la alarma para que se active cada determinado tiempo
     // por ejemplo:cada 3 minutos, cada 5 minutos, etc.
-    fun setNextAlarmInXTime(context: Context, alarmId: Int, delayMillis: Long, action: String, receiverClass: Class<out BroadcastReceiver>,areaId: Long?=null): Boolean {
+    fun setNextAlarmInXTime(context: Context, alarmId: Long, delayMillis: Long, action: String, receiverClass: Class<out BroadcastReceiver>): Boolean {
         val triggerAtElapsed = SystemClock.elapsedRealtime() + delayMillis
 
         //cancelo la alrma si anteriormente esta configurada
@@ -126,7 +128,6 @@ object AlarmHelper {
             triggerAtMillis = triggerAtElapsed,
             type = AlarmManager.ELAPSED_REALTIME_WAKEUP,
             action = action,
-            areaId = areaId,
             receiverClass = receiverClass
         )
     }
@@ -137,7 +138,7 @@ object AlarmHelper {
     //por ejemplo: el lunes 15 a las 20:30
     fun setNextAlarmAtExactTime(
         context: Context,
-        alarmId: Int,
+        alarmId: Long,
         triggerAtMillis: Long, // epoch time (System.currentTimeMillis-based)
         action: String,
         receiverClass: Class<out BroadcastReceiver>
@@ -156,5 +157,8 @@ object AlarmHelper {
             receiverClass = receiverClass
         )
     }
+
+
+
 }
 

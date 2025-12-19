@@ -28,7 +28,7 @@ interface DaoAreaRuntimeState {
     @Query("""
         UPDATE Area_Runtime_State 
         SET is_activated_geof = :isActivated
-        WHERE id_area = :idArea
+        WHERE id_area IN (:listAreasIds)
     """)
-    fun updateAreaActivated(idArea: Long, isActivated: Boolean):Int
+    fun updateAreaActivated(listAreasIds:List<Long>, isActivated: Boolean):Int
 }
