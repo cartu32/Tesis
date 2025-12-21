@@ -7,6 +7,8 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoAreaRuntimeState
+import com.example.comunicationwearmobile.ui.model.dto.AppointmentNextEnd
 import com.example.comunicationwearmobile.ui.model.dto.AreaNextAppointmentRow
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
@@ -18,6 +20,8 @@ class RepositoryScheduleAssistance(context: Context) {
 
     private val database = AbuMonitorDatabase.getDatabase(context)
     private val daoAssistance = database.entityScheduledAssistanceDao()
+    private val daoAreaRuntimeState = database.entityAreaRuntimeState()
+
     private val repositoryAreaDB=RepositoryAreaDB.getInstance(context)
 
     companion object {
@@ -113,6 +117,19 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
+    suspend fun desactivateAreasWithoutAssisntance(listAppointWithoutAssisntace: List<EntityScheduledAssistance>):Int{
+        return withContext(Dispatchers.IO){
+
+            val listIdAreas= mutableListOf<Long>()
+
+            for (area in listAppointWithoutAssisntace){
+                listIdAreas.add(area.id_area)
+            }
+            daoAreaRuntimeState.updateAreaActivated(listIdAreas,false)
+        }
+
+    }
+
     suspend fun getAreasWithAppointmentRemember(timePreviousRemember: Long, dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
         return withContext(Dispatchers.IO){
             daoAssistance.getAreasWithAppointmentRemember(timePreviousRemember,dateTimeAlarmInitial, dateTimeAlarmNext)
@@ -127,10 +144,43 @@ class RepositoryScheduleAssistance(context: Context) {
         }
     }
 
-    //metodo que retorna la hora y fecha de fin de la proxima cita de asistencia
-    suspend fun getEndTimeOfNextAppointment(initIntervalAlarma:Long=0):Long? {
+    //metodo que retorna la hora y fecha mas chica de fin de la proxima cita de asistencia
+    suspend fun getEndTimeOfNextAppointmentMin(initIntervalAlarma:Long=0):Long? {
         return withContext(Dispatchers.IO){
-            daoAssistance.getEndTimeOfNextAppointment(initIntervalAlarma)
+            daoAssistance.getEndTimeOfNextAppointmentMin(initIntervalAlarma)
+        }
+    }
+
+    //metodo que retorna el listado de las areas con la hora y fecha de fin de la proxima cita de asistencia
+    //teniendo en cuenta si la cita es nueva o no
+    suspend fun getListEndTimeOfNextAppointment(initIntervalAlarma:Long=0):List<AppointmentNextEnd> {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getListEndTimeOfNextAppointment(initIntervalAlarma)
+        }
+    }
+
+
+    suspend fun getAreasWithAppointmentWithoutAssistance(timeCurrentAlarm: Long): List<EntityScheduledAssistance> {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getAreasWithAppointmentWithoutAssistance(timeCurrentAlarm)
+
+        }
+    }
+
+    suspend fun getAndMarkExpiredInassistance(timeCurrentAlarm: Long): List<EntityScheduledAssistance> {
+        return database.withTransaction {
+            val list = daoAssistance.getExpiredUnassistedNotNotified(timeCurrentAlarm)
+            if (list.isNotEmpty()) {
+                val ids = list.map { it.id_area }
+                daoAssistance.markInassistanceNotifiedByIds(ids)
+            }
+            list
+        }
+    }
+
+    suspend fun updateNewAppointmentDate(listIdAreasNextEnd: List<Long>?) {
+        return withContext(Dispatchers.IO){
+            daoAssistance.updateNewAppointmentDate(listIdAreasNextEnd)
         }
     }
 

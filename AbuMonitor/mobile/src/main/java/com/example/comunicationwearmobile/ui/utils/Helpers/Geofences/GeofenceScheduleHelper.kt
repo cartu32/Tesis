@@ -6,8 +6,8 @@ import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.common.SharedVariables
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper.cancelAlarm
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper.setNextAlarmAtExactTime
@@ -16,7 +16,6 @@ import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.SmsHelpe
 import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import com.example.shared_library.SharedData
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 data class TimeWindow(val start: Long, val end: Long)
@@ -41,9 +40,15 @@ class GeofenceScheduleHelper(mContext:Context) {
         // 1) Activo las áreas cuya cita es exactamente la de esta alarma (pueden ser varias)
         activateGeofence(timeCurrentAlarm)
 
-        // 2) Reprogramo la próxima alarma usando como ancla el horario lógico de esta alarma,
+        // 2) Reprogramo la próxima alarma del siguiente inicio de cita
+        // , usando como ancla el horario lógico de esta alarma,
         scheduledNextStartAlarmAppointment(timeCurrentAlarm)
-    }
+
+        // 3) Reprogramo la próxima alarma del siguiente fin de cita
+        // , usando como ancla el horario lógico de esta alarma,
+        scheduledNextEndAlarmAppointmentFromActivation(timeCurrentAlarm)
+
+        }
 
 
     suspend fun deactivateGeofenceScheduled(timeCurrentAlarm: Long)=
@@ -52,12 +57,72 @@ class GeofenceScheduleHelper(mContext:Context) {
         desactivateGeofence(timeCurrentAlarm)
 
         // 2) Reprogramo la próxima alarma usando como ancla el horario lógico de esta alarma,
-        scheduledNextEndAlarmAppointment(timeCurrentAlarm)
+        scheduledNextEndAlarmAppointmentFromDesactivation(timeCurrentAlarm)
+
+        //compruebo si hubo inasistencia dentro del horario actual
+        checkAssistance(timeCurrentAlarm)
+
     }
 
-    private suspend fun scheduledNextEndAlarmAppointment(lastAlarmTime: Long) {
-        val nextEnd =repositoryScheduleAssistance.getEndTimeOfNextAppointment(initIntervalAlarma = lastAlarmTime)
-                ?: return
+
+    private suspend fun scheduledNextEndAlarmAppointmentFromActivation(timeCurrentAlarm: Long) {
+        //obtengo todas las areas que tienen la proxima cita de asistencia mas cercano
+        //para eso calculo el minimo y obtengo el listado de areas correspondiendiente a ese minimo
+        val listAssistenceNextEnd =
+            repositoryScheduleAssistance.getListEndTimeOfNextAppointment(initIntervalAlarma = timeCurrentAlarm)
+
+        if (listAssistenceNextEnd.isNotEmpty()) {
+
+            val nextEnd = listAssistenceNextEnd[0].endTime
+            val ok = setNextAlarmAtExactTime(
+                context = context,
+                alarmId = Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
+                triggerAtMillis = nextEnd,
+                action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+
+            // Solo si realmente programé la alarma, apago el flag
+            if (ok) {
+                //separo el listado de areas correspondiente al minimo para poder
+                //hacer el update del campo nueva cita de las areas que tienen el valor
+                //minimo
+                val listIdAreas = listAssistenceNextEnd.map { it.id_area }
+                repositoryScheduleAssistance.updateNewAppointmentDate(listIdAreas)
+            }
+
+            return
+        }
+
+        // FALLBACK: no hay "nuevas", pero puede haber citas activas pendientes
+        val nextEndGlobal: Long? = repositoryScheduleAssistance.getEndTimeOfNextAppointmentMin()
+
+        if (nextEndGlobal != null) {
+            setNextAlarmAtExactTime(
+                context = context,
+                alarmId = Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
+                triggerAtMillis = nextEndGlobal,
+                action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        } else {
+            Log.d(Definition.TAG_DEBUG, "No hay próxima cita. Alarma de DESACTIVACIÓN cancelada.")
+        }
+    }
+
+
+    private suspend fun scheduledNextEndAlarmAppointmentFromDesactivation(lastAlarmTime: Long) {
+        val nextEnd =repositoryScheduleAssistance.getEndTimeOfNextAppointmentMin(initIntervalAlarma = lastAlarmTime)
+
+        if (nextEnd==null){
+            //cancelo la alarma anteriormente progrmada
+            cancelAlarm(
+                context=context,
+                action=Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
+                alarmId=Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
+                receiverClass = AlarmBroadcastReceiver::class.java)
+            return
+        }
 
         setNextAlarmAtExactTime(
             context = context,
@@ -66,15 +131,29 @@ class GeofenceScheduleHelper(mContext:Context) {
             action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
             receiverClass = AlarmBroadcastReceiver::class.java
         )
+
     }
 
-    private suspend fun scheduledNextStartAlarmAppointment(lastAlarmTime: Long) {
+
+    private suspend fun scheduledNextStartAlarmAppointment(timeCurrentAlarm: Long) {
 
         // Busco la próxima cita estrictamente posterior a la que acabo de procesar
-        val timeNextAppointment =
-            repositoryScheduleAssistance.getStartTimeOfNextAppointment(lastAlarmTime)
-                ?: return
+        val timeNextAppointment = repositoryScheduleAssistance.getStartTimeOfNextAppointment(timeCurrentAlarm)
 
+
+        if (timeNextAppointment == null) {
+            // No hay próximas citas, entonces se cancela la alarma de activación si quedó programada
+            cancelAlarm(
+                context = context,
+                alarmId = Definition.ALARM_ID_FOR_ACTIVATION_AREAS,
+                action = Definition.ACTION_ALARM_FOR_ACTIVATION_AREA,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+            Log.d(Definition.TAG_DEBUG, "No hay próxima cita. Alarma de ACTIVACIÓN cancelada.")
+            return
+        }
+
+        //si hay una cita proxima, reprogramo la alarma de activacion
         setNextAlarmAtExactTime(
             context = context,
             alarmId = Definition.ALARM_ID_FOR_ACTIVATION_AREAS,
@@ -139,6 +218,22 @@ class GeofenceScheduleHelper(mContext:Context) {
 
 
     }
+
+    private suspend fun checkAssistance(now: Long): Boolean {
+        val list = repositoryScheduleAssistance.getAndMarkExpiredInassistance(now)
+
+        if (list.isEmpty()) {
+            Log.d(Definition.TAG_DEBUG, "No hay citas vencidas sin asistencia para now=$now")
+            return false
+        }
+
+        // Si además querés desactivar áreas asociadas:
+        repositoryScheduleAssistance.desactivateAreasWithoutAssisntance(list)
+
+        reportInassistanceScheduled(list)
+        return true
+    }
+
 
     suspend  fun checkRememberAppointmentInsideInterval(prev: TimeWindow, curr: TimeWindow) {
         //obtengo el intervalo de tiempo en que se va a recordar las citas

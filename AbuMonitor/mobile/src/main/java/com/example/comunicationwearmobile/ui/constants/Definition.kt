@@ -185,7 +185,7 @@ object Definition {
     const val PARAMETER_SERVICE: String = "PARAMETER_SERVICE"
 
     //cantidad de citas maximas que se pueden agendar por cada dia
-    const val COUNT_MAX_DATE_FOR_DAY = 3
+    const val COUNT_MAX_DATE_FOR_DAY = 5
 
     //tiempo de maximo de respuesta en que el S.O notifica al broadcastt cuando
     //detecta un evento de geofence

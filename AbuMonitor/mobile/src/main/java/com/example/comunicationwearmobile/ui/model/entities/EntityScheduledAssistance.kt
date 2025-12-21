@@ -31,5 +31,8 @@ import kotlinx.parcelize.Parcelize
     var date_hour_enter_assistance:Long=0, //dia y hora en que realmente asisto a la cita
     var date_hour_exit_assistance:Long=0,  //dia y hora en que realmente salio de la cita
     var time_duration_activation_appointment:Long=0, //tiempo que se mantiene activa el area de geof de la cita
+    var was_notified_inassistance:Boolean=false, //indica si ya se notifico que no asistio a la cita
+    var is_new_appointment_assistance:Boolean=false, //bandera que se utiliza para saber si es una cita de asistencia nueva.
+                                                    // Se usa para saber cuando programar la alarma de desactivacion de areas
     var id_area: Long = 0,
     ): Parcelable

@@ -97,9 +97,10 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     ): Long=SharedVariables.mutexAssistanceDateAlarm.withLock {
 
         val now = System.currentTimeMillis()
-
         val startDateAppointment = assistance.date_hour_appointment
-        val endDateAppointment = startDateAppointment + assistance.time_duration_activation_appointment
+
+        //indico en el registro que va a guardarse en la bd que es una cita de asistencia nueva
+        assistance.is_new_appointment_assistance=true
 
         // 1) creo la nueva cita de asitencia y la guardo en la base de datos
         val newAreaGeofAux = createAreaGeof(latitude, longitude, meters)
@@ -107,7 +108,6 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
 
         // 2) Reconsulto mínimos reales de inicio y fin de las citas desde DB (ya con la nueva cita incluida)
         val nextStartNow = repoAssistance.getStartTimeOfNextAppointment(initIntervalAlarma = now)
-        val nextEndNow = repoAssistance.getEndTimeOfNextAppointment(initIntervalAlarma = now)
 
         // 3) Programo SOLAMENTE si el comienzo del nueva cita quedó siendo la próxima real.
         //    o sea si es la mas chica de todas en el horario de inicio
@@ -120,19 +120,6 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
                 receiverClass = AlarmBroadcastReceiver::class.java
             )
         }
-
-        // 4) Programo SOLAMENTE si el fin del nueva cita quedó siendo la próxima real.
-        //    o sea si es la mas chica de todas en el horario de fin
-        if (nextEndNow != null && nextEndNow == endDateAppointment) {
-            setNextAlarmAtExactTime(
-                context,
-                alarmId = Definition.ALARM_ID_FOR_DESACTIVATION_AREAS,
-                triggerAtMillis = nextEndNow,
-                action = Definition.ACTION_ALARM_FOR_DESACTIVATION_AREA,
-                receiverClass = AlarmBroadcastReceiver::class.java
-            )
-        }
-
         return idAreaAssistance
 
     }
