@@ -130,9 +130,9 @@ class RepositoryScheduleAssistance(context: Context) {
 
     }
 
-    suspend fun getAreasWithAppointmentRemember(timePreviousRemember: Long, dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance> {
+    suspend fun getReminderAppointmentOfCurrentAlarm(timeCurrentAlarm: Long,offsetReminder: Long): List<EntityScheduledAssistance> {
         return withContext(Dispatchers.IO){
-            daoAssistance.getAreasWithAppointmentRemember(timePreviousRemember,dateTimeAlarmInitial, dateTimeAlarmNext)
+            daoAssistance.getReminderAppointmentOfCurrentAlarm(timeCurrentAlarm,offsetReminder)
         }
 
     }
@@ -160,13 +160,6 @@ class RepositoryScheduleAssistance(context: Context) {
     }
 
 
-    suspend fun getAreasWithAppointmentWithoutAssistance(timeCurrentAlarm: Long): List<EntityScheduledAssistance> {
-        return withContext(Dispatchers.IO){
-            daoAssistance.getAreasWithAppointmentWithoutAssistance(timeCurrentAlarm)
-
-        }
-    }
-
     suspend fun getAndMarkExpiredInassistance(timeCurrentAlarm: Long): List<EntityScheduledAssistance> {
         return database.withTransaction {
             val list = daoAssistance.getExpiredUnassistedNotNotified(timeCurrentAlarm)
@@ -181,6 +174,12 @@ class RepositoryScheduleAssistance(context: Context) {
     suspend fun updateNewAppointmentDate(listIdAreasNextEnd: List<Long>?) {
         return withContext(Dispatchers.IO){
             daoAssistance.updateNewAppointmentDate(listIdAreasNextEnd)
+        }
+    }
+
+    suspend fun getTimeOfNextReminder(timeCurrentAlarm:Long, offsetReminder: Long): Long? {
+        return withContext(Dispatchers.IO){
+            daoAssistance.getTimeOfNextReminder(timeCurrentAlarm, offsetReminder)
         }
     }
 

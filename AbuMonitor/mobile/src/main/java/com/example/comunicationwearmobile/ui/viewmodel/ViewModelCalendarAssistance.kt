@@ -13,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
@@ -28,7 +27,6 @@ import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
-    private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
     private val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(application.applicationContext)
 
@@ -99,13 +97,35 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         val now = System.currentTimeMillis()
         val startDateAppointment = assistance.date_hour_appointment
 
+        val idAreaAssistance = insertNewScheduleAppointment(latitude, longitude, meters, assistance)
+
+        sheduleNextAppointementAlarm(now, startDateAppointment, context)
+        scheduleReminderAlarm(now,startDateAppointment,context)
+
+        return idAreaAssistance
+
+    }
+
+    private suspend fun insertNewScheduleAppointment(
+        latitude: String,
+        longitude: String,
+        meters: Int,
+        assistance: EntityScheduledAssistance,
+    ): Long {
         //indico en el registro que va a guardarse en la bd que es una cita de asistencia nueva
         assistance.is_new_appointment_assistance=true
 
         // 1) creo la nueva cita de asitencia y la guardo en la base de datos
         val newAreaGeofAux = createAreaGeof(latitude, longitude, meters)
         val idAreaAssistance = repoAssistance.insertScheduledAssistance(assistance, newAreaGeofAux)
+        return idAreaAssistance
+    }
 
+    private suspend fun sheduleNextAppointementAlarm(
+        now: Long,
+        startDateAppointment: Long,
+        context: Context,
+    ) {
         // 2) Reconsulto mínimos reales de inicio y fin de las citas desde DB (ya con la nueva cita incluida)
         val nextStartNow = repoAssistance.getStartTimeOfNextAppointment(initIntervalAlarma = now)
 
@@ -120,14 +140,27 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
                 receiverClass = AlarmBroadcastReceiver::class.java
             )
         }
-        return idAreaAssistance
-
     }
 
+    private suspend fun scheduleReminderAlarm(now: Long,startDateAppointment:Long,context: Context) {
 
+        val offsetTimeReminder=repositoryConfigAppSPref.getTimeRememberAppointment()
+        val timeRelativeReminder=startDateAppointment-offsetTimeReminder
+        val nextTimeReminder=repoAssistance.getTimeOfNextReminder(timeCurrentAlarm = now,offsetReminder=offsetTimeReminder)
 
+        // 3) Programo SOLAMENTE si el comienzo del nuevo recordatorio quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de inicio y mayor que el horario actual
+        if (nextTimeReminder != null && nextTimeReminder == timeRelativeReminder && nextTimeReminder>now) {
+            setNextAlarmAtExactTime(
+                context,
+                alarmId = Definition.ALARM_ID_FOR_REMINDER,
+                triggerAtMillis = nextTimeReminder,
+                action = Definition.ACTION_ALARM_FOR_REMINDER,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        }
 
-
+    }
 
     // Configura los datos para el área geográfica
     private fun createAreaGeof(latitude: String, longitude: String, meters: Int): DataAreaGeofAux {

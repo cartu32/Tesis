@@ -235,23 +235,57 @@ class GeofenceScheduleHelper(mContext:Context) {
     }
 
 
-    suspend  fun checkRememberAppointmentInsideInterval(prev: TimeWindow, curr: TimeWindow) {
-        //obtengo el intervalo de tiempo en que se va a recordar las citas
-        val timePreviousRemeber=repositoryConfigAppSPref.getTimeRememberAppointment()
+    suspend fun notifyReminderScheduled(timeCurrentAlarm: Long) {
+        val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(context)
+
+        val offsetTimeReminder=repositoryConfigAppSPref.getTimeRememberAppointment()
 
         //obtengo de la bd el listado de citas a las que se debe recordar
         var listAreasWithPreviousRemember:List<EntityScheduledAssistance>?=null
 
-        listAreasWithPreviousRemember=repositoryScheduleAssistance.getAreasWithAppointmentRemember(timePreviousRemeber,curr.start,curr.end)
+        //como la alarma es justo para este recoradotrio, entonces me fijo que recordatorio son para examente la
+        //la hora de la alarma
+        listAreasWithPreviousRemember=repositoryScheduleAssistance.getReminderAppointmentOfCurrentAlarm(timeCurrentAlarm,offsetTimeReminder)
 
-        if(listAreasWithPreviousRemember.isEmpty()){
-            Log.d(Definition.TAG_DEBUG,"No hay citas a las que se debe recordar")
+        if(listAreasWithPreviousRemember.isNotEmpty()){
+            for (date in listAreasWithPreviousRemember) {
+                notifyRemeberUser(date)
+            }
+        }
+        scheduleNextAlarmReminder(timeCurrentAlarm,offsetTimeReminder,context)
+    }
+
+    private suspend fun scheduleNextAlarmReminder(now: Long, offsetTimeReminder:Long,context: Context) {
+        val repoAssistance=RepositoryScheduleAssistance.getInstance(context)
+
+        val nextTimeReminder=repoAssistance.getTimeOfNextReminder(timeCurrentAlarm = now, offsetReminder=offsetTimeReminder)
+
+        if(nextTimeReminder==null){
+            cancelAlarm(
+                context=context,
+                alarmId = Definition.ALARM_ID_FOR_REMINDER,
+                action = Definition.ACTION_ALARM_FOR_REMINDER,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
             return
         }
 
-        for(date in listAreasWithPreviousRemember){
-            notifyRemeberUser(date)
+        //   Programo SOLAMENTE si el comienzo del nuevo recordatorio quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de inicio y mayor que el horario actual
+        if (nextTimeReminder>now) {
+            setNextAlarmAtExactTime(
+                context,
+                alarmId = Definition.ALARM_ID_FOR_REMINDER,
+                triggerAtMillis = nextTimeReminder,
+                action = Definition.ACTION_ALARM_FOR_REMINDER,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        }else
+        {
+            Log.d(Definition.TAG_DEBUG,"No hay proximos recordatorios")
         }
+
+
     }
 
     private fun notifyRemeberUser(dateRemember: EntityScheduledAssistance)

@@ -66,11 +66,11 @@ object Definition {
      ********************************************************
      */
 
-    const val HASH_TYPE_DWELL = 10
-
     const val ACTION_ALARM_FOR_DWELL_TIME         = "ACTION_ALARM_FOR_DWELL_TIME"
     const val ACTION_ALARM_FOR_ACTIVATION_AREA    = "ACTION_ALARM_FOR_ACTIVATION_AREA"
     const val ACTION_ALARM_FOR_DESACTIVATION_AREA = "ACTION_ALARM_FOR_DESACTIVATION_AREA"
+    const val ACTION_ALARM_FOR_REMINDER           = "ACTION_ALARM_FOR_REMINDER"
+
 
     const val INTENT_ALARM_ID                  = "INTENT_ALARM_ID"
     const val INTENT_ALARM_TIME                = "INTENT_ALARM_TIME"
@@ -95,8 +95,9 @@ object Definition {
     const val ERROR_IN_SET_ALARM    = -1
 
     //constante del id que identifica la alarmas
-    const val ALARM_ID_FOR_ACTIVATION_AREAS:Long    = 800L
-    const val ALARM_ID_FOR_DESACTIVATION_AREAS:Long = 900L
+    const val ALARM_ID_FOR_ACTIVATION_AREAS:Long    = 700L
+    const val ALARM_ID_FOR_DESACTIVATION_AREAS:Long = 800L
+    const val ALARM_ID_FOR_REMINDER:Long            = 900L
 
     //constante que indica que no hay tiempo de alarma alamcenado en el shared preference
     val NO_STORED_VALUE: Long =-1L

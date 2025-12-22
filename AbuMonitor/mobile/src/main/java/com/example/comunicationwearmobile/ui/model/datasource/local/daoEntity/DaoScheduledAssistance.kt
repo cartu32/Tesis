@@ -49,10 +49,9 @@ interface DaoScheduledAssistance {
     @Query("""
         SELECT *
         FROM scheduled_assistance sa
-        WHERE sa.date_hour_appointment - :timePreviousRemember >= :dateTimeAlarmInitial AND
-              sa.date_hour_appointment - :timePreviousRemember < :dateTimeAlarmNext
+        WHERE (sa.date_hour_appointment-:offsetReminder)=:timeCurrentAlarm
     """)
-    fun getAreasWithAppointmentRemember(timePreviousRemember: Long,dateTimeAlarmInitial: Long, dateTimeAlarmNext: Long): List<EntityScheduledAssistance>
+    fun getReminderAppointmentOfCurrentAlarm(timeCurrentAlarm: Long,offsetReminder: Long): List<EntityScheduledAssistance>
 
     @Query("""
         SELECT MIN(sa2.date_hour_appointment)
@@ -153,6 +152,15 @@ interface DaoScheduledAssistance {
         WHERE id_area IN (:listIdAreasNextEnd)
     """)
     suspend fun updateNewAppointmentDate(listIdAreasNextEnd: List<Long>?):Int
+
+    @Query("""
+        SELECT MIN(sa2.date_hour_appointment-:offsetReminder)
+        FROM   scheduled_assistance sa2
+        INNER JOIN Area_Runtime_State ar ON sa2.id_area = ar.id_area
+        WHERE ar.is_activated_geof == false AND
+              :timeCurrentAlarm < (sa2.date_hour_appointment - :offsetReminder)
+    """)
+    fun getTimeOfNextReminder(timeCurrentAlarm:Long, offsetReminder: Long):Long?
 
 }
 

@@ -153,6 +153,10 @@ class GeofencesServices: Service() {
                 val timeCurrentAlarm = intent.extras?.getLong(Definition.INTENT_ALARM_TIME) ?: 0
                 geofenceHelper.deactivateGeofenceScheduled(timeCurrentAlarm)
             }
+            Definition.ACTION_ALARM_FOR_REMINDER->{
+                val timeCurrentAlarm=intent.extras?.getLong(Definition.INTENT_ALARM_TIME)?:0
+                geofenceHelper.notifyReminderScheduled(timeCurrentAlarm)
+            }
 
         }
     }
