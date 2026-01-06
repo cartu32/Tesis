@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.core.view.setPadding
-import com.example.comunicationwearmobile.ui.model.extra.StateSpinner
 
 class SpinnerSimpleAdapter(mContext: Context, resource: Int,items : Array<String>)
     :ArrayAdapter<String>(mContext, resource, items) {

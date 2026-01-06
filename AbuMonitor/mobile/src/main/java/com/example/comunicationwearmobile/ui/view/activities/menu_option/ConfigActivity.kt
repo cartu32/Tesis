@@ -9,14 +9,13 @@ import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.EditText
 import android.widget.NumberPicker
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.viewmodel.ConfigViewModel
-import androidx.core.widget.addTextChangedListener
 
 
 class ConfigActivity : AppCompatActivity() {
@@ -25,9 +24,7 @@ class ConfigActivity : AppCompatActivity() {
 
     private var cmdSaveConfig: Button? = null
     private var cmdCancelConfig: Button? = null
-    private var cmdTimeAlarmBetweenChecks: Button? = null
     private var cmdRememberHour: Button? = null
-    private var txtTimeNextAlarm:TextView?=null
     private var txtNameUser:EditText?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,9 +35,7 @@ class ConfigActivity : AppCompatActivity() {
 
         cmdSaveConfig = findViewById(R.id.cmdSaveConfig)
         cmdCancelConfig = findViewById(R.id.cmdCancelConfig)
-        cmdTimeAlarmBetweenChecks = findViewById(R.id.cmdTimeAlarmForCkecks)
         cmdRememberHour = findViewById(R.id.cmdRememberHour)
-        txtTimeNextAlarm  = findViewById(R.id.txtTimeNextAlarm)
         txtNameUser       = findViewById(R.id.txtNameUser)
 
         configObservers()
@@ -49,7 +44,6 @@ class ConfigActivity : AppCompatActivity() {
         // Listeners
         cmdCancelConfig?.setOnClickListener { listenerCmdCancel() }
         cmdSaveConfig?.setOnClickListener { listenerCmdSaveConfig() }
-        cmdTimeAlarmBetweenChecks?.setOnClickListener {listenerCmdTimeAlarmBetweenChecks() }
         cmdRememberHour?.setOnClickListener{listenerCmdRememberHour()}
         txtNameUser?.addTextChangedListener{listenerChangeNameUser()}
 
@@ -70,9 +64,6 @@ class ConfigActivity : AppCompatActivity() {
         vm.save(txtNameUser?.text.toString())
     }
 
-    private fun listenerCmdTimeAlarmBetweenChecks() {
-        showCustomTimePicker(maxHour=Definition.MAX_HOUR_DTPICKER_ALARMCHECKS) { h, m -> vm.onTimePickedBetween(h, m) }
-    }
 
 
     private fun listenerCmdRememberHour() {
@@ -87,13 +78,6 @@ class ConfigActivity : AppCompatActivity() {
         // Observers
         vm.nameUser.observe(this){ text->
             txtNameUser?.setText(text)
-        }
-
-        vm.timeTextCheck.observe(this) { text ->
-            cmdTimeAlarmBetweenChecks?.text = text
-        }
-        vm.timeTextNextAlarm.observe(this) { text ->
-            txtTimeNextAlarm?.text = text
         }
 
         vm.timeTextRemember.observe(this){text->

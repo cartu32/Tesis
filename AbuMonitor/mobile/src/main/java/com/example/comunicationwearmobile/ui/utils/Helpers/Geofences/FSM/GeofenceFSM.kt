@@ -10,8 +10,7 @@ import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.dto.ResultFsm
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceFsmEngine
 
-object
-GeofenceFSM {
+object GeofenceFSM {
 
     suspend fun proccessFSM(
         dataArea: DataAreaGeofAux,

@@ -14,7 +14,6 @@ import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceForMap
 import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventProcessorHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.PlayServiceGeofenceStrategyHelper
 import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -86,25 +85,9 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
     private fun insertAreaGeofComplete(context: Context, dataAreaGeofAux: DataAreaGeofAux) {
         viewModelScope.launch(Dispatchers.IO) {
             val newAreaId = repositoryAreaDB?.insertAreaGeofence(dataAreaGeofAux,true)?: Definition.ERROR_INSERT_BD_GEOF
-            var finalId   = newAreaId
-
-            //si se pudo insertar correctamente la nueva area en la base de datos
-            if (newAreaId > 0) {
-
-                dataAreaGeofAux.entityAreaGeofence.id_area = newAreaId
-                //activo el area de geofence
-                val stateActivateGeof =
-                    PlayServiceGeofenceStrategyHelper.activateGeofence(context, dataAreaGeofAux)
-
-                // Si falla, eliminamos el registro de la base de datos
-                if (!stateActivateGeof) {
-                    repositoryAreaDB?.deleteAreaWithId(newAreaId)
-                    finalId = Definition.ERROR_ACTIVATE_GEOF
-                }
-            }
 
             // Publicamos el resultado
-            _idNewAreaGeof?.postValue(finalId)
+            _idNewAreaGeof?.postValue(newAreaId)
         }
     }
 
@@ -153,8 +136,6 @@ class ViewmodelMapsActivity(application: Application): AndroidViewModel(applicat
 
             if (result!=error)
             {
-                //desactivo el area de geofence
-                PlayServiceGeofenceStrategyHelper.desactivateGeofence(context,idArea.toString())
 
                 //si es un area dwell time cancelo su alarma
                 AlarmHelper.cancelAlarm(

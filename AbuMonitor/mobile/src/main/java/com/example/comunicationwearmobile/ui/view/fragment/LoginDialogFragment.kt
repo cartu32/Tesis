@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
 import com.example.comunicationwearmobile.ui.common.SharedVariables
 

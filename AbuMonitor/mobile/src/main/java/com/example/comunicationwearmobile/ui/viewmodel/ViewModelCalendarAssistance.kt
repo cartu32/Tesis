@@ -39,10 +39,6 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     // MutableLiveData para la fecha seleccionada
     val selectedDateMillis = MutableLiveData<Long>()
 
-    private var timeBetweenChecksSaved: Long = 0
-
-
-
 
     /*aca se uso un switchMap para observar los cambios en la fecha seleccionada
     en la view. Esto se hizo para que cada vez que se hace click en una fecha,
@@ -181,26 +177,6 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         }
     }
 
-    fun getTimeDurationAppointmentSaved() {
-        viewModelScope.launch(Dispatchers.IO) {
-            var timeBetweenChecks = repositoryConfigAppSPref.getTimeBetweenChecks()
-			//incremento el doble de tiempo + 1 minutos de lo que esta configurada la alarma
-			// por ejemplo si se ejecuta cada 3 miuntos entonces pongo como inicio 6+1 o sea 7 minutos
-            timeBetweenChecks = (timeBetweenChecks * 2) + 60000
-            //convierto el tiempo en minutos
-            timeBetweenChecksSaved = Tools.convertMillisToMinutes(timeBetweenChecks)
-
-            withContext(Dispatchers.Main) {
-                _timeDurationAppointment.postValue(timeBetweenChecksSaved)
-            }
-        }
-    }
-    fun checkTimeAppointmentLessThanTimeAlarm(timeEnteredByUser:Long):Pair<Boolean,Long> {
-        if (timeEnteredByUser>=timeBetweenChecksSaved)
-            return Pair (true,0)
-        else
-            return Pair (false,timeBetweenChecksSaved)
-    }
 
 
 }

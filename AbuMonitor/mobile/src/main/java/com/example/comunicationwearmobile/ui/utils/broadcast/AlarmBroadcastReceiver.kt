@@ -4,12 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {

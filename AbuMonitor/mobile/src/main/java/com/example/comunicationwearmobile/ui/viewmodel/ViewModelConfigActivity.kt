@@ -5,26 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
-import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceScheduleHelper
 import com.example.comunicationwearmobile.ui.utils.Tools
-import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
-data class dataNextAlarm(
-    var hb:Int=0,
-    var mb:Int=0,
-    var hn:Int=0,
-    var mn:Int=0,
-    var millisBetweenCheck:Long=0,
-    var millisNextAlarm:Long=0
-)
 
 data class dataTimeReminder(
     var hb:Int=0,
@@ -35,13 +22,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     // UI directa (sin Mediator): la actualizamos nosotros
     private val repo by lazy { RepositoryConfigAppSPref.getInstance(app) }
-    private var geofenceScheduleHelper= GeofenceScheduleHelper(app.applicationContext)
-    private var hourBetweenCheck:Int=0
-    private var minuteBetweenCheck:Int=0
-
-    private var hourNextAlarm:Int=0
-    private var minuteNextalarm:Int=0
-
     private var hourRemember:Int=0
     private var minuteRemember:Int=0
 
@@ -68,7 +48,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     private val _finishEvent = MutableLiveData<Boolean>(false)
     val finishEvent: LiveData<Boolean> = _finishEvent
 
-    private var isChangedBetween=false
     private var isChangedRemeber=false
     private var isChangeNameUser=false
 
@@ -77,7 +56,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
 
     fun loadConfiguration(){
         viewModelScope.launch {
-            loadTimeBetweenChecks()
             loadTimeRememberAppointment()
             loadNameUser()
         }
@@ -105,39 +83,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         computeSaveEnabled()
     }
 
-    private suspend fun getTimeNextAlarm(): Long {
-        //pregunto si es la primera vez que se abre la app
-        if(SharedVariables.isOpenAppFirsTime){
-            SharedVariables.isOpenAppFirsTime=false
-            return SharedVariables.timeAlarmChecksFirstTime
-        }else
-            return repo.getTimeNextAlarm()
-    }
-
-    private suspend fun getTimeBetweenChecks():Long{
-        return repo.getTimeBetweenChecks()
-    }
-
-    private suspend  fun loadTimeBetweenChecks() {
-        val millisBetweenCheck = withContext(Dispatchers.IO) { getTimeBetweenChecks() }
-        val millisNextAlarm = withContext(Dispatchers.IO) { getTimeNextAlarm() }
-
-        val (hb, mb) = Tools.getHourMinOfParcial(millisBetweenCheck)
-
-
-        val (hn, mn) = Tools.getHourMinOfParcial(millisNextAlarm)
-
-        hourBetweenCheck = hb
-        minuteBetweenCheck = mb
-        hourNextAlarm = hn
-        minuteNextalarm = mn
-
-        updateTimeTextCheck(hourBetweenCheck, minuteBetweenCheck)
-        updateTimeNextAlarm(hourNextAlarm, minuteNextalarm)
-        isChangedBetween= false
-        computeSaveEnabled()
-    }
-
     fun onTimePickedRemember(h: Int, m: Int) {
         hourRemember    = h
         minuteRemember  = m
@@ -146,31 +91,20 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         computeSaveEnabled()
     }
 
-    fun onTimePickedBetween(h: Int, m: Int) {
-        hourBetweenCheck = h
-        minuteBetweenCheck = m
-        updateTimeTextCheck(h, m)
-        isChangedBetween = true
-        computeSaveEnabled()
-    }
+
 
     fun save(nameUser:String) {
         viewModelScope.launch {
             // Si no hay cambios, no hacemos nada
-            if (!isChangedBetween && !isChangedRemeber && !isChangeNameUser)
+            if (!isChangedRemeber && !isChangeNameUser)
                 return@launch
 
             var allOk = true
 
-            val dataNextAlarm=calculateDataNextAlarm()
             val dataTimeReminder=calculateTimeReminder()
 
             if(nameUser.isEmpty()) {
                 _toastMessage.value = "Por favor ingrese un nombre de usuario"
-                return@launch
-            }
-            if (dataNextAlarm.millisBetweenCheck>dataTimeReminder.millisRemember){
-                _toastMessage.value = "Por favor elija un tiempo mayor al tiempo de chequeo para recordar"
                 return@launch
             }
 
@@ -234,24 +168,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun calculateDataNextAlarm():dataNextAlarm{
-        var dataNextAlarm=dataNextAlarm()
-
-        with(dataNextAlarm) {
-            hb = hourBetweenCheck
-            mb = minuteBetweenCheck
-
-            // cálculo del intervalo entre chequeos
-            millisBetweenCheck = Tools.getTimeInMillis(hb, mb)
-            val aux = System.currentTimeMillis() + millisBetweenCheck
-
-            millisNextAlarm = Tools.extractHourOfDateInMillis(aux)
-            val (hnAux, mnAux) = Tools.getHourMinOfParcial(millisNextAlarm)
-            hn=hnAux
-            mn=mnAux
-        }
-        return dataNextAlarm
-    }
 
     fun onToastShown() { _toastMessage.value = null }
     fun onFinishConsumed() { _finishEvent.value = false }
@@ -259,7 +175,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     // ------------------ Helpers ------------------
 
     private fun updateTimeTextCheck(h: Int, m: Int) {
-        //_timeTextCheck.value = String.format(Locale.getDefault(), "%02d:%02d", h, m)
         _timeTextCheck.value = String.format(Locale.getDefault(), "%d horas y %d minutos", h, m)
     }
 
@@ -272,7 +187,6 @@ class ConfigViewModel(app: Application) : AndroidViewModel(app) {
     }
     private fun computeSaveEnabled() {
         _saveEnabled.value = (isChangeNameUser == true) ||
-                             (isChangedBetween == true) ||
                              (isChangedRemeber == true)
     }
 

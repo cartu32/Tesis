@@ -90,6 +90,7 @@ class SenderToMobileService : Service() {
                 return
             }
 
+
             for (node in nodes) {
                 Log.d("Wearable", "Nodo ID: ${node.id}, Nombre: ${node.displayName}, Cerca: ${node.isNearby}")
 

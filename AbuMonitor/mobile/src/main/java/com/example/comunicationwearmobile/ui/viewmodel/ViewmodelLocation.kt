@@ -23,7 +23,6 @@ class ViewmodelLocation(application: Application) : AndroidViewModel(application
 
     init {
         repositoryLocation = RepositoryLocation.getInstance(application)
-        //repositoryLocation?.startLocationUpdates()
         locationLiveData= repositoryLocation?.locationLiveData
     }
 

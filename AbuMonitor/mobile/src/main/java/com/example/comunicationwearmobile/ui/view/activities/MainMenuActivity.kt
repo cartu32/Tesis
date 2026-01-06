@@ -262,7 +262,6 @@ class MainMenuActivity : AppCompatActivity(),LoginDialogFragmentDialogFragment.L
         startActivity(Intent(this , AssistanceCalendarActivity::class.java))
     }
     private fun showContacts() {
-        Toast.makeText(this , "En construcción" , Toast.LENGTH_SHORT).show()
         startActivity(Intent(this , ContactsActivity::class.java))
 
     }

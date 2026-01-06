@@ -87,8 +87,7 @@ class SenderToWearableService : Service() {
 
                 if (node.displayName.contains("Watch", ignoreCase = true) ||
                     node.displayName.contains("Wear", ignoreCase = true) ||
-                    node.displayName.contains("e705723a",ignoreCase = true)||
-                        node.displayName.contains("e705723a", ignoreCase = true)){
+                    node.displayName.contains("3663a8e3",ignoreCase = true)){
                     Wearable.getMessageClient(context).sendMessage(node.id, path, msg).await()
                     Log.d(Definition.TAG_DEBUG, "Mensaje enviado correctamente a ${node.displayName}")
                 }

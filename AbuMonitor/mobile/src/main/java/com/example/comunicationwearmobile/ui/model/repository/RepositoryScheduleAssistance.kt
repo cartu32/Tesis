@@ -9,7 +9,6 @@ import com.example.abumonitor.data.model.EntityScheduledAssistance
 import com.example.abumonitor.data.repository.RepositoryAreaDB
 import com.example.comunicationwearmobile.ui.model.datasource.local.daoEntity.DaoAreaRuntimeState
 import com.example.comunicationwearmobile.ui.model.dto.AppointmentNextEnd
-import com.example.comunicationwearmobile.ui.model.dto.AreaNextAppointmentRow
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
 import com.example.comunicationwearmobile.ui.utils.Tools

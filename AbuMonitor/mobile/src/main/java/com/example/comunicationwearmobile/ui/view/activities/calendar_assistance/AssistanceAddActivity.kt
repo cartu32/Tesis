@@ -22,7 +22,6 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceViewModelFactory
 import com.example.comunicationwearmobile.ui.viewmodel.ViewModelCalendarAssistance
 import java.util.Calendar
-import java.util.Locale
 
 class AssistanceAddActivity : AppCompatActivity() {
 
@@ -79,18 +78,8 @@ class AssistanceAddActivity : AppCompatActivity() {
 
     private fun configObservers() {
         observerIdNewAssitance()
-        oberverLoadDurationAppointmentDefault()
     }
 
-    private fun oberverLoadDurationAppointmentDefault() {
-        viewModel.getTimeDurationAppointmentSaved()
-
-        viewModel.timeDurationAppointment.observe(this){value->
-            val texto = String.format(Locale.getDefault(), "%d", value)
-            txtDesactivationDate?.setText(texto)
-
-        }
-    }
 
     private fun observerIdNewAssitance() {
 
@@ -162,14 +151,6 @@ class AssistanceAddActivity : AppCompatActivity() {
         if (txtDescription?.text.toString().isEmpty()) {
             Toast.makeText(this, "Debe ingresar una descripcion para la cita", Toast.LENGTH_SHORT)
                 .show()
-            return
-        }
-
-        val timeDurationAppointment = txtDesactivationDate?.text.toString().toLong()
-        val (result,timeSaved)=viewModel.checkTimeAppointmentLessThanTimeAlarm(timeDurationAppointment)
-
-        if(!result){
-            Toast.makeText(this,"La duracion la cita debe ser mayor o igual a $timeSaved minutos",Toast.LENGTH_LONG).show()
             return
         }
 

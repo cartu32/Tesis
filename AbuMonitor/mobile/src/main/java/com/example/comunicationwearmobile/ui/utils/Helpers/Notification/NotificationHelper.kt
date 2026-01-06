@@ -53,7 +53,7 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
         //del shared preferences con los id de las notificaciones
         val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
         //siempre dejo 1elemento en la lista para que coincida el id con los indices
-        var listNotification= arrayListOf(FIRST_ITEM_LIST_NOTIF)
+        val listNotification= arrayListOf(FIRST_ITEM_LIST_NOTIF)
 
         preferences.clearSharedPreferences()
         preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)

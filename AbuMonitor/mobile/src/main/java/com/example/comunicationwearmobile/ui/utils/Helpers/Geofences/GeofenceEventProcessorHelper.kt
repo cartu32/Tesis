@@ -205,7 +205,6 @@ object GeofenceEventProcessorHelper {
                 }
                 NotificationManager.notifyUserPriorityBaja(msg, lat, lon)
 
-                PlayServiceGeofenceStrategyHelper.desactivateGeofence(appContext, id_area.toString())
                 Log.d(Definition.TAG_DEBUG, "Hora de salida de la cita actualizada")
             } else {
                 Log.e(Definition.TAG_DEBUG, "Error no se pudo actualizar la cita")

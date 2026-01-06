@@ -9,10 +9,6 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.comunicationwearmobile.ui.model.dto.AreaNextAppointmentRow
-import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
-import java.util.ArrayList
 
 object AlarmHelper {
 
