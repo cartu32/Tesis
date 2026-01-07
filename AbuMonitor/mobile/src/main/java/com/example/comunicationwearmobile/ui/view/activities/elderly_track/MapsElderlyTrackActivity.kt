@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.utils.Helpers.MapsActivityHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Maps.MapsActivityHelper
 import com.example.comunicationwearmobile.ui.view.activities.common.BaseMapActivity
 import com.example.comunicationwearmobile.ui.view.activities.common.PropertiesGeofenceActivity
 import com.example.comunicationwearmobile.ui.viewmodel.ViewmodelLocation

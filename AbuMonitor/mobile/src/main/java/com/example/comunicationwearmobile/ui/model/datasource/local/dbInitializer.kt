@@ -55,11 +55,14 @@ class dbInitializer {
             val entityTypeArea1 = EntityTypeArea(TYPE_AREA_ID_NORMAL, TYPE_AREA_DESC_NORMAL, TYPE_AREA_COLOR_NORMAL)
             val entityTypeArea2 = EntityTypeArea(TYPE_AREA_ID_SECURITY_ZONE, TYPE_AREA_DESC_SECURITY_ZONE, TYPE_AREA_COLOR_SECURITY_ZONE)
             val entityTypeArea3 = EntityTypeArea(TYPE_AREA_ID_ASSISTANCE, TYPE_AREA_DESC_ASSISTANCE, TYPE_AREA_COLOR_ASSISTANCE)
+            val entityTypeArea4 = EntityTypeArea(TYPE_AREA_ID_DWELL_TIME, TYPE_AREA_DESC_DWELL_TIME, TYPE_AREA_COLOR_ASSISTANCE)
+
             val daoTypeArea = database.entityTypeAreaDao()
 
             daoTypeArea.insertTypeArea(entityTypeArea1)
             daoTypeArea.insertTypeArea(entityTypeArea2)
             daoTypeArea.insertTypeArea(entityTypeArea3)
+            daoTypeArea.insertTypeArea(entityTypeArea4)
         }
     }
 

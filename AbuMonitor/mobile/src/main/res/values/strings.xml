@@ -17,7 +17,7 @@
     <string name="lbl_texto_distancia">Distancia(Mts)</string>
     <string name="lbl_metros">0</string>
     <string name="descripcion_de_area_geofence">Descripcion de Area Geofence</string>
-    <string name="zona_segura">Zona Segura</string>
+    <string name="zona_segura">Es Zona Segura</string>
     <string name="tiempo_de_permanencia">Tiempo de permanencia(min)</string>
     <string name="prioridad">Prioridad:</string>
     <string name="evento">Evento:</string>
@@ -35,9 +35,12 @@
     <string name="descripci_n">Descripción</string>
     <string name="borrar_cita">Eliminar Cita</string>
     <string name="view_location">Ver ubicacion</string>
+    <string name="fechaHoraCita">Fecha y hora de la cita</string>
+    <string name="fin_cita">Fin aprox. de la cita</string>
+    <string name="duracion_cita">Duración aprox. de la cita(minutos)</string>
     <string name="configuracion">Configuracion</string>
     <string name="cambiar_modo_usuario">Entrar modo administrador</string>
-    <string name="hora_de_alarma_para_activar_geofence">Hora para activar geofence del dia siguiente</string>
+    <string name="hora_de_alarma_verficiacion_configuracion">Tiempo entre chequeo de asistencia y activacion de  geofence</string>
     <string name="configurar_hora_de_alarma">Configurar hora de alarma</string>
     <string name="hora_de_alarma_para_verificar_asistencia">Hora para verificar asistencia del dia actual</string>
     <string name="item_enter_mode_admin">Entrar modo administrador</string>
@@ -50,6 +53,14 @@
     <string name="leyends">Leyendas..</string>
     <string name="leyends_combined">%1$s\n%2$s</string>
     <string name="vista_previa_del_mapa">Vista previa del mapa</string>
+    <string name="datos_de_zona_segura">Datos de Zona Segura</string>
+    <string name="hora_proxima_alarma_verficiacion_configuracion">Horario proxima alarma de chequeo:</string>
+    <string name="horas_minutos">(horas:minutos)</string>
+    <string name="state_default">Estado no cargado</string>
+    <string name="numero_de_horas_previas_para_recordar_cita_de_asistencia">Tiempo previo para hacer recordar cita de asistencia</string>
+    <string name="horas">(HORAS)</string>
+    <string name="title_Activty_configuration">CONFIGURACION</string>
+    <string name="ingrese_el_nombre_del_usuario_a_monitorear">Ingrese el nombre del usuario a monitorear</string>
 
 
     <string-array name="spinner_events">

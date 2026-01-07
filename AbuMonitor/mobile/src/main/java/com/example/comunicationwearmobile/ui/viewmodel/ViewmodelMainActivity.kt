@@ -13,11 +13,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
-import com.example.abumonitor.data.datasource.local.AbuMonitorDatabase
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.ui.model.repository.RepositorySecurityZoneSPref
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -113,6 +113,45 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
     }
 
 
+    private fun isWearOsAppInstalled(): Boolean {
+        val appCtx = getApplication<Application>().applicationContext
+        val pm = appCtx.packageManager
+        val pkg = "com.google.android.wearable.app" // principal
+
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getPackageInfo(pkg, 0)
+            }
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+
+
+
+    fun checkWearableApiAvailable(context: Context): Int {
+        val gmsAvailable = GoogleApiAvailability.getInstance()
+            .isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
+
+        val wearOsInstalled = isWearOsAppInstalled()
+
+        if (!gmsAvailable) {
+            Log.d(Definition.TAG_DEBUG,"Google Play Services no está disponible o actualizado.")
+            return Definition.ERROR_PLAY_SERVICES_MISSING_OR_OUTDATED
+        }
+
+        if (!wearOsInstalled) {
+            return Definition.ERROR_API_UNAVAILABLE
+        }
+
+        return Definition.API_OK
+    }
+
     fun onDestroyed(){
         //por si uso alguna corutina la cancelo
         viewModelScope.cancel()
@@ -124,5 +163,4 @@ class ViewmodelMainActivity(application: Application): AndroidViewModel(applicat
 
         tempAreaGeof=null
     }
-
 }

@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.abumonitor.constants.Definition
@@ -128,14 +127,19 @@ class AssistanceCalendarActivity : AppCompatActivity() {
 
         // Manejo de la fecha seleccionada a través del ViewModel
         calendarView.setOnDateChangedListener { _, date, _ ->
+
             viewModel.selectedDateMillis.value = getDateMillis(date)
         }
 
 
         cmdAddEvent.setOnClickListener {
             viewModel.selectedDateMillis.value?.let { millis ->
-                if(getCountItemsRecicleView()>=Definition.COUNT_MAX_DATE_FOR_DAY){
-                    Toast.makeText(this,"Se llego al maximo de citas para registrar en esta fecha",Toast.LENGTH_SHORT).show()
+                val count = getCountItemsRecicleView()
+                val max = Definition.COUNT_MAX_DATE_FOR_DAY
+                Log.d("DEBUG", "count=$count, max=$max")
+
+                if (count >= max) {
+                    Toast.makeText(this, "Se llegó al máximo de citas...", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 if(!Tools.isGreaterThanToday(millis)){
@@ -153,7 +157,7 @@ class AssistanceCalendarActivity : AppCompatActivity() {
     fun updateMonthDecorators(month: Int) {
         calendarView.removeDecorators()
         val datesWithEvents = allEvents.map {
-            val localDate = Instant.ofEpochMilli(it.date_appointment.toLong())
+            val localDate = Instant.ofEpochMilli(it.date_hour_appointment.toLong())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
             CalendarDay.from(localDate)
@@ -170,7 +174,9 @@ class AssistanceCalendarActivity : AppCompatActivity() {
         val cal = Calendar.getInstance()
         cal.set(date.year, date.month - 1, date.day, 0, 0, 0)
         cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
+
+        val onlydateinMillis= Tools.extractDayOfDateInMillis(cal.timeInMillis)
+        return onlydateinMillis
     }
 
 

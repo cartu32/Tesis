@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -20,9 +21,12 @@ import com.example.comunicationwearmobile.ui.utils.Tools
 import com.example.comunicationwearmobile.ui.viewmodel.AssistanceDetailViewModel
 
 class AssistanceDetailActivity : AppCompatActivity() {
-    private var title:TextView?=null
-    private var desc:TextView?=null
-    private var time:TextView?=null
+    private var txtTitle:TextView?=null
+    private var txtDesc:TextView?=null
+    private var txtInitDateAppointment:TextView?=null
+    private var txtFinishDateAppointment:TextView?=null
+    private var lblFinishAppointment:TextView?=null
+    private var imgFinishAppointment: ImageView?=null
     private var cmdDelete:Button?=null
     private var cmdViewLocation:Button?=null
 
@@ -35,9 +39,12 @@ class AssistanceDetailActivity : AppCompatActivity() {
 
         val assistanceId = intent.getIntExtra("assistance_id", -1)
 
-        title = findViewById<TextView>(R.id.detailTitle)
-        desc = findViewById<TextView>(R.id.detailDesc)
-        time = findViewById<TextView>(R.id.detailTime)
+        txtTitle = findViewById<TextView>(R.id.txtTitle)
+        txtDesc = findViewById<TextView>(R.id.txtDescription)
+        txtInitDateAppointment = findViewById<TextView>(R.id.txtInitDateAppointment)
+        txtFinishDateAppointment = findViewById<TextView>(R.id.txtFinishDateAppointment)
+        lblFinishAppointment = findViewById<TextView>(R.id.lblFinishAppointment)
+        imgFinishAppointment = findViewById<ImageView>(R.id.imgFinishAppointment)
         cmdDelete = findViewById<Button>(R.id.cmdDeleteDate)
         cmdViewLocation = findViewById<Button>(R.id.cmdViewLocation)
 
@@ -55,8 +62,14 @@ class AssistanceDetailActivity : AppCompatActivity() {
     private fun configComponents() {
         if(SharedVariables.user== SharedVariables.USER_ADMIN){
             cmdDelete?.isVisible=true
+            txtFinishDateAppointment?.isVisible=true
+            lblFinishAppointment?.isVisible=true
+            imgFinishAppointment?.isVisible=true
         }else{
             cmdDelete?.isVisible=false
+            txtFinishDateAppointment?.isVisible=false
+            lblFinishAppointment?.isVisible=false
+            imgFinishAppointment?.isVisible=false
         }
     }
 
@@ -105,9 +118,13 @@ class AssistanceDetailActivity : AppCompatActivity() {
     private fun configObserverAssistanceDetail() {
         viewModel.assistanceDetail.observe(this) { assistance ->
             assistance?.let {
-                title?.text = it.title
-                desc?.text = it.description
-                time?.text = "${Tools.getMillisToDate(it.date_appointment)} - ${Tools.formatHour(it.hour_appointment)}"
+                val finishActivationAppointment=it.date_hour_appointment+it.time_duration_activation_appointment
+
+                txtTitle?.text = it.title
+                txtDesc?.text = it.description
+
+                txtInitDateAppointment?.text = "${Tools.getMillisToDate(it.date_hour_appointment)} - ${Tools.getMillisToHourMinutes(it.date_hour_appointment)}"
+                txtFinishDateAppointment?.text = "${Tools.getMillisToDate(finishActivationAppointment)} - ${Tools.getMillisToHourMinutes(finishActivationAppointment)}"
                 id_area_geof = it.id_area
             }
         }

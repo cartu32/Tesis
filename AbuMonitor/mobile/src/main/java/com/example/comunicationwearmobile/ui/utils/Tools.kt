@@ -1,7 +1,9 @@
 package com.example.comunicationwearmobile.ui.utils
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.os.StrictMode
 import android.text.Editable
 import android.util.Log
@@ -16,167 +18,354 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
-
+/**
+ * Utilidades generales para manejo de fechas, horas y validaciones temporales,
+ * además de helpers para Android y operaciones con datos parcelables.
+ *
+ */
 object Tools {
-    fun toEditable(text: String): Editable = Editable.Factory.getInstance().newEditable(text)
 
-    fun isOutsideTimeRange(currentTimeStr: String, startTimeStr: String, endTimeStr: String): Boolean {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm") // formato de hora 24hs
+    // ==========================================================
+    //  FORMATEADORES Y HELPERS PRIVADOS
+    // ==========================================================
 
-        val currentTime = LocalTime.parse(currentTimeStr, formatter)
-        val startTime = LocalTime.parse(startTimeStr, formatter)
-        val endTime = LocalTime.parse(endTimeStr, formatter)
+    /** Formato estándar de fecha: "dd/MM/yyyy". */
+    private val DF_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-        return if (startTime <= endTime) {
-            // Rango normal, por ejemplo de 08:00 a 20:00
-            currentTime < startTime || currentTime > endTime
-        } else {
-            // Rango que pasa por medianoche, por ejemplo de 20:00 a 06:00
-            currentTime < startTime && currentTime > endTime
-        }
+    /** Formato estándar de hora en 24 horas: "HH:mm". */
+    private val DF_HOUR = DateTimeFormatter.ofPattern("HH:mm")
+
+    /**
+     * Aplica un formato determinado a un valor temporal en milisegundos.
+     *
+     * @param millis valor temporal en milisegundos desde epoch.
+     * @param pattern patrón de formato, por ejemplo `"dd/MM/yyyy"`.
+     * @return una cadena formateada según el patrón indicado.
+     */
+    private fun formatMillis(millis: Long, pattern: String): String =
+        SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
+
+    /**
+     * Obtiene el instante correspondiente al inicio del día (00:00:00.000)
+     * para un tiempo dado.
+     *
+     * @param millis instante de referencia en milisegundos.
+     * @return el mismo día pero a las 00:00:00.000.
+     */
+     fun getDayStart(millis: Long): Long = Calendar.getInstance().run {
+        timeInMillis = millis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        timeInMillis
     }
 
-    fun desactiveStrictMode(){
-        //Deshabilita StrictMode temporalmente para evitar warnings
+
+
+    // ==========================================================
+    //  ANDROID / UI HELPERS
+    // ==========================================================
+
+    /**
+     * Convierte una cadena en un objeto [Editable].
+     *
+     * @param text texto que se desea convertir.
+     * @return una instancia de [Editable] con el texto recibido.
+     */
+    fun toEditable(text: String): Editable =
+        Editable.Factory.getInstance().newEditable(text)
+
+    /**
+     * Desactiva temporalmente el [StrictMode] para permitir
+     * operaciones de lectura/escritura en disco sin generar advertencias.
+     */
+    fun desactiveStrictMode() {
         StrictMode.setThreadPolicy(
             StrictMode.ThreadPolicy.Builder()
-                .permitDiskReads()  // Evita los StrictModeDiskReadViolation
-                .permitDiskWrites() // Evita los StrictModeDiskWriteViolation
+                .permitDiskReads()
+                .permitDiskWrites()
                 .build()
         )
-
     }
 
 
-    fun getDate(dateTime: LocalDate):String{
-        val formatter=DateTimeFormatter.ofPattern("dd/MM/yyyy")
-        val formatterDate=dateTime.format(formatter)
+    // ==========================================================
+    //  FORMATEO Y CONVERSIÓN DE FECHAS / HORAS
+    // ==========================================================
 
-        return formatterDate
+    /**
+     * Convierte los minutos a milisegundos.
+     *
+     * @param parcialMillis cantidad de minutos a convertir
+     * @return el tiempo convertido en milisegundos.
+     */
+
+    fun convertMinutesToMillis(time: Long): Long {
+        return time * 60 * 1000
     }
 
-    fun getHour(dateTime: LocalTime):String{
-        val formatter= DateTimeFormatter.ofPattern("HH:mm")
-        val formatterDate=dateTime.format(formatter)
+    /**
+     * Convierte los  milisegundos a minutos
+     *
+     * @param parcialMillis cantidad de milisegundo  a convertir
+     * @return el tiempo convertido en minutos.
+     */
 
-        return formatterDate
+    fun convertMillisToMinutes(time: Long): Long {
+        return time /(60 * 1000)
     }
 
-    fun getMillisToDate(millis :Long):String{
-        val date = Date(millis)
-        val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val dateFormatter= format.format(date)
+    /**
+     * Convierte un [LocalDate] a formato `"dd/MM/yyyy"`.
+     *
+     * @param dateTime objeto de tipo [LocalDate].
+     * @return cadena con la fecha formateada.
+     */
+    fun getDate(dateTime: LocalDate): String = dateTime.format(DF_DATE)
 
-        return dateFormatter
-    }
-    fun getMillisToHourMinutes(millis: Long): String {
-        val date = Date(millis)
-        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return format.format(date)
+    /**
+     * Convierte un [LocalTime] a formato `"HH:mm"`.
+     *
+     * @param dateTime objeto de tipo [LocalTime].
+     * @return cadena con la hora formateada.
+     */
+    fun getHour(dateTime: LocalTime): String = dateTime.format(DF_HOUR)
+
+    /**
+     * Convierte un valor en milisegundos a una cadena `"dd/MM/yyyy"`.
+     *
+     * @param millis tiempo en milisegundos desde epoch.
+     * @return cadena con la fecha formateada.
+     */
+    fun getMillisToDate(millis: Long): String = formatMillis(millis, "dd/MM/yyyy")
+
+    /**
+     * Convierte un valor en milisegundos a una cadena `"HH:mm"`.
+     *
+     * @param millis tiempo en milisegundos desde epoch.
+     * @return cadena con la hora formateada.
+     */
+    fun getMillisToHourMinutes(millis: Long): String = formatMillis(millis, "HH:mm")
+
+    /**
+     * Convierte un valor en milisegundos a una cadena `"dd/MM/yyyy HH:mm"`.
+     *
+     * @param millis tiempo en milisegundos desde epoch.
+     * @return cadena con la fecha y hora completa
+     */
+    fun getMillisToCompleteDate(millis: Long): String = formatMillis(millis, "dd/MM/yyyy HH:mm")
+
+    /**
+     * Convierte un desplazamiento dentro del día (en milisegundos) a una pareja hora:minuto.
+     *
+     * @param parcialMillis milisegundos desde las 00:00 (0 a 86.399.999).
+     * @return un [Pair] con la hora y los minutos correspondientes.
+     */
+    fun getHourMinOfParcial(parcialMillis: Long): Pair<Int, Int> {
+        val totalMinutes = (parcialMillis / (60 * 1000)).toInt()
+        val hour = totalMinutes / 60
+        val min = totalMinutes % 60
+        return hour to min
     }
 
-    fun formatHour(millis: Long): String {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = millis
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val min = cal.get(Calendar.MINUTE)
-        return String.format("%02d:%02d", hour, min)
-    }
 
-    fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? {
-        //Recibo los datos desde la activty PropertiesGeofence Activty
-        val dataNewAreaGeof = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF,
-                DataAreaGeofAux::class.java)
-        } else {
-            data.getParcelable<DataAreaGeofAux>(Definition.INTENT_DATA_NEW_AREA_GEOF)
+    // ==========================================================
+    //  EXTRACCIÓN / DESCOMPOSICIÓN DE FECHAS
+    // ==========================================================
+
+    /**
+     * Extrae sólo la parte de “día” de una fecha (hora truncada a 00:00).
+     *
+     * @param fullMillis instante completo en milisegundos.
+     * @return el mismo día a las 00:00 en milisegundos.
+     */
+    fun extractDayOfDateInMillis(fullMillis: Long): Long = getDayStart(fullMillis)
+
+    /**
+     * Obtiene sólo la parte horaria (offset desde la medianoche).
+     *
+     * @param fullMillis instante completo en milisegundos.
+     * @return cantidad de milisegundos transcurridos desde las 00:00 de ese día.
+     */
+    fun extractHourOfDateInMillis(fullMillis: Long): Long =
+        fullMillis - getDayStart(fullMillis)
+
+    /**
+     * Calcula el inicio del día siguiente a partir de un instante.
+     *
+     * @param funMillis instante base en milisegundos.
+     * @return instante del día siguiente a las 00:00.
+     */
+    fun getStartNextDay(funMillis: Long): Long =
+        getDayStart(funMillis) + 24 * 60 * 60 * 1000L
+
+
+    // ==========================================================
+    //  CONSTRUCCIÓN DE INSTANTES
+    // ==========================================================
+
+    /**
+     * Obtiene el instante correspondiente al inicio del día actual (00:00).
+     *
+     * @return tiempo en milisegundos del inicio del día actual.
+     */
+    fun getDateTodayInMillis(): Long = getDayStart(System.currentTimeMillis())
+
+    /**
+     * Construye un instante para hoy a la hora y minuto especificados.
+     * Si la hora ya pasó hoy, devuelve el mismo horario del día siguiente.
+     *
+     * @param hour hora deseada (0–23).
+     * @param minute minuto deseado (0–59).
+     * @return instante en milisegundos representando esa hora.
+     */
+    fun getHourInMillis(hour: Int, minute: Int): Long {
+        val now = Calendar.getInstance()
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
-        return dataNewAreaGeof
+        if (cal.timeInMillis <= now.timeInMillis) cal.add(Calendar.DAY_OF_YEAR, 1)
+        return cal.timeInMillis
     }
 
-    fun calculateTomorrowMidnight(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
-        return calendar.timeInMillis
+    /**
+     * Convierte una hora y minuto a milisegundos desde las 00:00.
+     *
+     * @param hour hora (0–23).
+     * @param minute minuto (0–59).
+     * @return milisegundos desde las 00:00 de un día ficticio.
+     */
+    fun getTimeInMillis(hour: Int, minute: Int): Long =
+        hour * 60 * 60 * 1000L + minute * 60 * 1000L
+
+
+    // ==========================================================
+    //  VALIDACIONES Y COMPARACIONES TEMPORALES
+    // ==========================================================
+
+    /**
+     * Determina si una hora actual está fuera de un rango dado (formato "HH:mm").
+     * Soporta rangos que cruzan la medianoche.
+     *
+     * @param currentTimeStr hora actual, formato "HH:mm".
+     * @param startTimeStr hora de inicio del rango.
+     * @param endTimeStr hora de fin del rango.
+     * @return `true` si la hora actual está fuera del rango; `false` si está dentro.
+     */
+    fun isOutsideTimeRange(currentTimeStr: String, startTimeStr: String, endTimeStr: String): Boolean {
+        val current = LocalTime.parse(currentTimeStr, DF_HOUR)
+        val start = LocalTime.parse(startTimeStr, DF_HOUR)
+        val end = LocalTime.parse(endTimeStr, DF_HOUR)
+        return if (start <= end) current < start || current > end
+        else current < start && current > end
     }
 
-    fun calculateTodayMidnight(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.DAY_OF_YEAR, 0)
-        return calendar.timeInMillis
-    }
-
+    /**
+     * Verifica si una fecha (en milisegundos) es hoy o futura.
+     *
+     * @param timestamp instante en milisegundos desde epoch.
+     * @return `true` si pertenece a hoy o a una fecha posterior.
+     */
     fun isGreaterThanToday(timestamp: Long): Boolean {
-        val inputDate = Instant.ofEpochMilli(timestamp)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-
+        val inputDate = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
         val today = LocalDate.now()
-        return inputDate.isAfter(today) || inputDate.isEqual(today)
+        return !inputDate.isBefore(today)
     }
 
-    fun isTimeAndDateGreaterThanCurrentDate(dateMillis: Long,timeMillis: Long): Boolean {
-        if(isToday(dateMillis)){
-            if(isTimeGreaterThanCurrentTime(timeMillis)){
-                Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta bien:")
-                return true
-            }
-            Log.d(Definition.TAG_DEBUG,"es hoy y la hora esta mal:")
-            return false
-        }
-        Log.d(Definition.TAG_DEBUG,"es un dia mayor a hoy")
-        return true
-    }
-
+    /**
+     * Verifica si una fecha corresponde al día actual.
+     *
+     * @param dateMillis instante en milisegundos.
+     * @return `true` si la fecha coincide con el día actual.
+     */
     fun isToday(dateMillis: Long): Boolean {
-        val formatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-
-        val today = formatter.format(Date())
-        val givenDate = formatter.format(Date(dateMillis))
-
-        return today == givenDate
+        val fmt = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        return fmt.format(Date()) == fmt.format(Date(dateMillis))
     }
 
-    fun isTimeGreaterThanCurrentTime(givenTimeMillis: Long): Boolean {
-        val currentTimeMillis = System.currentTimeMillis()
-        //se compara la hora seleccionada con la hora actual adelantada un minuto
-        val oneMinuteLater = currentTimeMillis + 60 * 1000
-
-        return givenTimeMillis >= oneMinuteLater
+    /**
+     * Determina si un instante futuro está al menos [bufferMillis] ms por delante del actual.
+     *
+     * @param givenTimeMillis instante objetivo en milisegundos.
+     * @param bufferMillis margen mínimo permitido (por defecto 60.000 ms = 1 minuto).
+     * @return `true` si [givenTimeMillis] ocurre después del margen.
+     */
+    fun isTimeGreaterThanCurrentTime(givenTimeMillis: Long, bufferMillis: Long = 60_000L): Boolean {
+        val now = System.currentTimeMillis()
+        return givenTimeMillis >= now + bufferMillis
     }
 
-    fun isTimeEnterAssistanceCorrect(timeAppointment: Long): Boolean {
-        //a la hora de la cita le resto 30 minutos por si llega antes de la hora
-        val earlyMinutes = 30*60*1000
-        val timeAppointmentEarly = timeAppointment - earlyMinutes
-
-        //obtengo la hora actual
-        val currentTimeMillis = System.currentTimeMillis()
-
-        //pregunto si la hora a la que llego la persona
-        //es mayor o igual a la hora de la cita menos 30 minutos
-        return currentTimeMillis >= timeAppointmentEarly
+    /**
+     * Comprueba si la hora actual está dentro de una ventana válida de llegada a una cita.
+     *
+     * @param timeAppointment hora de la cita en milisegundos.
+     * @param earlyMinutes minutos permitidos de antelación (por defecto 30).
+     * @return `true` si la persona llegó dentro del margen válido.
+     */
+    fun isTimeEnterAssistanceCorrect(timeAppointment: Long, earlyMinutes: Int = 30): Boolean {
+        val earlyWindow = earlyMinutes * 60 * 1000L
+        val timeAppointmentEarly = timeAppointment - earlyWindow
+        return System.currentTimeMillis() >= timeAppointmentEarly
     }
 
-    //funcion que retorna la fecha de hoy en millis pero sin incluir la hora.
-    //Por ejemplo retorna: 21-05-2025, pero en milisegundos
-    fun getDateTodayInMillis():Long{
-        val calendar = Calendar.getInstance()
-
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-
-        return calendar.timeInMillis
+    /**
+     * Verifica si una cita (fecha+hora) es hoy y aún no pasó, o si pertenece a una fecha futura.
+     *
+     * @param dateHourAppoint instante de la cita en milisegundos.
+     * @return `true` si la cita aún no ocurrió; `false` si ya pasó.
+     */
+    fun isTimeAndDateGreaterThanCurrentDate(dateHourAppoint: Long): Boolean {
+        return if (isToday(dateHourAppoint)) {
+            val ok = isTimeGreaterThanCurrentTime(dateHourAppoint)
+            Log.d(Definition.TAG_DEBUG, if (ok) "es hoy y la hora está bien" else "es hoy y la hora está mal")
+            ok
+        } else {
+            Log.d(Definition.TAG_DEBUG, "es un día mayor a hoy")
+            true
+        }
     }
+
+
+    // ==========================================================
+    //  INTENTS / PARCELABLES
+    // ==========================================================
+
+    /**
+     * Extrae un objeto [DataAreaGeofAux] de un [Bundle] enviado por un Intent.
+     * Compatible con Android 13 (Tiramisu) y versiones anteriores.
+     *
+     * @param data bundle recibido en la Activity/Service.
+     * @return objeto [DataAreaGeofAux] si está presente; `null` si no existe.
+     */
+    fun extractDataNewAreaOfIntent(data: Bundle): DataAreaGeofAux? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data.getParcelable(Definition.INTENT_DATA_NEW_AREA_GEOF, DataAreaGeofAux::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            data.getParcelable(Definition.INTENT_DATA_NEW_AREA_GEOF)
+        }
+
+    /**
+     * Funcion que se usa para extraer un objeto pasado como parametroen en un [Intent].
+     *
+     * @param valor key donde se alamacena el parametro.
+     */
+    inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.getParcelableExtra(key, T::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            this.getParcelableExtra(key)
+        }
+    }
+
+    fun convertLongToInt(areaId: Long, type: Int): Int {
+        val base = (areaId xor (areaId ushr 32)).toInt()
+        return base * 31 + type
+    }
+
 }

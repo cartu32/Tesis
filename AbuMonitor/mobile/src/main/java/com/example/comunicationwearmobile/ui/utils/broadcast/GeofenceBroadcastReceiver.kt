@@ -4,46 +4,74 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.core.content.ContextCompat
 import com.example.abumonitor.constants.Definition
-import com.example.comunicationwearmobile.ui.utils.workers.GeofenceWorker
+import com.example.comunicationwearmobile.ui.model.extra.GeofenceEventParameter
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
+import com.example.comunicationwearmobile.ui.utils.services.GeofencesServices
+import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 
-// Reemplazo de la corutina por Worker en el BroadcastReceiver
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val appContext = context.applicationContext
-
-        if (intent.action == Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
-            val geofencingEvent = GeofencingEvent.fromIntent(intent)
-
-            if (geofencingEvent == null || geofencingEvent.hasError()) {
-                Log.e(Definition.TAG_DEBUG, "Error en el Geofencing: ${geofencingEvent?.errorCode}")
-                return
-            }
-
-            // Serializamos el evento (guardamos los IDs y el tipo de transición)
-            val triggeringIds = geofencingEvent.triggeringGeofences?.map { it.requestId }?.toTypedArray()
-            val transition = geofencingEvent.geofenceTransition
-
-            val inputData = workDataOf(
-                "triggering_ids" to triggeringIds,
-                "transition" to transition
-            )
-
-            val workRequest = OneTimeWorkRequestBuilder<GeofenceWorker>()
-                .setInputData(inputData)
-                .build()
-
-            WorkManager.getInstance(appContext).enqueueUniqueWork(
-                "trabajo_geofence",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                workRequest
-            )
+        RepositoryDebugLogger.log(context,"**********Entro en broadcast receiver de Geofence")
+        if (intent.action != Definition.ACTION_GEOFENCE_EVENT_BROADCAST) {
+            return
         }
+
+        val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        if (geofencingEvent == null) {
+            Log.e(Definition.TAG_DEBUG, "GeofencingEvent nulo")
+            return
+        }
+
+        if (geofencingEvent.hasError()) {
+            Log.e(Definition.TAG_DEBUG, "Error en GeofencingEvent: ${geofencingEvent.errorCode}")
+            return
+        }
+
+        var triggeringIds = geofencingEvent.triggeringGeofences
+            ?.mapNotNull { it.requestId.toLongOrNull() }
+            ?: emptyList()
+
+        triggeringIds=triggeringIds.toMutableList()
+        if (triggeringIds.isEmpty()) {
+            Log.e(Definition.TAG_DEBUG, "No se encontraron IDs de geofence en el evento")
+            return
+        }
+
+        val transition = geofencingEvent.geofenceTransition
+
+        val transitionText = when (transition) {
+            Geofence.GEOFENCE_TRANSITION_ENTER -> "ENTER"
+            Geofence.GEOFENCE_TRANSITION_EXIT -> "EXIT"
+            Geofence.GEOFENCE_TRANSITION_DWELL -> "DWELL"
+            else -> "UNKNOWN"
+        }
+
+        // Coordenadas actuales que usa el geofence del sistema
+        val loc = geofencingEvent.triggeringLocation
+        val locText =
+            if (loc != null)
+                "lat=${loc.latitude}, lon=${loc.longitude}, acc=${loc.accuracy}"
+            else
+                "NO_LOCATION"
+
+        RepositoryDebugLogger.log(
+            context,
+            "EVENTO GEOFENCE: transition=$transitionText, ids=$triggeringIds, loc=($locText)"
+        )
+
+        val parameter=GeofenceEventParameter(triggeringIds,transition)
+
+        val serviceIntent = Intent(context, GeofencesServices::class.java).apply {
+            action = intent.action
+            putExtra(Definition.PARAMETER_SERVICE,parameter )
+            intent.extras?.let { putExtras(it) }
+        }
+
+        ContextCompat.startForegroundService(context, serviceIntent)
+
     }
 }

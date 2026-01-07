@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Maps
 
 import android.graphics.Color
 import androidx.core.graphics.ColorUtils

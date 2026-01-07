@@ -2,35 +2,43 @@ package com.example.comunicationwearmobile.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityScheduledAssistance
-import com.example.abumonitor.data.repository.RepositoryAreaDB
+import com.example.comunicationwearmobile.ui.common.SharedVariables
 import com.example.comunicationwearmobile.ui.model.dto.DataAreaGeofAux
-import com.example.comunicationwearmobile.ui.model.repository.RepositoryGeofActivate
+import com.example.comunicationwearmobile.ui.model.repository.RepositoryConfigAppSPref
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryScheduleAssistance
+import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.AlarmHelper.setNextAlarmAtExactTime
 import com.example.comunicationwearmobile.ui.utils.Tools
+import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmBroadcastReceiver
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(application) {
 
-    private var repositoryGeofActivate: RepositoryGeofActivate = RepositoryGeofActivate()
-    private var repositoryAreaDB: RepositoryAreaDB = RepositoryAreaDB.getInstance(application.applicationContext)
     private val repoAssistance = RepositoryScheduleAssistance.getInstance(application.applicationContext)
+    private val repositoryConfigAppSPref=RepositoryConfigAppSPref.getInstance(application.applicationContext)
 
     private val _idNewAssistance = MutableLiveData<Long>()
     val idNewAssistance: LiveData<Long> get() = _idNewAssistance
 
+    private val _timeDurationAppointment = MutableLiveData<Long>()
+    val timeDurationAppointment: LiveData<Long> get() = _timeDurationAppointment
+
     // MutableLiveData para la fecha seleccionada
     val selectedDateMillis = MutableLiveData<Long>()
+
 
     /*aca se uso un switchMap para observar los cambios en la fecha seleccionada
     en la view. Esto se hizo para que cada vez que se hace click en una fecha,
@@ -48,9 +56,11 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
     2) eventsBySelectedDate: en donde la viewmodel actualiza la lista de eventos segun los datos obtenidos de la base de datos
     */
     val eventsBySelectedDate: LiveData<List<EntityScheduledAssistance>> =
-        selectedDateMillis.switchMap { date ->
-            repoAssistance.getEventsByDate(date)
-        }
+        selectedDateMillis
+            .distinctUntilChanged()
+            .switchMap { date ->
+                repoAssistance.getEventsByDate(date)
+            }
 
     fun getAllEvents(): LiveData<List<EntityScheduledAssistance>> =
         repoAssistance.getAllScheduleAssitance()
@@ -62,71 +72,90 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
         longitude: String,
         meters: Int
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val result = handleInsertionDateAssistance(context, assistance, latitude, longitude, meters)
-            _idNewAssistance.postValue(result)
+
+            withContext(Dispatchers.Main) {
+                _idNewAssistance.postValue(result)
+            }
         }
     }
 
-    //este metodo realiza toda la insercion de datos en la base de datos
+    // Este método realiza toda la inserción de datos en la base de datos y su activación
     private suspend fun handleInsertionDateAssistance(
         context: Context,
         assistance: EntityScheduledAssistance,
         latitude: String,
         longitude: String,
         meters: Int
+    ): Long=SharedVariables.mutexAssistanceDateAlarm.withLock {
+
+        val now = System.currentTimeMillis()
+        val startDateAppointment = assistance.date_hour_appointment
+
+        val idAreaAssistance = insertNewScheduleAppointment(latitude, longitude, meters, assistance)
+
+        sheduleNextAppointementAlarm(now, startDateAppointment, context)
+        scheduleReminderAlarm(now,startDateAppointment,context)
+
+        return idAreaAssistance
+
+    }
+
+    private suspend fun insertNewScheduleAppointment(
+        latitude: String,
+        longitude: String,
+        meters: Int,
+        assistance: EntityScheduledAssistance,
     ): Long {
-        //creo e inserto una nueva area de geofence en la bd
-        val dataAreaGeofAux = createAreaGeof(latitude, longitude, meters)
-        val idNewArea = insertArea(dataAreaGeofAux)
+        //indico en el registro que va a guardarse en la bd que es una cita de asistencia nueva
+        assistance.is_new_appointment_assistance=true
 
-        //si no se pudo insertar la nueva area en la bd
-        if(idNewArea<0) {
-            return Definition.ERROR_INSERT_BD_GEOF
-        }
-        //si se pudo insertar la nueva area en la bd, se inserta la nueva cita de asistencia
-        dataAreaGeofAux.entityAreaGeofence.id_area = idNewArea
-        assistance.id_area=idNewArea
-        val idNewAssistance = insertAssistance(assistance)
-
-        //si no se pudo insertar la nueva cita de asistencia en la bd
-        if(idNewAssistance<0) {
-            rollbackArea(idNewArea)
-            return Definition.ERROR_INSERT_BD_GEOF
-        }
-
-        //si se pudo insertar la nueva cita de asistencia en la bd, se activa el geofence
-        //me fijo si corresponde a la fecha a partir de mañana. Osea que no sea hoy(la fecha actual)
-        if(!Tools.isToday(assistance.date_appointment)){
-            Log.d(Definition.TAG_DEBUG,"No se activo el geofence para la cita porque no es de hoy")
-            return idNewAssistance
-        }
-        //
-        val geofenceActivated = activateGeofence(context, dataAreaGeofAux)
-        //si no se pudo activar el geofence
-        if (!geofenceActivated) {
-            rollbackArea(idNewArea)
-            return Definition.ERROR_ACTIVATE_GEOF
-        }
-        Log.d(Definition.TAG_DEBUG,"Se activo el geofence para la cita para hoy")
-
-        return idNewAssistance
+        // 1) creo la nueva cita de asitencia y la guardo en la base de datos
+        val newAreaGeofAux = createAreaGeof(latitude, longitude, meters)
+        val idAreaAssistance = repoAssistance.insertScheduledAssistance(assistance, newAreaGeofAux)
+        return idAreaAssistance
     }
 
-    private suspend fun insertArea(dataAreaGeofAux: DataAreaGeofAux): Long {
-        return repositoryAreaDB.insertAreaGeofence(dataAreaGeofAux)
+    private suspend fun sheduleNextAppointementAlarm(
+        now: Long,
+        startDateAppointment: Long,
+        context: Context,
+    ) {
+        // 2) Reconsulto mínimos reales de inicio y fin de las citas desde DB (ya con la nueva cita incluida)
+        val nextStartNow = repoAssistance.getStartTimeOfNextAppointment(initIntervalAlarma = now)
+
+        // 3) Programo SOLAMENTE si el comienzo del nueva cita quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de inicio
+        if (nextStartNow != null && nextStartNow == startDateAppointment) {
+            setNextAlarmAtExactTime(
+                context,
+                alarmId = Definition.ALARM_ID_FOR_ACTIVATION_AREAS,
+                triggerAtMillis = nextStartNow,
+                action = Definition.ACTION_ALARM_FOR_ACTIVATION_AREA,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        }
     }
 
-    private suspend fun insertAssistance(assistance: EntityScheduledAssistance): Long {
-        return repoAssistance.insertScheduledAssistance(assistance)
-    }
+    private suspend fun scheduleReminderAlarm(now: Long,startDateAppointment:Long,context: Context) {
 
-    private suspend fun rollbackArea(areaId: Long) {
-        repositoryAreaDB.deleteAreaWithId(areaId)
-    }
+        val offsetTimeReminder=repositoryConfigAppSPref.getTimeRememberAppointment()
+        val timeRelativeReminder=startDateAppointment-offsetTimeReminder
+        val nextTimeReminder=repoAssistance.getTimeOfNextReminder(timeCurrentAlarm = now,offsetReminder=offsetTimeReminder)
 
-    private suspend fun activateGeofence(context: Context, dataAreaGeofAux: DataAreaGeofAux): Boolean {
-        return repositoryGeofActivate.activateGeofence(context, dataAreaGeofAux)
+        // 3) Programo SOLAMENTE si el comienzo del nuevo recordatorio quedó siendo la próxima real.
+        //    o sea si es la mas chica de todas en el horario de inicio y mayor que el horario actual
+        if (nextTimeReminder != null && nextTimeReminder == timeRelativeReminder && nextTimeReminder>now) {
+            setNextAlarmAtExactTime(
+                context,
+                alarmId = Definition.ALARM_ID_FOR_REMINDER,
+                triggerAtMillis = nextTimeReminder,
+                action = Definition.ACTION_ALARM_FOR_REMINDER,
+                receiverClass = AlarmBroadcastReceiver::class.java
+            )
+        }
+
     }
 
     // Configura los datos para el área geográfica
@@ -147,6 +176,9 @@ class ViewModelCalendarAssistance(application: Application) : AndroidViewModel(a
             secZoneTimeRange = null
         }
     }
+
+
+
 }
 
 class AssistanceViewModelFactory(private val app: Application) : ViewModelProvider.Factory {
@@ -158,3 +190,4 @@ class AssistanceViewModelFactory(private val app: Application) : ViewModelProvid
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+

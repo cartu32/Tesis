@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers
+package com.example.comunicationwearmobile.ui.utils.Helpers.Notification
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -53,7 +53,7 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
         //del shared preferences con los id de las notificaciones
         val preferences = RepositoryIDNotificationSPref.getInstance(appContext)
         //siempre dejo 1elemento en la lista para que coincida el id con los indices
-        var listNotification= arrayListOf(FIRST_ITEM_LIST_NOTIF)
+        val listNotification= arrayListOf(FIRST_ITEM_LIST_NOTIF)
 
         preferences.clearSharedPreferences()
         preferences.saveArrayList(listNotification, KEY_LIST_NOTIFICATION_SP)
@@ -264,7 +264,11 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
     //son utilizadas principalmente para notificaciones de alerta
     fun showNotificationGeneral(msg:SharedData.MsgNotification):Int{
         // Crear el canal de notificaciones
-        val notificationBuilder = createChannelAlerts(CHANNEL_ID_ALERTS,CHANNEL_ALERTS,CHANNEL_DESCRIPTION_ALERTS)
+        val notificationBuilder = createChannelAlerts(
+            CHANNEL_ID_ALERTS,
+            CHANNEL_ALERTS,
+            CHANNEL_DESCRIPTION_ALERTS
+        )
 
         // crear y mostrar(muestra como una notificacion) el grupo de notificaciones
         //En este caso al crear grupo se configuro para que no se muestra una notificacion
@@ -284,7 +288,11 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
     @SuppressLint("MissingPermission")
     fun showNotificationIndependent(context:Context, title:String, msg:String){
-        val notificationBuilder = createChannelAlerts(CHANNEL_ID_INDEPENDENT,CHANNEL_INDEPENDENT,CHANNEL_DESCRIPTION_INDEPENDENT)
+        val notificationBuilder = createChannelAlerts(
+            CHANNEL_ID_INDEPENDENT,
+            CHANNEL_INDEPENDENT,
+            CHANNEL_DESCRIPTION_INDEPENDENT
+        ).setLocalOnly(true)
 
         notificationBuilder
             .setSmallIcon(R.drawable.ic_old_person)
@@ -292,7 +300,7 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
             .setContentText(msg)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        idNotificationIndependent++
+        //idNotificationIndependent++
 
         with(NotificationManagerCompat.from(context)) {
             notify(idNotificationIndependent, notificationBuilder.build())
@@ -317,7 +325,9 @@ class NotificationHelper(context: Context) : ContextWrapper(context.applicationC
 
         const val FIRST_ITEM_LIST_NOTIF = 255
 
-        var idNotificationIndependent=0
+        //inicializo las notificaciones independientes con un valor alto para que
+        //no se repitan y choquen con las demás notificaciones
+        var idNotificationIndependent=800
 
         var instance: NotificationHelper? = null
 

@@ -11,6 +11,7 @@ import com.example.abumonitor.data.model.EntityContact
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryContact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 class ViewmodelContacts(application: Application) : AndroidViewModel(application) {
     private val repositoryContact = RepositoryContact(application.applicationContext)
 

@@ -30,7 +30,6 @@ data class EntityAreaGeofence(
     var latitude:String= null.toString() ,
     var longitude:String= null.toString() ,
     var meters:Int=0 ,
-    var dwell_time: Int=0 ,
     var description:String= null.toString() ,
 
     var id_type_area: Int =Definition.TYPE_AREA_ID_NORMAL ,

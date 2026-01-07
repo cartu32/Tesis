@@ -1,131 +1,104 @@
 package com.example.comunicationwearmobile.ui.view.activities.menu_option
 
-import android.app.TimePickerDialog
+import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.widget.Button
+import android.widget.EditText
+import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.ViewModelProvider
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.R
-import com.example.comunicationwearmobile.ui.common.SharedVariables
-import com.example.comunicationwearmobile.ui.utils.Helpers.AlarmHelper
-import com.example.comunicationwearmobile.ui.utils.broadcast.AlarmDailyActivateGeofReceiver
-import java.util.Calendar
-import java.util.Locale
+import com.example.comunicationwearmobile.ui.viewmodel.ConfigViewModel
 
-class ConfigActivity: AppCompatActivity() {
 
-    private var cmdDateAlarmActivateGeof: Button? = null
-    private var cmdDateAlarmCheckAssistance: Button? = null
+class ConfigActivity : AppCompatActivity() {
+
+    private lateinit var vm: ConfigViewModel
+
     private var cmdSaveConfig: Button? = null
     private var cmdCancelConfig: Button? = null
-
-
-    private var isChangedAlarmActivateGeof=false
-    private var isChangedAlarmCheckAssistance=false
+    private var cmdRememberHour: Button? = null
+    private var txtNameUser:EditText?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_configuration)
 
-        cmdDateAlarmActivateGeof= findViewById<Button>(R.id.cmdDateAlarmActivateGeof)
-        cmdDateAlarmCheckAssistance= findViewById<Button>(R.id.cmdDateAlarmCheckAssistance)
-        cmdSaveConfig = findViewById<Button>(R.id.cmdSaveConfig)
-        cmdCancelConfig = findViewById<Button>(R.id.cmdCancelConfig)
+        vm = ViewModelProvider(this)[ConfigViewModel::class.java]
 
-        cmdCancelConfig?.setOnClickListener {listenerCmdCancelConfig()}
-        cmdSaveConfig?.setOnClickListener {listenerCmdSaveConfig()}
-        cmdDateAlarmActivateGeof?.setOnClickListener {listenerCmdDateAlarmActivateGeof()}
-        cmdDateAlarmCheckAssistance?.setOnClickListener {listenerCmdDateAlarmCheckAssistance()}
+        cmdSaveConfig = findViewById(R.id.cmdSaveConfig)
+        cmdCancelConfig = findViewById(R.id.cmdCancelConfig)
+        cmdRememberHour = findViewById(R.id.cmdRememberHour)
+        txtNameUser       = findViewById(R.id.txtNameUser)
 
-        //seteo el texto del boton para configurar la alarma para activar geofence segun el valor cargado.
-        cmdDateAlarmActivateGeof?.text = String.format(Locale.getDefault(), "%02d:%02d", SharedVariables.hourDailyActivateGeofence, SharedVariables.minuteDailyActivateGeofence)
-        cmdDateAlarmCheckAssistance?.text = String.format(Locale.getDefault(), "%02d:%02d", SharedVariables.hourDailyCheckAssitance, SharedVariables.minuteDailyCheckAssitance)
+        configObservers()
+        initConfiguration()
 
-        cmdSaveConfig?.isEnabled=false
+        // Listeners
+        cmdCancelConfig?.setOnClickListener { listenerCmdCancel() }
+        cmdSaveConfig?.setOnClickListener { listenerCmdSaveConfig() }
+        cmdRememberHour?.setOnClickListener{listenerCmdRememberHour()}
+        txtNameUser?.addTextChangedListener{listenerChangeNameUser()}
 
         configActionBar()
     }
 
+    private fun listenerChangeNameUser() {
+        vm.markAsChangedNameUser()
+    }
+
+
+    private fun initConfiguration() {
+        // Estado inicial
+        vm.loadConfiguration()
+    }
+
     private fun listenerCmdSaveConfig() {
-        if(saveHourAlarmActivateGeof() || saveHourAlarmCheckAssistance())
-            finish()
-        else
-            Toast.makeText(this@ConfigActivity,"No se realizaron cambios en la alarma",Toast.LENGTH_SHORT).show()
-
+        vm.save(txtNameUser?.text.toString())
     }
 
-    private fun saveHourAlarmActivateGeof(): Boolean {
-        with(SharedVariables) {
-            val alarmHelper=AlarmHelper()
 
-            if (isChangedAlarmActivateGeof) {
-                alarmHelper.cancelAlarm(
-                    this@ConfigActivity,
-                    alarmIdActivateGeofence,
-                    Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF,
-                    AlarmDailyActivateGeofReceiver::class.java
-                )
 
-                Log.d(Definition.TAG_DEBUG, "Alarma Activate Geofence cancelada")
-
-                alarmIdActivateGeofence =
-                    alarmHelper.setDailyAlarm(
-                        this@ConfigActivity,
-                        hourDailyActivateGeofence,
-                        minuteDailyActivateGeofence,
-                        Definition.ACTION_ALARM_DAILY_ACTIVATION_GEOF,
-                        AlarmDailyActivateGeofReceiver::class.java
-                    )
-
-                Log.d(Definition.TAG_DEBUG, "Alarma Activate Geofence configurada correctamente")
-                Toast.makeText(this@ConfigActivity, "Alarma de activacion configurada correctamente", Toast.LENGTH_SHORT).show()
-                return true
-            }
-            //Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
-        }
-        return false
+    private fun listenerCmdRememberHour() {
+        showCustomTimePicker(maxHour=Definition.MAX_HOUR_DTPICKER_REMEMBER) {h, m -> vm.onTimePickedRemember(h, m) }
     }
-
-    private fun saveHourAlarmCheckAssistance(): Boolean {
-        with(SharedVariables) {
-            val alarmHelper=AlarmHelper()
-
-            if (isChangedAlarmCheckAssistance) {
-                alarmHelper.cancelAlarm(
-                    this@ConfigActivity,
-                    alarmIdCheckAssitance,
-                    Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
-                    AlarmDailyActivateGeofReceiver::class.java
-                )
-
-                Log.d(Definition.TAG_DEBUG, "Alarma de chekear asistencia cancelada")
-
-                alarmIdCheckAssitance =
-                    alarmHelper.setDailyAlarm(
-                        this@ConfigActivity,
-                        hourDailyCheckAssitance,
-                        minuteDailyCheckAssitance,
-                        Definition.ACTION_ALARM_DAILY_CHECK_ASSISTANCE,
-                        AlarmDailyActivateGeofReceiver::class.java
-                    )
-
-                Log.d(Definition.TAG_DEBUG, "Alarma de chekear asistencia configurada corrctamente")
-                Toast.makeText(this@ConfigActivity, "Alarma de checkeo configurada correctamente", Toast.LENGTH_SHORT).show()
-                return true
-            }
-            //Toast.makeText(this@ConfigActivity,"No se pudo guardar la hora de la alarma",Toast.LENGTH_SHORT).show()
-        }
-        return false
-    }
-
-    private fun listenerCmdCancelConfig() {
+    private fun listenerCmdCancel() {
         finish()
+    }
+
+    private fun configObservers() {
+
+        // Observers
+        vm.nameUser.observe(this){ text->
+            txtNameUser?.setText(text)
+        }
+
+        vm.timeTextRemember.observe(this){text->
+            cmdRememberHour?.text=text
+        }
+
+        vm.saveEnabled.observe(this) { enabled ->
+            cmdSaveConfig?.isEnabled = enabled
+        }
+        vm.toastMessage.observe(this) { msg ->
+            msg?.let {
+                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+                vm.onToastShown()
+            }
+        }
+        vm.finishEvent.observe(this) { finish ->
+            if (finish == true) {
+                vm.onFinishConsumed()
+                finish()
+            }
+        }
     }
 
 
@@ -138,40 +111,49 @@ class ConfigActivity: AppCompatActivity() {
         actionBar?.title = textColor
     }
 
-    private fun listenerCmdDateAlarmActivateGeof() {
-        showTimePicker { hour,minute->
-            SharedVariables.hourDailyActivateGeofence=hour
-            SharedVariables.minuteDailyActivateGeofence=minute
+    private fun showCustomTimePicker(
+        minHour: Int = 0,
+        maxHour: Int = 6,
+        minMinute: Int = 3,
+        maxMinute: Int = 59,
+        onTimeSet: (hour: Int, minute: Int) -> Unit
+    ) {
+        val view = layoutInflater.inflate(R.layout.dialog_timerpicker, null)
+        val npHour = view.findViewById<NumberPicker>(R.id.npHour)
+        val npMinute = view.findViewById<NumberPicker>(R.id.npMinute)
 
-            isChangedAlarmActivateGeof=true
-            cmdSaveConfig?.isEnabled=true
-            cmdDateAlarmActivateGeof?.text = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
-        }
+        // Configurar límites de hora
+        npHour.minValue = minHour
+        npHour.maxValue = maxHour
+        npHour.value = minHour // valor inicial
 
+        // Configurar minutos (0–59)
+        npMinute.minValue = minMinute
+        npMinute.maxValue = maxMinute
+        npMinute.value = minMinute
+
+        AlertDialog.Builder(this)
+            .setTitle("Seleccionar el tiempo")
+            .setView(view)
+            .setPositiveButton("OK") { _, _ ->
+                val hour = npHour.value
+                val minute = npMinute.value
+                onTimeSet(hour, minute)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
-    private fun listenerCmdDateAlarmCheckAssistance() {
-        showTimePicker { hour,minute->
-            SharedVariables.hourDailyCheckAssitance=hour
-            SharedVariables.minuteDailyCheckAssitance=minute
-
-            isChangedAlarmCheckAssistance=true
-            cmdSaveConfig?.isEnabled=true
-            cmdDateAlarmCheckAssistance?.text = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
-        }
-
-    }
-
-    private fun showTimePicker(onTimeSet: (hour:Int,minute:Int) -> Unit) {
-        val cal = Calendar.getInstance()
-
-        TimePickerDialog(this, { _, hour, minute ->
-            cal.set(Calendar.HOUR_OF_DAY, hour)
-            cal.set(Calendar.MINUTE, minute)
-            cal.set(Calendar.SECOND, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            onTimeSet(hour,minute)
-        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+    override fun onDestroy() {
+        super.onDestroy()
+        vm.onFinishConsumed()
+        vm.timeTextCheck.removeObservers(this)
+        vm.nameUser.removeObservers(this)
+        vm.timeTextNextAlarm.removeObservers(this)
+        vm.timeTextRemember.removeObservers(this)
+        vm.saveEnabled.removeObservers(this)
+        vm.toastMessage.removeObservers(this)
+        vm.finishEvent.removeObservers(this)
     }
 }
 

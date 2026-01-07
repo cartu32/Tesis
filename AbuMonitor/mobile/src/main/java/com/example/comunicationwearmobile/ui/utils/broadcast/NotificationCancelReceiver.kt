@@ -6,7 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDispatcherWearable
-import com.example.comunicationwearmobile.ui.utils.Helpers.NotificationHelper
+import com.example.comunicationwearmobile.ui.utils.Helpers.Notification.NotificationHelper
 import com.example.shared_library.SharedData
 
 // BroadcastReceiver para manejar la cancelación de notificaciones

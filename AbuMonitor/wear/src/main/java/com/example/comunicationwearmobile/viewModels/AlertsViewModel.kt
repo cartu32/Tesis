@@ -51,7 +51,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
     private var alarmManager:AlarmManager
     private var pendingIntentAlarmFall:PendingIntent?=null
-    private val intervalTimeFallDetect = 1 * 20 * 1000L // 5 minutos en milisegundos
+    private val intervalTimeFallDetect = 1 * 60 * 1000L // 5 minutos en milisegundos
     private var numberTimesAlarmRepeats=0
     private val MAX_TIME_REPEATS=3
 

@@ -30,10 +30,16 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <queries>
+        <!-- Wear OS estándar -->
+        <package android:name="com.google.android.wearable.app" />
+        <!-- (Opcional) variante China, por si algún dispositivo la usa -->
+        <package android:name="com.google.android.wearable.app.cn" />
+    </queries>
 
     <application
         android:name="com.example.abumonitor.AbuMonitorApplicationMobile"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_old_people_round"
@@ -136,8 +142,9 @@
                 <action android:name="com.example.app.ACTION_GEOFENCE_EVENT"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".ui.utils.broadcast.AlarmDailyActivateGeofReceiver" />
+        <receiver android:name=".ui.utils.broadcast.AlarmBroadcastReceiver" />
         <receiver android:name=".ui.utils.broadcast.NotificationCancelReceiver"/>
+
     </application>
 
 </manifest>

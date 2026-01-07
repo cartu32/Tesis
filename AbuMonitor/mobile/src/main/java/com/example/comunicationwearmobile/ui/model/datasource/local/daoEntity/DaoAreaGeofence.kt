@@ -10,6 +10,8 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.abumonitor.data.model.EntityEvent
 import com.example.comunicationwearmobile.ui.model.entities.EntityAreaEventCrossRef
 import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceBasic
+import com.example.comunicationwearmobile.ui.model.pojo.AreaGeofenceWithEvents
+import com.example.comunicationwearmobile.ui.model.pojo.JoinAreaGeofence
 
 @Dao
 
@@ -45,6 +47,7 @@ interface DaoAreaGeofence {
     suspend fun deleteAreaWithId(idArea: Long?):Int
 
     // Actualizar el área (solo actualiza la tabla principal)
+    @Transaction
     @Update
     suspend fun updateArea(areaGeofence: EntityAreaGeofence):Int
 
@@ -62,4 +65,30 @@ interface DaoAreaGeofence {
         WHERE ae.id_area = :areaId
     """)
     suspend fun getEventByArea(areaId: Long): List<EntityEvent>
+
+    @Transaction
+    @Query("SELECT * FROM Area_Geofence WHERE id_area = :idArea")
+    suspend fun getJoinAreaGeofence(idArea:Long): JoinAreaGeofence
+
+    @Query("""
+        SELECT 
+            ag.id_area,
+            ag.latitude,
+            ag.longitude,
+            ag.meters,
+            ag.id_priority,
+            ag.id_type_area,
+            ag.description,
+            ar.is_activated_geof,
+            ar.prev_state_machine,
+            ar.last_update_time,
+            COALESCE(dt.dwell_time, 0) AS dwell_time,
+            GROUP_CONCAT(DISTINCT ae.id_event) AS list_id_event
+        FROM Area_Geofence ag, Area_Runtime_State ar
+        INNER JOIN Area_Event ae ON ag.id_area = ae.id_area
+        INNER JOIN Area_Runtime_State ON ag.id_area = ar.id_area
+        LEFT  JOIN DwellTimeZone dt ON ag.id_area = dt.id_area
+        GROUP BY ag.id_area,ag.latitude,ag.longitude,ag.meters,ag.id_priority,ag.id_type_area,ag.description,ar.is_activated_geof,ar.prev_state_machine,ar.last_update_time
+    """)
+    fun getAreasActivated():List<AreaGeofenceWithEvents>
 }

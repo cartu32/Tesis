@@ -26,12 +26,13 @@ import java.util.Calendar
 class AssistanceAddActivity : AppCompatActivity() {
 
     private val viewModel: ViewModelCalendarAssistance by viewModels { AssistanceViewModelFactory(application) }
-    private var dateMillis: Long = 0
-    private var hour:Long=0
+    private var dateAppontimentMillis: Long = 0
+    private var dateHourAppointment:Long=0
 
     private var txtTitle:EditText?=null
     private var txtDescription:EditText?=null
     private var txtDate:EditText?=null
+    private var txtDesactivationDate:EditText?=null
     private var cmdHourAppointment:Button?=null
     private var cmdCreateAreaGeof:Button?=null
 
@@ -43,15 +44,16 @@ class AssistanceAddActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_assistance_add)
 
-        dateMillis = intent.getLongExtra("date", 0)
+        dateAppontimentMillis = intent.getLongExtra("date", 0)
 
         txtTitle = findViewById<EditText>(R.id.txtTitle)
         txtDescription = findViewById<EditText>(R.id.txtDescription)
         txtDate = findViewById<EditText>(R.id.txtDate)
+        txtDesactivationDate = findViewById<EditText>(R.id.txtDesactivationDate)
         cmdHourAppointment = findViewById<Button>(R.id.cmdHourDate)
         cmdCreateAreaGeof = findViewById<Button>(R.id.cmdCreateAreaGeof)
 
-        val dateString = Tools.getMillisToDate(dateMillis)
+        val dateString = Tools.getMillisToDate(dateAppontimentMillis)
 
         txtDate?.setText(dateString)
         txtDate?.isEnabled = false
@@ -64,6 +66,7 @@ class AssistanceAddActivity : AppCompatActivity() {
         configActionBar()
     }
 
+
     private fun configActionBar() {
         val actionBar = supportActionBar
         actionBar?.title = "AbuMonitor"
@@ -74,6 +77,12 @@ class AssistanceAddActivity : AppCompatActivity() {
     }
 
     private fun configObservers() {
+        observerIdNewAssitance()
+    }
+
+
+    private fun observerIdNewAssitance() {
+
         viewModel.idNewAssistance.observe(this) {idNewAssitance ->
             if(idNewAssitance!=-1L){
                 Toast.makeText(this,"Se guardo correctamente la cita",Toast.LENGTH_SHORT).show()
@@ -97,8 +106,8 @@ class AssistanceAddActivity : AppCompatActivity() {
                 val assistance = EntityScheduledAssistance(
                     title = txtTitle?.text.toString(),
                     description = txtDescription?.text.toString(),
-                    date_appointment = dateMillis,
-                    hour_appointment = hour,
+                    date_hour_appointment = dateHourAppointment,
+                    time_duration_activation_appointment = Tools.convertMinutesToMillis(txtDesactivationDate?.text.toString().toLong()),
                 )
 
                 if (meters != null) {
@@ -116,8 +125,12 @@ class AssistanceAddActivity : AppCompatActivity() {
 
     private fun onClickListenerCmdHourAppointment() {
         showTimePicker { millis ->
-            hour = millis
-            cmdHourAppointment?.text = Tools.formatHour(millis)
+            //fusiono la fecha de la cita con la hora seleccionada
+            val onlyHourApponinment = Tools.extractHourOfDateInMillis(millis)
+            dateHourAppointment=dateAppontimentMillis+onlyHourApponinment
+
+            //muestro la hora seleccionada
+            cmdHourAppointment?.text = Tools.getMillisToHourMinutes(millis)
         }
     }
 
@@ -127,7 +140,7 @@ class AssistanceAddActivity : AppCompatActivity() {
             Toast.makeText(this,"Debe seleccionar una hora para la cita",Toast.LENGTH_SHORT).show()
             return
         }
-        if(!Tools.isTimeAndDateGreaterThanCurrentDate(dateMillis,hour)) {
+        if(!Tools.isTimeAndDateGreaterThanCurrentDate(dateHourAppointment)) {
             Toast.makeText(this, "La hora seleccionada debe ser mayor a la actual ", Toast.LENGTH_SHORT).show()
             return
         }
@@ -143,6 +156,7 @@ class AssistanceAddActivity : AppCompatActivity() {
 
         var intent = Intent(this, MapsAddAssistance::class.java)
         resultLauncher?.launch(intent)
+
     }
 
     private fun showTimePicker(onTimeSet: (Long) -> Unit) {
@@ -163,5 +177,6 @@ class AssistanceAddActivity : AppCompatActivity() {
         super.onDestroy()
 
         viewModel.idNewAssistance.removeObservers(this)
+        viewModel.timeDurationAppointment.removeObservers(this)
     }
 } 

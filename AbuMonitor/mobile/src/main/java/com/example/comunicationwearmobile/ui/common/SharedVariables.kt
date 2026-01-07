@@ -1,15 +1,13 @@
 package com.example.comunicationwearmobile.ui.common
 
+import kotlinx.coroutines.sync.Mutex
+
 object SharedVariables {
-    var alarmIdActivateGeofence = 0
-    var alarmIdCheckAssitance   = 0
-
-    var hourDailyActivateGeofence = 0
-    var minuteDailyActivateGeofence = 0
-    var hourDailyCheckAssitance = 0
-    var minuteDailyCheckAssitance = 0
-
     const val USER_ADMIN = "admin"
     var user=""
     var password=""
+    var timeAlarmChecksFirstTime:Long=0
+    var isOpenAppFirsTime = false
+
+    var mutexAssistanceDateAlarm= Mutex()
 }
