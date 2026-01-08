@@ -93,12 +93,14 @@ abstract class BaseMapActivity : AppCompatActivity() , OnMapReadyCallback, OnMap
     private fun clickCmdSerachAndroid13(addressText: String) {
         geocoder.getFromLocationName(addressText, 1, object : Geocoder.GeocodeListener {
             override fun onGeocode(addresses: MutableList<Address>) {
-                if (addresses.isNotEmpty()) {
-                    val location = addresses[0]
-                    val latLng = LatLng(location.latitude, location.longitude)
-                    mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-                } else {
-                    Toast.makeText(this@BaseMapActivity, "Dirección no encontrada", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (addresses.isNotEmpty()) {
+                        val location = addresses[0]
+                        val latLng = LatLng(location.latitude, location.longitude)
+                        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+                    } else {
+                        Toast.makeText(this@BaseMapActivity, "Dirección no encontrada", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
