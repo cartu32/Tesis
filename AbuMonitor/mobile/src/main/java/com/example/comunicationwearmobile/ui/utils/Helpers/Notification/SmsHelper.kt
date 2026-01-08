@@ -217,15 +217,10 @@ object SmsHelper {
             if (hasUrl && parts.size >= 2) {
                 val url = urlRegex.find(longMessage)?.value
                 if (url != null) {
-                    val bodySinUrl = longMessage.replace(url, "").trim()
+                    var bodySinUrl = longMessage.replace(url, "").trim()
+                    bodySinUrl+="\n"
 
                     val partsSinUrl: ArrayList<String> = smsManager.divideMessage(bodySinUrl)
-                    val sentIntentsText = ArrayList<PendingIntent>(partsSinUrl.size).apply {
-                        repeat(partsSinUrl.size) { add(sentIntents.first()) }
-                    }
-                    val deliveredIntentsText = ArrayList<PendingIntent>(partsSinUrl.size).apply {
-                        repeat(partsSinUrl.size) { add(deliveredIntents.first()) }
-                    }
 
                     Log.d(Definition.TAG_DEBUG, "URL detectada: $url")
                     Log.d(
@@ -233,22 +228,24 @@ object SmsHelper {
                         "Texto sin URL dividido en ${partsSinUrl.size} parte(s)"
                     )
 
-                    // 1) Texto sin URL (multipart)
+                    val allParts = ArrayList<String>().apply {
+                        addAll(partsSinUrl)  // texto sin URL (puede ser 1..N partes)
+                        add(url)             // URL como última “parte” del mismo multipart
+                    }
+
+                    val sentAll = ArrayList<PendingIntent>(allParts.size).apply {
+                        repeat(allParts.size) { add(sentIntents.first()) }
+                    }
+                    val deliveredAll = ArrayList<PendingIntent>(allParts.size).apply {
+                        repeat(allParts.size) { add(deliveredIntents.first()) }
+                    }
+
                     smsManager.sendMultipartTextMessage(
                         telephoneNumber,
                         null,
-                        partsSinUrl,
-                        sentIntentsText,
-                        deliveredIntentsText
-                    )
-
-                    // 2) URL sola en un SMS independiente
-                    smsManager.sendTextMessage(
-                        telephoneNumber,
-                        null,
-                        url,
-                        sentIntents.firstOrNull(),
-                        deliveredIntents.firstOrNull()
+                        allParts,
+                        sentAll,
+                        deliveredAll
                     )
 
                     Log.d(
@@ -271,6 +268,7 @@ object SmsHelper {
             Log.e(Definition.TAG_DEBUG, "Error al enviar SMS (35+): ${e.message}", e)
         }
     }
+
 
     // -------------------- Utilidades --------------------
 
