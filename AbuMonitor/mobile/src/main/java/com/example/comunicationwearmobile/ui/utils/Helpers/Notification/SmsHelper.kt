@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.location.Location
 import android.os.Build
 import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
@@ -36,7 +37,37 @@ object SmsHelper {
 
     // -------------------- API pública --------------------
 
-    fun sendSMSFallDetection(context: Context, msg: ByteArray) {
+    fun sendSMSFallDetection(context: Context, msg: ByteArray, geofLatitude: String, geofLongitude: String) {
+        var rawMessage=""
+        val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(msg)
+
+        val googleMapsUrl = "https://maps.google.com/?q=${geofLatitude},${geofLongitude}"
+
+        //me fijo que se haya pasado como parametro la ubicacion de la caida
+        val hasValidLocation =  geofLatitude != "0.0" &&
+                                geofLongitude!= "0.0" &&
+                                geofLatitude.isNotBlank() &&
+                                geofLongitude.isNotBlank()
+
+        //creo el mensaje
+        rawMessage = """
+                    ${msgFallDetection.title.uppercase(Locale.getDefault())}
+                    ${msgFallDetection.message}
+                    ${msgFallDetection.fechaHora}                    
+                    """.trimIndent()
+
+        //me fijo si se paso una ubicacion para mostrar el mapa o no en el SMS
+        if (hasValidLocation) {
+            rawMessage+="\n\nUbicación:\n$googleMapsUrl"
+        }else{
+            rawMessage+="\n\nUbicación no disponible"
+        }
+
+        val message = limpiarTextoParaSMS(rawMessage)
+        sendSMSToAllContact(context, message)
+    }
+
+    fun sendSMSFallContinue(context: Context, msg: ByteArray) {
         val msgFallDetection: SharedData.MsgFallDetection = fromByteArray(msg)
 
         val rawMessage = """
@@ -50,6 +81,7 @@ object SmsHelper {
         val message = limpiarTextoParaSMS(rawMessage)
         sendSMSToAllContact(context, message)
     }
+
 
     fun sendSMSPlainText(context: Context, message: String) {
         sendSMSToAllContact(context, limpiarTextoParaSMS(message))
