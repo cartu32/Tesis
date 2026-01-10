@@ -16,7 +16,7 @@ object SharedData
     //este tipo de mensjae se usa para indicarle al mobile desde el smart watch que se detecto
     //una caida y que se debe enviar un sms
     const val PATH_FALL_DETECTION_SMS:String          = "/fall_detection_SMS"
-
+    const val PATH_FALL_CONTINUE_SMS:String           = "/fall_continue_SMS"
 
     //indica el grupo de las notificaciones que se muestran en la bandeja de notificaciones
     const val GROUP_ID_NOTIFICATION = 9999

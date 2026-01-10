@@ -8,7 +8,6 @@ import kotlin.time.Duration
 object Definition {
 
 
-
     /********************************************************
      ******* constante de la maquina de estados de goefence**
      ********************************************************
@@ -184,6 +183,11 @@ object Definition {
     //Esta constante sirve para activar la deteccion de geofence a traves del broadcast
     const val ACTION_GEOFENCE_EVENT_BROADCAST: String="com.example.app.ACTION_GEOFENCE_EVENT"
     const val PARAMETER_SERVICE: String = "PARAMETER_SERVICE"
+
+    //constante de tiempo que se usa para saber si la ubicacion es fresca
+    //o sea esta actualizada, o si ya es vieja y se debe ignorar
+    const val TIME_FRESH_LAST_LOCATION_MS: Int = 2 * 60_000
+
 
     //cantidad de citas maximas que se pueden agendar por cada dia
     const val COUNT_MAX_DATE_FOR_DAY = 5

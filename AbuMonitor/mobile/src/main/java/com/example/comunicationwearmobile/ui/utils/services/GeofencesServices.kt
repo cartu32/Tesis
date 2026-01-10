@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import com.example.abumonitor.constants.Definition
+import com.example.comunicationwearmobile.ui.model.dto.CachedLocation
+import com.example.comunicationwearmobile.ui.model.dto.LastLocationCache
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryLocation
 import com.example.comunicationwearmobile.ui.utils.Helpers.Alarm.GeofenceDwellAlarmHelper
@@ -62,6 +64,10 @@ class GeofencesServices: Service() {
                     mutexLocationUpdate.withLock {
                         Log.d(Definition.TAG_DEBUG, "Nueva ubicación in GeofencesServices: ${location.latitude}, ${location.longitude}")
 
+                        //guardo la ultima ubicacion conocida en un singleton
+                        LastLocationCache.last = CachedLocation(location.latitude, location.longitude, System.currentTimeMillis())
+
+                        //ejecuto la FSM
                         ManualGeofenceStrategyHelper.callGeofenceManualStrategy(this@GeofencesServices,location)
                     }
                 }

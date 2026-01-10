@@ -91,7 +91,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
             when(actionAlarm){
                 AlarmTimeFallEventManager.NOTIFYING_ALARM_FALL->
-                    notifyFallBySmartPhone("¡¡Alerta!!","La persona continua caida")
+                    notifyFallBySmartPhone("¡¡Alerta!!","La persona continua caida",SharedData.PATH_FALL_CONTINUE_SMS)
             }
 
             Log.d("ABUMONITOR","numero de repeticiones"+numberTimesAlarmRepeats)
@@ -218,7 +218,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
 
             SharedData.PATH_ADD_NOTIFICATION_FALL -> {
                 addMsgAlertList(msgBytes)
-                notifyFallBySmartPhone("¡¡Alerta!!","Se ha detectado una caida")
+                notifyFallBySmartPhone("¡¡Alerta!!","Se ha detectado una caida",SharedData.PATH_FALL_DETECTION_SMS)
                 VibrateMannager.generateVibration(app,500)
                 startAlarmTimeFall()
                 MediaPlayerManager.playAlarmSound(context, R.raw.siren)
@@ -356,7 +356,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
     }
 
 
-    fun notifyFallBySmartPhone(title:String,msg:String){
+    fun notifyFallBySmartPhone(title:String,msg:String,path:String){
 
         var msgFallDetection = SharedData.MsgFallDetection(
             title = title,
@@ -364,7 +364,7 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
         )
 
-        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
+        notifySmartphone(path, toByteArray( msgFallDetection))
     }
 
 
@@ -387,6 +387,6 @@ open class AlertsViewModel(private var app: Application) : AndroidViewModel(app)
             fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
         )
 
-        notifySmartphone(SharedData.PATH_FALL_DETECTION_SMS, toByteArray( msgFallDetection))
+        notifySmartphone(SharedData.PATH_FALL_CONTINUE_SMS, toByteArray( msgFallDetection))
     }
 }
