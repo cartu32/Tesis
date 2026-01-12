@@ -35,12 +35,12 @@ Se generó una serie de nueve videos, en los cuales se explica detalladamente el
 
 A continuación, se enumeran los videos que componen la demostración:
 
-  1.[Introducción a la demostración](https://www.youtube.com/watch?v=5zlPaYfKqKQ)
-  2.[Pantalla Principal](https://youtu.be/I5af_vEUFDk)
-  3.[Menú Configuración](https://youtu.be/6okEt313hCg)
-  4.[Definir Contactos](https://youtu.be/2k6AQZ4QdYY)
-  5.Creación de Area Normal de Geofencing
-  6.[Creación de Zonas Seguras](https://youtu.be/_UQ-u3-r_Uc)
-  7.[Creación de Cita de Asistencia (ej: asistir a cita)](https://youtu.be/Ri-aVA3Bm5I)
-  8.[Creación de Cita de Asistencia (ej: no asistir a cita)](https://youtu.be/2Z__qlds1Kg)
-  9.[Validación y Alertas de caídas](https://youtu.be/Hr3wQPGS584) 
+  1. [Introducción a la demostración](https://www.youtube.com/watch?v=5zlPaYfKqKQ)
+  2. [Pantalla Principal](https://youtu.be/I5af_vEUFDk)
+  3. [Menú Configuración](https://youtu.be/6okEt313hCg)
+  4. [Definir Contactos](https://youtu.be/2k6AQZ4QdYY)
+  5. Creación de Area Normal de Geofencing
+  6. [Creación de Zonas Seguras](https://youtu.be/_UQ-u3-r_Uc)
+  7. [Creación de Cita de Asistencia (ej: asistir a cita)](https://youtu.be/Ri-aVA3Bm5I)
+  8. [Creación de Cita de Asistencia (ej: no asistir a cita)](https://youtu.be/2Z__qlds1Kg)
+  9. [Validación y Alertas de caídas](https://youtu.be/Hr3wQPGS584) 
