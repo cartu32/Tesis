@@ -1,7 +1,4 @@
-## Tesis
-
-Este repositorio contiene el trabajo de **Tesis de Maestría del Ing. Esteban Carnuccio**, el cual consiste en el desarrollo de un **prototipo de sistema de geocercas (Geofence)** para el monitoreo de adultos mayores.
-El sistema desarrollado se denomina **AbuMonitor** y está compuesto por dos partes principales:
+Este repositorio contiene el trabajo de Tesis de Maestría del Ing. Esteban Carnuccio, el cual consiste en el desarrollo de un prototipo de sistema de geocercas (Geofence) para el monitoreo de adultos mayores. El sistema desarrollado se denomina "AbuMonitor" y está compuesto por dos partes principales:
 
 * **Smartphone**
 * **Smartwatch**
@@ -29,3 +26,21 @@ Dentro del directorio AbuMonitor se encuentra el código fuente del proyecto And
 * **Shared Library**: contiene bibliotecas compartidas utilizadas tanto por la aplicación del teléfono como por la del reloj.
 
 Por otro lado, el directorio APK contiene los archivos APK generados, los cuales pueden instalarse en los dispositivos móviles y wearables compatibles.
+
+---
+
+## Demostración del funcionamiento del Sistema Abumonitor
+
+Se generó una serie de nueve videos, en los cuales se explica detalladamente el funcionamiento de cada una de las funcionalidades del sistema AbuMonitor.
+
+A continuación, se enumeran los videos que componen la demostración:
+
+  1. [Introducción a la demostración](https://www.youtube.com/watch?v=5zlPaYfKqKQ)
+  2. [Pantalla Principal](https://youtu.be/I5af_vEUFDk)
+  3. [Menú Configuración](https://youtu.be/6okEt313hCg)
+  4. [Definir Contactos](https://youtu.be/2k6AQZ4QdYY)
+  5. [Creación de Area Normal de Geofencing](https://youtu.be/bzhAvdDtgJU)
+  6. [Creación de Zonas Seguras](https://youtu.be/_UQ-u3-r_Uc)
+  7. [Creación de Cita de Asistencia (ej: asistir a cita)](https://youtu.be/Ri-aVA3Bm5I)
+  8. [Creación de Cita de Asistencia (ej: no asistir a cita)](https://youtu.be/2Z__qlds1Kg)
+  9. [Validación y Alertas de caídas](https://youtu.be/Hr3wQPGS584) 
