@@ -1,4 +1,4 @@
-El sistema desarrollado se denomina **AbuMonitor** y está compuesto por dos partes principales:
+Este repositorio contiene el trabajo de Tesis de Maestría del Ing. Esteban Carnuccio, el cual consiste en el desarrollo de un prototipo de sistema de geocercas (Geofence) para el monitoreo de adultos mayores. El sistema desarrollado se denomina "AbuMonitor" y está compuesto por dos partes principales:
 
 * **Smartphone**
 * **Smartwatch**
