@@ -38,6 +38,7 @@ material3Android = "1.2.1"
 playServicesWearableVersion = "18.2.0"
 recyclerview = "1.4.0"
 retrofit = "2.9.0"
+robolectric = "4.16"
 roomVersion = "2.6.1"
 threetenabp = "1.4.5"
 uiToolingPreview = "1.6.7"
@@ -98,6 +99,7 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 play-services-wearable-v1820 = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServicesWearableVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }

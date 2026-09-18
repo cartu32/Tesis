@@ -24,7 +24,7 @@ import kotlinx.coroutines.sync.withLock
         }
     }
 
-    private fun isStationaryUpdate(t: AreaTrack, location: Location, now: Long): Boolean {
+    fun isStationaryUpdate(t: AreaTrack, location: Location, now: Long): Boolean {
         if (t.lastLocAt == 0L) {
             t.lastLocAt = now
             t.lastLat = location.latitude
