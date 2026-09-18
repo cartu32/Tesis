@@ -69,49 +69,66 @@ object ManualGeofenceStrategyHelper {
 
             val areaId = areaResult.areaId
 
-            // --- DWELL: anti-rearmado + persistencia ---
-            // Si la FSM pide START pero ya estaba armada → NO reprogrames.
-            if (areaResult.fireDwellStart) {
-                val alreadyScheduled =
-                    scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
+            //si el area debe detectar el evento dwell, se lo programa para hacerlo
+            programDwellArea(areaResult, areaId, appContext, dataArea)
 
-                if (!alreadyScheduled) {
-                    startAlarmDwell(appContext, areaId, dataArea.secZoneDwellTime.dwell_time)
-                    scheduledDwell.add(areaId)
-                    setDwellScheduledPersisted(appContext, areaId, true)
-                    RepositoryDebugLogger.log(appContext, "DWELL: alarma armada area=$areaId")
-                } else {
-                    RepositoryDebugLogger.log(appContext, "DWELL: ya armada, no reprog area=$areaId")
-                }
-            }
-
-            // Cancelá DWELL tanto por CANCEL como por EXIT (si saliste, no hay dwell posible)
-            if (areaResult.fireDwellCancel || areaResult.fireExit) {
-                val wasScheduled =
-                    scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
-
-                if (wasScheduled) {
-                    cancelAlarmDwell(appContext, areaId)
-                    scheduledDwell.remove(areaId)
-                    setDwellScheduledPersisted(appContext, areaId, false)
-                    RepositoryDebugLogger.log(appContext, "DWELL: alarma cancelada area=$areaId")
-                }
-            }
-
+            //si el area  debe detectar el evento enter se lo agrega a la lista global de enter
+            //para programarlo al salir del bucle
             if (areaResult.fireEnter) {
                 globalEnterIds.add(areaId)
             }
+
+            //si el area  debe detectar el evento exit se lo agrega a la lista global de exit
+            //para programarlo al salir del bucle
             if (areaResult.fireExit) {
                 globalExitIds.add(areaId)
             }
         }
 
+        //Si existen areas con eventos de enter se las ejecuta
         if (globalEnterIds.isNotEmpty()) {
             triggerActionAreaEntry(globalEnterIds, appContext)
         }
 
+        //si existen areas con eventos de exit se las ejecuta
         if (globalExitIds.isNotEmpty()) {
             triggerActionAreaExit(globalExitIds, appContext)
+        }
+    }
+
+    private fun programDwellArea(
+        areaResult: ResultAreaGenerateEvent,
+        areaId: Long,
+        appContext: Context,
+        dataArea: DataAreaGeofAux,
+    ) {
+        // --- DWELL: anti-rearmado + persistencia ---
+        // Si la FSM pide START pero ya estaba armada → NO reprogrames.
+        if (areaResult.fireDwellStart) {
+            val alreadyScheduled =
+                scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
+
+            if (!alreadyScheduled) {
+                startAlarmDwell(appContext, areaId, dataArea.secZoneDwellTime.dwell_time)
+                scheduledDwell.add(areaId)
+                setDwellScheduledPersisted(appContext, areaId, true)
+                RepositoryDebugLogger.log(appContext, "DWELL: alarma armada area=$areaId")
+            } else {
+                RepositoryDebugLogger.log(appContext, "DWELL: ya armada, no reprog area=$areaId")
+            }
+        }
+
+        // Cancelá DWELL tanto por CANCEL como por EXIT (si saliste, no hay dwell posible)
+        if (areaResult.fireDwellCancel || areaResult.fireExit) {
+            val wasScheduled =
+                scheduledDwell.contains(areaId) || isDwellScheduledPersisted(appContext, areaId)
+
+            if (wasScheduled) {
+                cancelAlarmDwell(appContext, areaId)
+                scheduledDwell.remove(areaId)
+                setDwellScheduledPersisted(appContext, areaId, false)
+                RepositoryDebugLogger.log(appContext, "DWELL: alarma cancelada area=$areaId")
+            }
         }
     }
 

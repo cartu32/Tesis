@@ -5,6 +5,8 @@ import android.location.Location
 import android.util.Log
 import com.example.abumonitor.constants.Definition
 import com.example.abumonitor.data.model.EntityAreaGeofence
+import com.example.comunicationwearmobile.ui.model.extra.Metrics
+import com.example.comunicationwearmobile.ui.model.extra.PreDetectionFilterResult
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceTrackStore
 
@@ -33,20 +35,77 @@ object GeofenceEventFsmDetector {
         //  El historial esta en mapa llamado track
         val stationary = GeofenceTrackStore.getStationaryInHitorialLocation(area, location, now)
 
-        // 2) Aplico filtro por accuracy (valor absoluto + ratio vs radio)
+        // 2) Aplico los filtros de predeteccion
+        val preDetection = applyPreDetectionFilters(context,area,m)
+
+        if (!preDetection.passed) {
+            return Definition.EVT_CONTINUE
+        }
+
+        // 3) Determino el evento cadidato
+        val candidate = determineCandidateEvent(area,prevState,m,preDetection.meterForEnter,preDetection.meterForExit)
+
+        if (candidate == Definition.EVT_CONTINUE) {
+            return Definition.EVT_CONTINUE
+        }
+
+        //4) aplico los filtros de postdeteccion
+        val postDetectionPassed = applyPostDetectionFilters(context,area,now,isFast,stationary,candidate,m, preDetection.meterForExit)
+
+        if (!postDetectionPassed) {
+            return Definition.EVT_CONTINUE
+        }
+
+
+        // 5) Acepto evento: actualizo track
+        acceptEventAndUpdateTrack(area, now, m.distance)
+
+        // 6) Log final (debug)
+        logAcceptedEvent(
+            context = context,
+            area = area,
+            prevState = prevState,
+            candidate = candidate,
+            distance = m.distance,
+            radiusMeters = m.radiusMeters,
+            accuracy = m.accuracy,
+            meterForEnter = preDetection.meterForEnter,
+            meterForExit = preDetection.meterForExit,
+            distanceToBorder = m.distanceToBorder,
+            stationary = stationary,
+            isFast = isFast,
+            speed = speed
+        )
+
+
+        return candidate
+
+    }
+
+    private fun applyPreDetectionFilters(context: Context, area: EntityAreaGeofence, m: Metrics): PreDetectionFilterResult {
+
+
+        // 1) Aplico filtro por accuracy (valor absoluto + ratio vs radio)
         if (blockByAccuracy(context, area, m.accuracy, m.radiusMeters)) {
-            return Definition.EVT_CONTINUE
+            return PreDetectionFilterResult(false)
         }
 
-        // 3) Aplico filtro por “zona gris” cerca del borde
+        // 2) Aplico filtro por “zona gris” cerca del borde
         if (blockByGrayZone(context, area, m.radiusMeters, m.accuracy, m.distanceToBorder)) {
-            return Definition.EVT_CONTINUE
+            return PreDetectionFilterResult(false)
         }
 
-        // 4)Aplico Histeresis espacial (umbrales enter/exit)
+        // 3)Aplico Histeresis espacial (umbrales enter/exit)
         val (meterForEnter, meterForExit) = calculateHysteris(m.accuracy, m.radiusMeters)
 
-        // 5)Determino cual es el evento candidato según posición (todavía no se acepta).
+
+        return PreDetectionFilterResult(true, meterForEnter, meterForExit )
+    }
+
+    private suspend fun determineCandidateEvent(area: EntityAreaGeofence, prevState: String?, m: Metrics,
+                                                meterForEnter: Float, meterForExit: Float): String {
+
+        // 1)Determino cual es el evento candidato según posición (todavía no se acepta).
         //   Cuando no hay transiciones reseteo el contador de eventos Exit/enter consecutivos
         val candidate = determineEventAccordingPosition(
             prevState = prevState,
@@ -56,27 +115,34 @@ object GeofenceEventFsmDetector {
             meterForEnter = meterForEnter
         )
 
-        // 6) Si no hay transición real, resetea streaks y sale
+        // 2) Si no hay transición real, resetea streaks y sale
         if (resetStreaksAndReturnIfContinue(area, candidate)) {
             return Definition.EVT_CONTINUE
         }
 
-        // 7) Anti-spam (no repetir eventos demasiado seguido)
+        return candidate
+    }
+
+    suspend private fun applyPostDetectionFilters(context: Context, area: EntityAreaGeofence,
+                                                  now: Long, isFast: Boolean, stationary: Boolean,
+                                                  candidate: String, m: Metrics, meterForExit: Float): Boolean {
+
+        // 1) Anti-spam (no repetir eventos demasiado seguido)
         if (blockBySpam(context, area, now)) {
-            return Definition.EVT_CONTINUE
+            return false
         }
 
-        // 8) Anti-flip (cooldown dinámico) + excepción farOutside
+        // 2) Anti-flip (cooldown dinámico) + excepción farOutside
         if (blockByFlipCooldown(context, area, now, isFast, stationary, candidate, m, meterForExit)) {
-            return Definition.EVT_CONTINUE
+            return false
         }
 
-        // 9) Me fijo si está quieto y EXIT es un evento candidato
+        // 3) Me fijo si está quieto y EXIT es un evento candidato
         if (blockStationaryExitIfNotClear(context, area, stationary, candidate, m.distance, meterForExit, m.accuracy)) {
-            return Definition.EVT_CONTINUE
+            return false
         }
 
-        // 10) Heurística anti-teleport para EXIT. Esto ev
+        // 4) Heurística anti-teleport para EXIT. Esto ev
         val requiredExitConfirm = computeRequiredExitConfirmAndLog(
             context = context,
             area = area,
@@ -87,34 +153,13 @@ object GeofenceEventFsmDetector {
             radiusMeters = m.radiusMeters
         )
 
-        // 11) Debounce por lecturas consecutivas (confirmación por streaks)
+        // 5) Debounce por lecturas consecutivas (confirmación por streaks)
         val confirmed = confirmByStreaks(area, candidate, requiredExitConfirm)
         if (!confirmed) {
             logWaitConfirm(context, area, candidate)
-            return Definition.EVT_CONTINUE
+            return false
         }
-
-        // 12) Acepto evento: actualizo track
-        acceptEventAndUpdateTrack(area, now, m.distance)
-
-        // 13) Log final (debug)
-        logAcceptedEvent(
-            context = context,
-            area = area,
-            prevState = prevState,
-            candidate = candidate,
-            distance = m.distance,
-            radiusMeters = m.radiusMeters,
-            accuracy = m.accuracy,
-            meterForEnter = meterForEnter,
-            meterForExit = meterForExit,
-            distanceToBorder = m.distanceToBorder,
-            stationary = stationary,
-            isFast = isFast,
-            speed = speed
-        )
-
-        return candidate
+        return true
     }
 
     /** Crea un Location con el centro del área para poder usar distanceTo(). */
@@ -125,19 +170,7 @@ object GeofenceEventFsmDetector {
         }
     }
 
-    /** Calcula métricas base usadas por los filtros y la FSM (distancia, radio, accuracy, borde). */
-    private data class Metrics(
-        val distance: Float,
-        val radiusMeters: Float,
-        val accuracy: Float,
-        val distanceToBorder: Float
-    )
-
-    private fun computeMetrics(
-        area: EntityAreaGeofence,
-        location: Location,
-        areaLocation: Location
-    ): Metrics {
+    private fun computeMetrics(area: EntityAreaGeofence, location: Location, areaLocation: Location): Metrics {
         val distance = location.distanceTo(areaLocation)
         val radiusMeters = area.meters.toFloat()
         val accuracy = location.accuracy
@@ -163,12 +196,7 @@ object GeofenceEventFsmDetector {
     }
 
     /** Bloquea el procesamiento si el accuracy es demasiado malo (ABS + ratio vs radio). */
-    private fun blockByAccuracy(
-        context: Context,
-        area: EntityAreaGeofence,
-        accuracy: Float,
-        radiusMeters: Float
-    ): Boolean {
+    private fun blockByAccuracy(context: Context, area: EntityAreaGeofence, accuracy: Float, radiusMeters: Float): Boolean {
         if (isAccuracyTooBad(accuracy, radiusMeters)) {
             RepositoryDebugLogger.log(
                 context,
@@ -180,12 +208,7 @@ object GeofenceEventFsmDetector {
         return false
     }
 
-    private fun isInGrayZone(
-        context: Context,
-        radiusMeters: Float,
-        accuracy: Float,
-        distanceToBorder: Float
-    ): Boolean {
+    private fun isInGrayZone(context: Context, radiusMeters: Float, accuracy: Float, distanceToBorder: Float): Boolean {
 
         // En radios chicos, la gray-zone no puede comerse medio geofence
         val maxFraction = if (radiusMeters <= 15f) 0.15f else Definition.MAX_BORDER_FRACTION
@@ -208,13 +231,7 @@ object GeofenceEventFsmDetector {
     }
 
     /** Bloquea si la lectura cae en la “zona gris” cerca del borde del radio (evita rebotes por ruido). */
-    private fun blockByGrayZone(
-        context: Context,
-        area: EntityAreaGeofence,
-        radiusMeters: Float,
-        accuracy: Float,
-        distanceToBorder: Float
-    ): Boolean {
+    private fun blockByGrayZone(context: Context, area: EntityAreaGeofence, radiusMeters: Float, accuracy: Float, distanceToBorder: Float): Boolean {
         if (isInGrayZone(context, radiusMeters, accuracy, distanceToBorder)) {
             RepositoryDebugLogger.log(
                 context,
@@ -303,8 +320,8 @@ object GeofenceEventFsmDetector {
     private fun flipCooldownMs(isFast: Boolean, stationary: Boolean): Long {
         return when {
             stationary -> 8 * 60_000L   // quieto: súper duro (8 minuots)
-            isFast     -> 5_000L       // auto: no frenes la salida/entrada real(10 segundos)
-            else       -> 10_000L   // caminando: moderado (30 segundos)
+            isFast     -> 5_000L       // auto: no frenes la salida/entrada real(5 segundos)
+            else       -> 10_000L   // caminando: moderado (10 segundos)
         }
     }
 
