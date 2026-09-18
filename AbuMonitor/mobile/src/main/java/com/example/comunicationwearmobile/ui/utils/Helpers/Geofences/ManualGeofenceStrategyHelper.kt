@@ -216,7 +216,10 @@ object ManualGeofenceStrategyHelper {
         }
     }
 
-    private fun determineSpeedElderly(location: Location, context: Context): Pair<Float, Boolean> {
+    private fun determineSpeedElderly
+                (location: Location,
+                 context: Context)
+    : Pair<Float, Boolean> {
         val speedMps = location.speed
         val isFast = speedMps > Definition.LIMIT_SPEED_WALKING
 

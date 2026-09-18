@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences
+package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM
 
 import android.content.Context
 import android.location.Location
@@ -8,7 +8,6 @@ import com.example.abumonitor.data.model.EntityAreaGeofence
 import com.example.comunicationwearmobile.ui.model.extra.Metrics
 import com.example.comunicationwearmobile.ui.model.extra.PreDetectionFilterResult
 import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLogger
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceTrackStore
 
 object GeofenceEventFsmDetector {
 
@@ -20,7 +19,14 @@ object GeofenceEventFsmDetector {
     //Esta seria la cantidad de tiempo que debe esperarse entre eventos consecutivos.
     private const val MIN_EVENT_GAP_MS =  10_000L
 
-    suspend fun getEvent(context: Context, area: EntityAreaGeofence, location: Location, prevState: String?, isFast: Boolean, speed: Float): String {
+    suspend fun getEvent(
+        context: Context,
+        area: EntityAreaGeofence,
+        location: Location,
+        prevState: String?,
+        isFast: Boolean,
+        speed: Float)
+    : String {
 
         val now = System.currentTimeMillis()
 
@@ -82,7 +88,11 @@ object GeofenceEventFsmDetector {
 
     }
 
-    private fun applyPreDetectionFilters(context: Context, area: EntityAreaGeofence, m: Metrics): PreDetectionFilterResult {
+    private fun applyPreDetectionFilters(
+        context: Context,
+        area: EntityAreaGeofence,
+        m: Metrics)
+    : PreDetectionFilterResult {
 
 
         // 1) Aplico filtro por accuracy (valor absoluto + ratio vs radio)
@@ -102,8 +112,13 @@ object GeofenceEventFsmDetector {
         return PreDetectionFilterResult(true, meterForEnter, meterForExit )
     }
 
-    private suspend fun determineCandidateEvent(area: EntityAreaGeofence, prevState: String?, m: Metrics,
-                                                meterForEnter: Float, meterForExit: Float): String {
+    private suspend fun determineCandidateEvent(
+        area: EntityAreaGeofence,
+        prevState: String?,
+        m: Metrics,
+        meterForEnter: Float,
+        meterForExit: Float)
+    : String {
 
         // 1)Determino cual es el evento candidato según posición (todavía no se acepta).
         //   Cuando no hay transiciones reseteo el contador de eventos Exit/enter consecutivos
@@ -123,9 +138,16 @@ object GeofenceEventFsmDetector {
         return candidate
     }
 
-    suspend private fun applyPostDetectionFilters(context: Context, area: EntityAreaGeofence,
-                                                  now: Long, isFast: Boolean, stationary: Boolean,
-                                                  candidate: String, m: Metrics, meterForExit: Float): Boolean {
+    private suspend fun applyPostDetectionFilters(
+        context: Context,
+        area: EntityAreaGeofence,
+        now: Long,
+        isFast: Boolean,
+        stationary: Boolean,
+        candidate: String,
+        m: Metrics,
+        meterForExit: Float)
+    : Boolean {
 
         // 1) Anti-spam (no repetir eventos demasiado seguido)
         if (blockBySpam(context, area, now)) {
@@ -170,11 +192,16 @@ object GeofenceEventFsmDetector {
         }
     }
 
-    private fun computeMetrics(area: EntityAreaGeofence, location: Location, areaLocation: Location): Metrics {
+    private fun computeMetrics(
+        area: EntityAreaGeofence,
+        location: Location,
+        areaLocation: Location)
+    : Metrics {
         val distance = location.distanceTo(areaLocation)
         val radiusMeters = area.meters.toFloat()
         val accuracy = location.accuracy
         val distanceToBorder = kotlin.math.abs(distance - radiusMeters)
+
         return Metrics(distance, radiusMeters, accuracy, distanceToBorder)
     }
 
@@ -196,7 +223,12 @@ object GeofenceEventFsmDetector {
     }
 
     /** Bloquea el procesamiento si el accuracy es demasiado malo (ABS + ratio vs radio). */
-    private fun blockByAccuracy(context: Context, area: EntityAreaGeofence, accuracy: Float, radiusMeters: Float): Boolean {
+    private fun blockByAccuracy(
+        context: Context,
+        area: EntityAreaGeofence,
+        accuracy: Float,
+        radiusMeters: Float)
+    : Boolean {
         if (isAccuracyTooBad(accuracy, radiusMeters)) {
             RepositoryDebugLogger.log(
                 context,
@@ -208,7 +240,12 @@ object GeofenceEventFsmDetector {
         return false
     }
 
-    private fun isInGrayZone(context: Context, radiusMeters: Float, accuracy: Float, distanceToBorder: Float): Boolean {
+    private fun isInGrayZone(
+        context: Context,
+        radiusMeters: Float,
+        accuracy: Float,
+        distanceToBorder: Float)
+    : Boolean {
 
         // En radios chicos, la gray-zone no puede comerse medio geofence
         val maxFraction = if (radiusMeters <= 15f) 0.15f else Definition.MAX_BORDER_FRACTION
@@ -231,7 +268,13 @@ object GeofenceEventFsmDetector {
     }
 
     /** Bloquea si la lectura cae en la “zona gris” cerca del borde del radio (evita rebotes por ruido). */
-    private fun blockByGrayZone(context: Context, area: EntityAreaGeofence, radiusMeters: Float, accuracy: Float, distanceToBorder: Float): Boolean {
+    private fun blockByGrayZone(
+        context: Context,
+        area: EntityAreaGeofence,
+        radiusMeters: Float, accuracy:
+        Float,
+        distanceToBorder: Float)
+    : Boolean {
         if (isInGrayZone(context, radiusMeters, accuracy, distanceToBorder)) {
             RepositoryDebugLogger.log(
                 context,
@@ -341,7 +384,8 @@ object GeofenceEventFsmDetector {
         val flipBlocked = GeofenceTrackStore.isFlipBlocked(area.id_area, now, minFlip)
 
         val farOutside = (candidate == Definition.EVT_EXIT) &&
-                (m.distance >= (meterForExit + maxOf(m.accuracy * 1.5f, m.radiusMeters * 0.5f, 10f)))
+                         (m.distance >= (meterForExit + maxOf(m.accuracy * 1.5f, m.radiusMeters *
+                                 0.5f, 10f)))
 
         val lastFlipAt = GeofenceTrackStore.getLastFlipAt(area.id_area)
 
@@ -398,15 +442,12 @@ object GeofenceEventFsmDetector {
         val jump = if (lastDist >= 0f) kotlin.math.abs(distance - lastDist) else 0f
         val overshoot = distance - meterForExit
 
-        val suspiciousExit =
-            candidate == Definition.EVT_EXIT && (
-                    accuracy > radiusMeters * 0.35f ||
-                            (lastDist >= 0f && jump > maxOf(accuracy * 2f, 25f))
-                    )
+        val suspiciousExit = candidate == Definition.EVT_EXIT &&
+                            (accuracy > radiusMeters * 0.35f ||
+                            (lastDist >= 0f && jump > maxOf(accuracy * 2f, 25f)))
 
-        val strongExit =
-            candidate == Definition.EVT_EXIT &&
-                    overshoot >= maxOf(accuracy * 1.2f, 12f)
+        val strongExit = candidate == Definition.EVT_EXIT &&
+                         overshoot >= maxOf(accuracy * 1.2f, 12f)
 
         val requiredExitConfirm = when {
             strongExit -> 1
@@ -478,8 +519,7 @@ object GeofenceEventFsmDetector {
         isFast: Boolean,
         speed: Float
     ) {
-        val msg =
-            "GETEVENT_BLIND: área=${area.id_area}, prevState=$prevState, event=$candidate, " +
+        val msg = "GETEVENT_BLIND: área=${area.id_area}, prevState=$prevState, event=$candidate, " +
                     "dist=${"%.1f".format(distance)}m, radius=${"%.1f".format(radiusMeters)}m, " +
                     "acc=${"%.1f".format(accuracy)}m, enter=${"%.1f".format(meterForEnter)}m, " +
                     "exit=${"%.1f".format(meterForExit)}m, distToBorder=${"%.1f".format(distanceToBorder)}m, " +

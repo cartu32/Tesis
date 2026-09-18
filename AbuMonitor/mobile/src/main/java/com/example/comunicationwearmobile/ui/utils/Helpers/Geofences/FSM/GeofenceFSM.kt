@@ -1,6 +1,5 @@
 package com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM
 
-import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceEventFsmDetector
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofencePermissions
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.GeofenceStatePersistence
 import android.content.Context

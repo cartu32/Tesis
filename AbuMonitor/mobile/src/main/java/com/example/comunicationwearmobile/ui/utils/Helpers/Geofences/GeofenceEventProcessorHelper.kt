@@ -113,7 +113,12 @@ object GeofenceEventProcessorHelper {
         }
     }
 
-    private suspend fun analizeAssistanceZone(idArea: Long, transition: Int, lat: String, lon: String) {
+    private suspend fun analizeAssistanceZone(
+        idArea: Long,
+        transition: Int,
+        lat: String,
+        lon: String)
+    {
         when (transition) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> processEnterAssistenceZone(idArea)
             Geofence.GEOFENCE_TRANSITION_EXIT -> proccessExitAssistanceZone(idArea, lat, lon)
@@ -212,7 +217,11 @@ object GeofenceEventProcessorHelper {
         }
     }
 
-    private suspend fun processEnterSecurityZone(description: String, lat: String, lon: String) {
+    private suspend fun processEnterSecurityZone(
+        description: String,
+        lat: String,
+        lon: String)
+    {
         val msg = SharedData.MsgNotification().apply {
             typeNotification = SharedData.TypeNotification.Alert
             title = "¡Alerta de Seguridad!"
