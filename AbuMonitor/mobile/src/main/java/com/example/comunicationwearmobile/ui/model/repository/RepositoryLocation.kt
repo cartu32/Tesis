@@ -44,22 +44,14 @@ class RepositoryLocation private constructor(appContext: Context) {
 
     val locationFlow: SharedFlow<Location> = _locationFlow
 
-/*    val locationRequest = LocationRequest.Builder(
-        Priority.PRIORITY_HIGH_ACCURACY, // GPS fuerte
-        10_000L                          // cada 10s
-    )
-        .setMinUpdateIntervalMillis(5_000L)     // hasta cada 5s si puede
-        .setMaxUpdateDelayMillis(30_000L)       // agrupa hasta 30s
-        .setMinUpdateDistanceMeters(5f)         // si se movió 5m, mandá
-        .build()
-*/
+
     val locationRequest = LocationRequest.Builder(
         Priority.PRIORITY_HIGH_ACCURACY, // GPS fuerte
-        15_000L                          // cada 15s
+        15_000L               // cada 15s
     )
-        .setMinUpdateIntervalMillis(10_000L)     // hasta cada 5s si puede
-        .setMaxUpdateDelayMillis(0L)       // agrupa hasta 30s
-        .setMinUpdateDistanceMeters(8f)         // si se movió 5m, mandá
+        .setMinUpdateIntervalMillis(10_000L)     // hasta cada 10s si puede
+        .setMaxUpdateDelayMillis(0L)             // agrupa hasta 0s
+        .setMinUpdateDistanceMeters(8f)         // si se movió 8m, mandá
         .build()
 
 

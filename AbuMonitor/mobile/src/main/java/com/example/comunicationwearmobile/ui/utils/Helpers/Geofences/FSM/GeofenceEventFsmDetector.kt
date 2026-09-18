@@ -82,10 +82,7 @@ object GeofenceEventFsmDetector {
             isFast = isFast,
             speed = speed
         )
-
-
         return candidate
-
     }
 
     private fun applyPreDetectionFilters(
@@ -93,7 +90,6 @@ object GeofenceEventFsmDetector {
         area: EntityAreaGeofence,
         m: Metrics)
     : PreDetectionFilterResult {
-
 
         // 1) Aplico filtro por accuracy (valor absoluto + ratio vs radio)
         if (blockByAccuracy(context, area, m.accuracy, m.radiusMeters)) {

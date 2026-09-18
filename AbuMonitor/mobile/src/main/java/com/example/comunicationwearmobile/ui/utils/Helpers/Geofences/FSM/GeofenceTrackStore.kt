@@ -45,15 +45,22 @@ import kotlinx.coroutines.sync.withLock
         t.lastLat = location.latitude
         t.lastLon = location.longitude
 
+        //si la persona se movio una cantidad determinada de metros acumulada
+        //se reinicia el contador de tiempo de inactividad
         if (t.stationaryAccumMove > STATIONARY_MAX_MOVE_M) {
             t.stationarySince = now
             t.stationaryAccumMove = 0f
             return false
         }
 
-        val speedOk = (!location.hasSpeed()) || (location.speed <= STATIONARY_MAX_SPEED_MS)
-        val timeOk  = (now - t.stationarySince) >= STATIONARY_WINDOW_MS
-        return speedOk && timeOk
+        // Se verifica que haya transcurrido el tiempo suficiente desde el inicio
+        // de la ventana actual sin superar STATIONARY_MAX_MOVE_M metros acumulados.
+        val enoughTimePassed = (now - t.stationarySince) >= STATIONARY_WINDOW_MS
+
+        //se verifica si la persona tiene poca o nula velocidad en ese momento
+        val hasLowOrUnknownSpeed  = (!location.hasSpeed()) || (location.speed <= STATIONARY_MAX_SPEED_MS)
+
+        return enoughTimePassed && hasLowOrUnknownSpeed
     }
 
     suspend fun getStationaryInHitorialLocation(area: EntityAreaGeofence, location: Location, now: Long): Boolean {
