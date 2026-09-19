@@ -11,6 +11,7 @@ import com.example.comunicationwearmobile.ui.model.repository.RepositoryDebugLog
 
 object GeofenceEventFsmDetector {
 
+
     // Debounce (lecturas consecutivas requeridas)
     private const val ENTER_CONFIRM_COUNT = 1
     private const val EXIT_CONFIRM_COUNT  = 1
@@ -18,6 +19,15 @@ object GeofenceEventFsmDetector {
     // Anti-spam / anti-oscilación. Sirve para no repetir enter/exit cada pocos segundos
     //Esta seria la cantidad de tiempo que debe esperarse entre eventos consecutivos.
     private const val MIN_EVENT_GAP_MS =  10_000L
+
+    //Limite del accuracy cuando el radio es grande
+    internal const val ABSOLUTE_LIMIT  = 35f
+
+    //Porcentage del radio que se toma para calcular el limite realtivo del accuracy
+    internal const val RADIUS_PERCENTAGE_FOR_ACCURACY = 0.60f
+
+    //Radio minimo para descartar el evento segun el accuracy
+    internal const val MIN_RADIUS_ACCURACY= 25
 
     suspend fun getEvent(
         context: Context,
@@ -201,40 +211,37 @@ object GeofenceEventFsmDetector {
         return Metrics(distance, radiusMeters, accuracy, distanceToBorder)
     }
 
-    private fun accuracyAbsLimit(radiusMeters: Float): Float {
-        // Más estricto en radios chicos (20-30m diámetro), más laxo en radios grandes.
-        return when {
-            radiusMeters <= 10f -> 12f     // diam <= 20m
-            radiusMeters <= 15f -> 18f     // diam <= 30m
-            radiusMeters <= 25f -> 25f     // diam <= 50m
-            else -> 35f                    // radios grandes
-        }
-    }
 
-    private fun isAccuracyTooBad(accuracy: Float, radiusMeters: Float): Boolean {
-        val absLimit = accuracyAbsLimit(radiusMeters)
-        val ratioLimit = radiusMeters * 0.60f
-        // si el radio es grande, el ratio puede ser muy alto, por eso usamos ambos (ABS + ratio)
-        return (accuracy > absLimit) || (accuracy > ratioLimit)
-    }
+        fun isAccuracyTooBad(accuracy: Float, radiusMeters: Float): Boolean {
 
-    /** Bloquea el procesamiento si el accuracy es demasiado malo (ABS + ratio vs radio). */
-    private fun blockByAccuracy(
-        context: Context,
-        area: EntityAreaGeofence,
-        accuracy: Float,
-        radiusMeters: Float)
-    : Boolean {
-        if (isAccuracyTooBad(accuracy, radiusMeters)) {
-            RepositoryDebugLogger.log(
-                context,
-                "GETEVENT_BLIND: BLOCK accuracy area=${area.id_area} acc=${"%.1f".format(accuracy)} " +
-                        "absLimit=${"%.1f".format(accuracyAbsLimit(radiusMeters))} ratioLimit=${"%.1f".format(radiusMeters * 0.60f)}"
-            )
-            return true
+            val ratioLimit = radiusMeters * RADIUS_PERCENTAGE_FOR_ACCURACY
+
+            //si el radio es chico se usa el ratio para el accuracy
+            if(radiusMeters <= MIN_RADIUS_ACCURACY) {
+               return (accuracy > ratioLimit)
+            }
+            // si el radio es grande, el ratio puede ser muy alto,
+            // por eso usamos ambos (ABS + ratio)
+            return (accuracy > ABSOLUTE_LIMIT) || (accuracy > ratioLimit)
         }
-        return false
-    }
+
+        /** Bloquea el procesamiento si el accuracy es demasiado malo (ABS + ratio vs radio). */
+        private fun blockByAccuracy(
+            context: Context,
+            area: EntityAreaGeofence,
+            accuracy: Float,
+            radiusMeters: Float)
+        : Boolean {
+            if (isAccuracyTooBad(accuracy, radiusMeters)) {
+                RepositoryDebugLogger.log(
+                    context,
+                    "GETEVENT_BLIND: BLOCK accuracy area=${area.id_area} acc=${"%.1f".format(accuracy)} " +
+                            "absLimit=${"%.1f".format(ABSOLUTE_LIMIT)} ratioLimit=${"%.1f".format(radiusMeters * 0.60f)}"
+                )
+                return true
+            }
+            return false
+        }
 
     private fun isInGrayZone(
         context: Context,
