@@ -39,12 +39,9 @@ object Definition {
     // --- Configuración de zona gris por imprecisión del GPS ---
     // Esta zona sirve para evitar falsos positivos cuando el usuario
     // está cerca del borde del geofence y el GPS fluctúa.
-    // El margen se calcula en base a:
-    // 1) Un mínimo fijo absoluto (en metros)
-    // 2) Un máximo relativo al tamaño del radio del área
 
-    val MIN_BORDER_MARGIN   = 5f      // margen mínimo absoluto en metros
-    val MAX_BORDER_FRACTION = 0.30f   // como mucho 30% del radio
+    const val MIN_RADIUS_FRACTION = 0.15f   // como minimo el
+    const val MAX_RADIUS_FRACTION = 0.30f   // como mucho 30% del radio
 
     // --- Configuración de histeresis espacial ---
     const val BASE_ENTER_FACTOR = 0.8f   // 80% del radio para considerar "ENTRA" (desde afuera)

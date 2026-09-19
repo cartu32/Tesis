@@ -243,20 +243,35 @@ object GeofenceEventFsmDetector {
             return false
         }
 
-    private fun isInGrayZone(
+    /*
+  * Esta función se utiliza actualmente con radios entre 30 y 300 metros,
+  * rango limitado por la SeekBar utilizada para configurar las áreas.
+  *
+  * Para este rango, el margen de la zona gris queda comprendido entre
+  * 3 y 6 metros.
+  *
+  * Se mantiene el uso de maxFraction para permitir una futura adaptación
+  * del algoritmo a radios menores. Para dichos radios será necesario
+  * revisar los límites del margen.
+  */
+    internal fun isInGrayZone(
         context: Context,
         radiusMeters: Float,
         accuracy: Float,
-        distanceToBorder: Float)
-    : Boolean {
+        distanceToBorder: Float
+    ): Boolean {
 
-        // En radios chicos, la gray-zone no puede comerse medio geofence
-        val maxFraction = if (radiusMeters <= 15f) 0.15f else Definition.MAX_BORDER_FRACTION
+        // Limita la fracción del radio utilizada según el tamaño del área.
+        val maxFraction =
+            if (radiusMeters <= 15f)
+                Definition.MIN_RADIUS_FRACTION
+            else
+                Definition.MAX_RADIUS_FRACTION
 
-        // margen basado en accuracy, pero acotado fuerte
+        // Margen basado en accuracy, limitado por el radio y por un máximo de 6 m.
         val borderMargin = kotlin.math.min(
-            kotlin.math.max(accuracy * 0.35f, 3f),              // 35% de acc, mínimo 3m
-            kotlin.math.min(radiusMeters * maxFraction, 6f)     // cap: fracción y 6m absoluto
+            kotlin.math.max(accuracy * 0.35f, 3f),
+            kotlin.math.min(radiusMeters * maxFraction, 6f)
         )
 
         if (distanceToBorder <= borderMargin) {
@@ -267,9 +282,9 @@ object GeofenceEventFsmDetector {
             )
             return true
         }
+
         return false
     }
-
     /** Bloquea si la lectura cae en la “zona gris” cerca del borde del radio (evita rebotes por ruido). */
     private fun blockByGrayZone(
         context: Context,
