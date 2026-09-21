@@ -303,7 +303,7 @@ object GeofenceEventFsmDetector {
         return false
     }
 
-    private fun calculateHysteris(
+    internal fun calculateHysteris(
         accuracy: Float,
         radiusMeters: Float,
     ): Pair<Float, Float> {
