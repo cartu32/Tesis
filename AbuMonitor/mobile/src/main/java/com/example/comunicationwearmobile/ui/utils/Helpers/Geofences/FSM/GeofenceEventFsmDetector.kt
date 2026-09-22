@@ -378,7 +378,7 @@ object GeofenceEventFsmDetector {
         return false
     }
 
-    private fun flipCooldownMs(isFast: Boolean, stationary: Boolean): Long {
+    internal fun flipCooldownMs(isFast: Boolean, stationary: Boolean): Long {
         return when {
             stationary -> 8 * 60_000L   // quieto: súper duro (8 minuots)
             isFast     -> 5_000L       // auto: no frenes la salida/entrada real(5 segundos)
@@ -387,7 +387,7 @@ object GeofenceEventFsmDetector {
     }
 
     /** Bloquea por cooldown anti-flip dinámico, excepto si es un EXIT “muy afuera” (farOutside). */
-    private suspend fun blockByFlipCooldown(
+    internal suspend fun blockByFlipCooldown(
         context: Context,
         area: EntityAreaGeofence,
         now: Long,
