@@ -109,21 +109,21 @@ import kotlinx.coroutines.sync.withLock
     suspend fun confirmByStreaks(
         areaId: Long,
         candidate: String,
-        enterConfirmCount: Int,
-        requiredExitConfirm: Int
+        requiredEnterConfirmCount: Int,
+        requiredExitConfirmCount: Int
     ): Boolean {
         return withTrack(areaId) { t ->
             when (candidate) {
                 Definition.EVT_ENTER -> {
                     t.insideStreak += 1
                     t.outsideStreak = 0
-                    t.insideStreak >= enterConfirmCount
+                    t.insideStreak >= requiredEnterConfirmCount
                 }
 
                 Definition.EVT_EXIT -> {
                     t.outsideStreak += 1
                     t.insideStreak = 0
-                    t.outsideStreak >= requiredExitConfirm
+                    t.outsideStreak >= requiredExitConfirmCount
                 }
 
                 else -> false

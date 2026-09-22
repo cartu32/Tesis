@@ -171,7 +171,7 @@ object GeofenceEventFsmDetector {
         }
 
         // 4) Heurística anti-teleport para EXIT. Esto ev
-        val requiredExitConfirm = computeRequiredExitConfirmAndLog(
+        val requiredExitConfirmCount = computeRequiredExitConfirmAndLog(
             context = context,
             area = area,
             candidate = candidate,
@@ -182,7 +182,7 @@ object GeofenceEventFsmDetector {
         )
 
         // 5) Debounce por lecturas consecutivas (confirmación por streaks)
-        val confirmed = confirmByStreaks(area, candidate, requiredExitConfirm)
+        val confirmed = confirmByStreaks(area, candidate, requiredExitConfirmCount)
         if (!confirmed) {
             logWaitConfirm(context, area, candidate)
             return false
@@ -488,13 +488,13 @@ object GeofenceEventFsmDetector {
     private suspend fun confirmByStreaks(
         area: EntityAreaGeofence,
         candidate: String,
-        requiredExitConfirm: Int
+        requiredExitConfirmCount: Int
     ): Boolean {
         return GeofenceTrackStore.confirmByStreaks(
             areaId = area.id_area,
             candidate = candidate,
-            enterConfirmCount = ENTER_CONFIRM_COUNT,
-            requiredExitConfirm = requiredExitConfirm
+            requiredEnterConfirmCount = ENTER_CONFIRM_COUNT,
+            requiredExitConfirmCount = requiredExitConfirmCount
         )
     }
 
