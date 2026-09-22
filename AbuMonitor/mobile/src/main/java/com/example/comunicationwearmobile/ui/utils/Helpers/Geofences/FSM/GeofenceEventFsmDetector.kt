@@ -14,7 +14,7 @@ object GeofenceEventFsmDetector {
 
     // Debounce (lecturas consecutivas requeridas)
     private const val ENTER_CONFIRM_COUNT = 1
-    private const val EXIT_CONFIRM_COUNT  = 1
+    private const val EXIT_CONFIRM_COUNT  = 1 
 
     // Anti-spam / anti-oscilación. Sirve para no repetir enter/exit cada pocos segundos
     //Esta seria la cantidad de tiempo que debe esperarse entre eventos consecutivos.
