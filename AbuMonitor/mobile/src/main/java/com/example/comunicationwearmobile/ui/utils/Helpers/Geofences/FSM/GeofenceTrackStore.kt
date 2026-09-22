@@ -69,6 +69,14 @@ import kotlinx.coroutines.sync.withLock
         }
     }
 
+     suspend fun getAndUpdatePreviousLocationDistance(areaId: Long, currentDistance: Float): Float {
+         return withTrack(areaId) { t ->
+             val previousDistance = t.previousLocationDistance
+             t.previousLocationDistance = currentDistance
+             previousDistance
+         }
+     }
+
     suspend fun resetStreaks(areaId: Long) {
         withTrack(areaId) { t ->
             t.insideStreak = 0
@@ -130,4 +138,10 @@ import kotlinx.coroutines.sync.withLock
             }
         }
     }
+
+     internal suspend fun clearTrackForTest() {
+         trackMutex.withLock {
+             track.clear()
+         }
+     }
 }

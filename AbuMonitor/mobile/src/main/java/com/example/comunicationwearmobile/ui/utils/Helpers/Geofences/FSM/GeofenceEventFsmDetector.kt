@@ -14,7 +14,7 @@ object GeofenceEventFsmDetector {
 
     // Debounce (lecturas consecutivas requeridas)
     private const val ENTER_CONFIRM_COUNT = 1
-    private const val EXIT_CONFIRM_COUNT  = 1 
+    private const val EXIT_CONFIRM_COUNT  = 1
 
     // Anti-spam / anti-oscilación. Sirve para no repetir enter/exit cada pocos segundos
     //Esta seria la cantidad de tiempo que debe esperarse entre eventos consecutivos.
@@ -46,27 +46,32 @@ object GeofenceEventFsmDetector {
         // Métricas básicas (distancia, radio, accuracy, distancia al borde)
         val m = computeMetrics(area, location, areaLocation)
 
-        //1) Se actualiza el historial de ubicaciones que me permite mas adelante
+        // 1) Actualizo historial de ubicaciones que me permite mas adelante
+        //saber si hubo un salto muy grande entre una lectura de ubicacion y otra.
+        // De forma tal, e poder determinar si hubo una lectura erratica
+        val previousDistance = GeofenceTrackStore.getAndUpdatePreviousLocationDistance(area.id_area, m.distance)
+
+        //2) Se actualiza el historial de ubicaciones que me permite mas adelante
         //  saber si la persona estuvo quieta mucho tiempo en el mismo lugar.
         //  El historial esta en mapa llamado track
         val stationary = GeofenceTrackStore.getStationaryInHitorialLocation(area, location, now)
 
-        // 2) Aplico los filtros de predeteccion
+        // 3) Aplico los filtros de predeteccion
         val preDetection = applyPreDetectionFilters(context,area,m)
 
         if (!preDetection.passed) {
             return Definition.EVT_CONTINUE
         }
 
-        // 3) Determino el evento cadidato
+        // 4) Determino el evento cadidato
         val candidate = determineCandidateEvent(area,prevState,m,preDetection.meterForEnter,preDetection.meterForExit)
 
         if (candidate == Definition.EVT_CONTINUE) {
             return Definition.EVT_CONTINUE
         }
 
-        //4) aplico los filtros de postdeteccion
-        val postDetectionPassed = applyPostDetectionFilters(context,area,now,isFast,stationary,candidate,m, preDetection.meterForExit)
+        //5) aplico los filtros de postdeteccion
+        val postDetectionPassed = applyPostDetectionFilters(context,area,now,isFast,stationary,candidate,m, preDetection.meterForExit,previousDistance)
 
         if (!postDetectionPassed) {
             return Definition.EVT_CONTINUE
@@ -152,7 +157,9 @@ object GeofenceEventFsmDetector {
         stationary: Boolean,
         candidate: String,
         m: Metrics,
-        meterForExit: Float)
+        meterForExit: Float,
+        previousDistance: Float
+    )
     : Boolean {
 
         // 1) Anti-spam (no repetir eventos demasiado seguido)
@@ -170,7 +177,8 @@ object GeofenceEventFsmDetector {
             return false
         }
 
-        // 4) Heurística anti-teleport para EXIT. Esto ev
+        // 4) Heurística anti-teleport para EXIT o ENTER. Este metodo calcula la cantidad de lecturas
+        // consecutivas que son necesarias para que el evento sea confirmado.
         val requiredExitConfirmCount = computeRequiredExitConfirmAndLog(
             context = context,
             area = area,
@@ -178,8 +186,9 @@ object GeofenceEventFsmDetector {
             distance = m.distance,
             meterForExit = meterForExit,
             accuracy = m.accuracy,
-            radiusMeters = m.radiusMeters
-        )
+            radiusMeters = m.radiusMeters,
+            previousDistance = previousDistance,
+            )
 
         // 5) Debounce por lecturas consecutivas (confirmación por streaks)
         val confirmed = confirmByStreaks(area, candidate, requiredExitConfirmCount)
@@ -447,22 +456,23 @@ object GeofenceEventFsmDetector {
     }
 
     /** Calcula confirmaciones requeridas para EXIT usando heurística anti-teleport . */
-    private suspend fun computeRequiredExitConfirmAndLog(
+    internal suspend fun computeRequiredExitConfirmAndLog(
         context: Context,
         area: EntityAreaGeofence,
         candidate: String,
         distance: Float,
         meterForExit: Float,
         accuracy: Float,
-        radiusMeters: Float
+        radiusMeters: Float,
+        previousDistance: Float
     ): Int {
-        val lastDist = GeofenceTrackStore.getLastDistToCenter(area.id_area)
-        val jump = if (lastDist >= 0f) kotlin.math.abs(distance - lastDist) else 0f
+
+        val jump = if (previousDistance >= 0f) kotlin.math.abs(distance - previousDistance) else 0f
         val overshoot = distance - meterForExit
 
         val suspiciousExit = candidate == Definition.EVT_EXIT &&
                             (accuracy > radiusMeters * 0.35f ||
-                            (lastDist >= 0f && jump > maxOf(accuracy * 2f, 25f)))
+                            (previousDistance >= 0f && jump > maxOf(accuracy * 2f, 25f)))
 
         val strongExit = candidate == Definition.EVT_EXIT &&
                          overshoot >= maxOf(accuracy * 1.2f, 12f)

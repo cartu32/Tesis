@@ -13,5 +13,7 @@ data class AreaTrack(
     var stationaryAccumMove: Float = 0f,// Movimiento acumulado estando quieto
     var insideStreak: Int = 0,         // Lecturas consecutivas INSIDE
     var outsideStreak: Int = 0,        // Lecturas consecutivas OUTSIDE
-    var lastDistToCenter: Float = -1f  // Última distancia al centro del área
+    var lastDistToCenter: Float = -1f,  // Última distancia al centro del área
+    var previousLocationDistance: Float = -1f // Distancia que existe entre una ubicacion
+                                              // anterior y la actual
 )
