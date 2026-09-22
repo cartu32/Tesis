@@ -5,7 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GeofenceHysteresisTest {
+class FSMHysteresisFilterTest {
 
     companion object {
         private const val DELTA = 0.0001f

@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.utils.Helpers.Geofences.FSM.AditionalJunit
+package com.example.comunicationwearmobile.utils.Helpers.Geofences.FSM.AditionalJunit.AntiFlip
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider

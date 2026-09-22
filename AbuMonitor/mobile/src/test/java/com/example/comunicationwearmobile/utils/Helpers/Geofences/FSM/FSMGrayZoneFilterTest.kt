@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
-class GeofenceGrayZoneTest {
+class FSMGrayZoneFilterTest {
 
     private val context: Context =
         ApplicationProvider.getApplicationContext()

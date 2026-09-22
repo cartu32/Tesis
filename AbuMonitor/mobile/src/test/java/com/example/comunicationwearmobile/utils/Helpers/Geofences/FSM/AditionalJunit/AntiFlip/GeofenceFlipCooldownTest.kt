@@ -1,4 +1,4 @@
-package com.example.comunicationwearmobile.utils.Helpers.Geofences.FSM.AditionalJunit
+package com.example.comunicationwearmobile.utils.Helpers.Geofences.FSM.AditionalJunit.AntiFlip
 
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceEventFsmDetector
 import com.example.comunicationwearmobile.ui.utils.Helpers.Geofences.FSM.GeofenceTrackStore

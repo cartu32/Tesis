@@ -156,9 +156,9 @@ object GeofenceEventFsmDetector {
     : Boolean {
 
         // 1) Anti-spam (no repetir eventos demasiado seguido)
-        if (blockBySpam(context, area, now)) {
-            return false
-        }
+        // if (blockBySpam(context, area, now)) {
+        // return false
+        // }
 
         // 2) Anti-flip (cooldown dinámico) + excepción farOutside
         if (blockByFlipCooldown(context, area, now, isFast, stationary, candidate, m, meterForExit)) {
@@ -419,7 +419,7 @@ object GeofenceEventFsmDetector {
     }
 
     /** Si está quieto y el candidato es EXIT, exige una salida “clara” para evitar falsos positivos. */
-    private suspend fun blockStationaryExitIfNotClear(
+    internal suspend fun blockStationaryExitIfNotClear(
         context: Context,
         area: EntityAreaGeofence,
         stationary: Boolean,

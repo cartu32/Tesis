@@ -6,7 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GeofenceAccuracyTest {
+class FSMAccuracyFilterTest {
 
     // ============================================================
     // RADIO MENOR A 25 m

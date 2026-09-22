@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
-class GeofenceFlipCooldownTest {
+class FSMAntiFlipCooldownFilterTest {
 
     companion object {
         private const val NOW = 1_000_000L
