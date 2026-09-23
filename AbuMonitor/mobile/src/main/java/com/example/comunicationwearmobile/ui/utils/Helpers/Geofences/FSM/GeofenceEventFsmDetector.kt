@@ -46,42 +46,48 @@ object GeofenceEventFsmDetector {
         // Métricas básicas (distancia, radio, accuracy, distancia al borde)
         val m = computeMetrics(area, location, areaLocation)
 
-        // 1) Actualizo historial de ubicaciones que me permite mas adelante
-        //saber si hubo un salto muy grande entre una lectura de ubicacion y otra.
-        // De forma tal, e poder determinar si hubo una lectura erratica
-        val previousDistance = GeofenceTrackStore.getAndUpdatePreviousLocationDistance(area.id_area, m.distance)
-
-        //2) Se actualiza el historial de ubicaciones que me permite mas adelante
-        //  saber si la persona estuvo quieta mucho tiempo en el mismo lugar.
-        //  El historial esta en mapa llamado track
-        val stationary = GeofenceTrackStore.getStationaryInHitorialLocation(area, location, now)
-
-        // 3) Aplico los filtros de predeteccion
-        val preDetection = applyPreDetectionFilters(context,area,m)
+        // 1) Aplico los filtros de predeteccion
+        val preDetection = applyPreDetectionFilters(context,area,location,m,now)
 
         if (!preDetection.passed) {
             return Definition.EVT_CONTINUE
         }
 
-        // 4) Determino el evento cadidato
-        val candidate = determineCandidateEvent(area,prevState,m,preDetection.meterForEnter,preDetection.meterForExit)
+        // 2) Determino el evento cadidato
+        val candidate = determineCandidateEvent(
+            area=area,
+            prevState=prevState,
+            m=m,
+            meterForEnter = preDetection.meterForEnter,
+            meterForExit = preDetection.meterForExit
+        )
 
         if (candidate == Definition.EVT_CONTINUE) {
             return Definition.EVT_CONTINUE
         }
 
-        //5) aplico los filtros de postdeteccion
-        val postDetectionPassed = applyPostDetectionFilters(context,area,now,isFast,stationary,candidate,m, preDetection.meterForExit,previousDistance)
+        //3) aplico los filtros de postdeteccion
+        val postDetectionPassed = applyPostDetectionFilters(
+            context=context,
+            area=area,
+            now=now,
+            isFast=isFast,
+            stationary = preDetection.stationary,
+            candidate=candidate,
+            m=m,
+            meterForExit = preDetection.meterForExit,
+            previousDistance = preDetection.previousDistance
+        )
 
         if (!postDetectionPassed) {
             return Definition.EVT_CONTINUE
         }
 
 
-        // 5) Acepto evento: actualizo track
+        // 4) Acepto evento: actualizo track
         acceptEventAndUpdateTrack(area, now, m.distance)
 
-        // 6) Log final (debug)
+        // 5) Log final (debug)
         logAcceptedEvent(
             context = context,
             area = area,
@@ -93,17 +99,16 @@ object GeofenceEventFsmDetector {
             meterForEnter = preDetection.meterForEnter,
             meterForExit = preDetection.meterForExit,
             distanceToBorder = m.distanceToBorder,
-            stationary = stationary,
+            stationary = preDetection.stationary,
             isFast = isFast,
             speed = speed
         )
         return candidate
     }
 
-    private fun applyPreDetectionFilters(
-        context: Context,
-        area: EntityAreaGeofence,
-        m: Metrics)
+    suspend private fun applyPreDetectionFilters(
+        context: Context, area: EntityAreaGeofence, location: Location, m: Metrics, now: Long
+    )
     : PreDetectionFilterResult {
 
         // 1) Aplico filtro por accuracy (valor absoluto + ratio vs radio)
@@ -111,16 +116,32 @@ object GeofenceEventFsmDetector {
             return PreDetectionFilterResult(false)
         }
 
-        // 2) Aplico filtro por “zona gris” cerca del borde
+        // 2) Actualizo historial de ubicaciones que me permite mas adelante
+        //saber si hubo un salto muy grande entre una lectura de ubicacion y otra.
+        // De forma tal, e poder determinar si hubo una lectura erratica
+        val previousDistance = GeofenceTrackStore.getAndUpdatePreviousLocationDistance(area.id_area, m.distance)
+
+        //3) Se actualiza el historial de ubicaciones que me permite mas adelante
+        //  saber si la persona estuvo quieta mucho tiempo en el mismo lugar.
+        //  El historial esta en mapa llamado track
+        val stationary = GeofenceTrackStore.getStationaryInHitorialLocation(area, location, now)
+
+        // 4) Aplico filtro por “zona gris” cerca del borde
         if (blockByGrayZone(context, area, m.radiusMeters, m.accuracy, m.distanceToBorder)) {
             return PreDetectionFilterResult(false)
         }
 
-        // 3)Aplico Histeresis espacial (umbrales enter/exit)
+        // 5)Aplico Histeresis espacial (umbrales enter/exit)
         val (meterForEnter, meterForExit) = calculateHysteris(m.accuracy, m.radiusMeters)
 
 
-        return PreDetectionFilterResult(true, meterForEnter, meterForExit )
+        return PreDetectionFilterResult(
+            true,
+            meterForEnter,
+            meterForExit,
+            stationary,
+            previousDistance
+        )
     }
 
     private suspend fun determineCandidateEvent(
