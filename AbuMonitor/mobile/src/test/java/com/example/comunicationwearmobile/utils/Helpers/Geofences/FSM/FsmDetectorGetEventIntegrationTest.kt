@@ -901,30 +901,22 @@ class FsmDetectorGetEventIntegrationTest {
     }
 
     @Test
-    fun strongExit_overridesSuspicious_andIsAcceptedImmediately() = runBlocking {
+    fun suspiciousStrongExit_firstDetection_returnsContinue() = runBlocking {
 
         /*
          * previous = 80
          * current = 150
          *
-         * Existe salto sospechoso.
+         * jump = 70 -> suspiciousExit = true
          *
          * EXIT = 130
+         * overshoot = 20
+         * strong threshold = max(10 * 1.2, 12) = 12
+         * 20 >= 12 -> strongExit = true
          *
-         * overshoot:
-         *
-         * 150 - 130 = 20
-         *
-         * strong threshold:
-         *
-         * max(10 * 1.2, 12)
-         * = 12
-         *
-         * 20 >= 12
-         *
-         * strongExit = true
-         *
-         * Por lo tanto requiere una sola confirmación.
+         * Con la nueva prioridad, suspiciousExit prevalece sobre strongExit.
+         * Por lo tanto se requieren dos confirmaciones y la primera
+         * detección debe devolver CONTINUE.
          */
 
         setPreviousDistance(
@@ -933,12 +925,17 @@ class FsmDetectorGetEventIntegrationTest {
         )
 
         assertEquals(
-            Definition.EVT_EXIT,
+            Definition.EVT_CONTINUE,
             event(
                 Definition.ST_INSIDE,
                 150f,
                 accuracy = 10f
             )
+        )
+
+        assertEquals(
+            1,
+            GeofenceTrackStore.getOutsideStreak(area.id_area)
         )
     }
 
@@ -1065,7 +1062,6 @@ class FsmDetectorGetEventIntegrationTest {
          * Simula que ya pasó el cooldown desde
          * el ENTER aceptado.
          */
-
         setLastFlipAgo(
             area.id_area,
             11_000L
@@ -1089,6 +1085,47 @@ class FsmDetectorGetEventIntegrationTest {
             )
         )
 
+        /*
+         * previous = 110
+         * current  = 140
+         *
+         * jump = 30
+         *
+         * max(2 * accuracy, 25)
+         * = max(10, 25)
+         * = 25
+         *
+         * 30 > 25
+         *
+         * Anti-Teleport considera el EXIT sospechoso.
+         * Primera confirmación -> CONTINUE.
+         */
+        assertEquals(
+            Definition.EVT_CONTINUE,
+            event(
+                Definition.ST_INSIDE,
+                140f,
+                accuracy = 5f
+            )
+        )
+
+        assertEquals(
+            1,
+            GeofenceTrackStore.getOutsideStreak(area.id_area)
+        )
+
+        /*
+         * Segunda lectura consecutiva fuera:
+         *
+         * previous = 140
+         * current  = 140
+         *
+         * jump = 0
+         *
+         * Ya no existe salto sospechoso.
+         * El outsideStreak anterior permite
+         * confirmar el EXIT.
+         */
         assertEquals(
             Definition.EVT_EXIT,
             event(

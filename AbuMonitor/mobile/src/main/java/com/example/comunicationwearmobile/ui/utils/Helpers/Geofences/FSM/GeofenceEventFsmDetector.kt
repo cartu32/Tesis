@@ -66,6 +66,23 @@ object GeofenceEventFsmDetector {
             return Definition.EVT_CONTINUE
         }
 
+        RepositoryDebugLogger.log(
+            context,
+            "GETEVENT_DIAG: CANDIDATE " +
+                    "area=${area.id_area} " +
+                    "prevState=$prevState " +
+                    "candidate=$candidate " +
+                    "dist=${"%.1f".format(m.distance)}m " +
+                    "prevDist=${"%.1f".format(preDetection.previousDistance)}m " +
+                    "acc=${"%.1f".format(m.accuracy)}m " +
+                    "radius=${"%.1f".format(m.radiusMeters)}m " +
+                    "enter=${"%.1f".format(preDetection.meterForEnter)}m " +
+                    "exit=${"%.1f".format(preDetection.meterForExit)}m " +
+                    "stationary=${preDetection.stationary} " +
+                    "isFast=$isFast " +
+                    "speed=${"%.2f".format(speed)}"
+        )
+
         //3) aplico los filtros de postdeteccion
         val postDetectionPassed = applyPostDetectionFilters(
             context=context,
@@ -437,6 +454,23 @@ object GeofenceEventFsmDetector {
 
         val lastFlipAt = GeofenceTrackStore.getLastFlipAt(area.id_area)
 
+        RepositoryDebugLogger.log(
+            context,
+            "GETEVENT_DIAG: FLIP " +
+                    "area=${area.id_area} " +
+                    "candidate=$candidate " +
+                    "dist=${"%.1f".format(m.distance)}m " +
+                    "acc=${"%.1f".format(m.accuracy)}m " +
+                    "meterForExit=${"%.1f".format(meterForExit)}m " +
+                    "stationary=$stationary " +
+                    "isFast=$isFast " +
+                    "farOutside=$farOutside " +
+                    "flipBlocked=$flipBlocked " +
+                    "elapsed=${now - lastFlipAt}ms " +
+                    "minFlip=${minFlip}ms"
+        )
+
+
         if (flipBlocked && !farOutside) {
             RepositoryDebugLogger.log(
                 context,
@@ -458,21 +492,37 @@ object GeofenceEventFsmDetector {
         meterForExit: Float,
         accuracy: Float
     ): Boolean {
+
         if (stationary && candidate == Definition.EVT_EXIT) {
+
             val clearExitMargin = maxOf(accuracy, 5f)
-            val clearExit = distance >= (meterForExit + clearExitMargin)
+            val clearExitThreshold = meterForExit + clearExitMargin
+            val clearExit = distance >= clearExitThreshold
+
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_DIAG: STATIONARY_EXIT " +
+                        "area=${area.id_area} " +
+                        "dist=${"%.1f".format(distance)}m " +
+                        "acc=${"%.1f".format(accuracy)}m " +
+                        "meterForExit=${"%.1f".format(meterForExit)}m " +
+                        "margin=${"%.1f".format(clearExitMargin)}m " +
+                        "threshold=${"%.1f".format(clearExitThreshold)}m " +
+                        "clearExit=$clearExit"
+            )
 
             if (!clearExit) {
                 RepositoryDebugLogger.log(
                     context,
-                    "GETEVENT_BLIND: BLOCK stationaryExit(notClear) area=${area.id_area} " +
-                            "dist=${"%.1f".format(distance)} meterForExit=${"%.1f".format(meterForExit)} " +
-                            "margin=${"%.1f".format(clearExitMargin)}"
+                    "GETEVENT_BLIND: BLOCK stationaryExit(notClear) " +
+                            "area=${area.id_area}"
                 )
+
                 GeofenceTrackStore.resetOutsideStreak(area.id_area)
                 return true
             }
         }
+
         return false
     }
 
@@ -495,23 +545,40 @@ object GeofenceEventFsmDetector {
                             (accuracy > radiusMeters * 0.35f ||
                             (previousDistance >= 0f && jump > maxOf(accuracy * 2f, 25f)))
 
+
         val strongExit = candidate == Definition.EVT_EXIT &&
                          overshoot >= maxOf(accuracy * 1.2f, 12f)
 
         val requiredExitConfirm = when {
-            strongExit -> 1
             suspiciousExit -> 2
+            strongExit -> 1
             else -> EXIT_CONFIRM_COUNT
         }
 
-        if (candidate == Definition.EVT_EXIT && suspiciousExit && !strongExit) {
+        if (candidate == Definition.EVT_EXIT && suspiciousExit) {
             RepositoryDebugLogger.log(
                 context,
                 "GETEVENT_BLIND: EXIT requires2 area=${area.id_area} " +
                         "acc=${"%.1f".format(accuracy)} jump=${"%.1f".format(jump)} overshoot=${"%.1f".format(overshoot)}"
             )
         }
+        if (candidate == Definition.EVT_EXIT) {
 
+            RepositoryDebugLogger.log(
+                context,
+                "GETEVENT_DIAG: ANTITELEPORT " +
+                        "area=${area.id_area} " +
+                        "dist=${"%.1f".format(distance)}m " +
+                        "prevDist=${"%.1f".format(previousDistance)}m " +
+                        "jump=${"%.1f".format(jump)}m " +
+                        "acc=${"%.1f".format(accuracy)}m " +
+                        "meterForExit=${"%.1f".format(meterForExit)}m " +
+                        "overshoot=${"%.1f".format(overshoot)}m " +
+                        "suspicious=$suspiciousExit " +
+                        "strong=$strongExit " +
+                        "required=$requiredExitConfirm"
+            )
+        }
         return requiredExitConfirm
     }
 

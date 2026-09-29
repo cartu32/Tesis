@@ -341,13 +341,13 @@ class FSMAntiTeleportFilterTest {
 
     // ============================================================
     // 8. SUSPICIOUS + STRONG
-    // STRONG TIENE PRIORIDAD
+    // SUSPICIOUS TIENE PRIORIDAD SOBRE STRONG
     // ============================================================
 
     @Test
-    fun suspiciousByJump_andStrong_requiresOne() {
+    fun suspiciousByJump_andStrong_requiresTwo() {
         assertEquals(
-            1,
+            2,
             required(
                 distance = 140f,
                 accuracy = 10f,
@@ -357,9 +357,9 @@ class FSMAntiTeleportFilterTest {
     }
 
     @Test
-    fun suspiciousByAccuracy_andStrong_requiresOne() {
+    fun suspiciousByAccuracy_andStrong_requiresTwo() {
         assertEquals(
-            1,
+            2,
             required(
                 distance = 170f,
                 accuracy = 40f,
@@ -369,9 +369,9 @@ class FSMAntiTeleportFilterTest {
     }
 
     @Test
-    fun suspiciousByAccuracyAndJump_andStrong_requiresOne() {
+    fun suspiciousByAccuracyAndJump_andStrong_requiresTwo() {
         assertEquals(
-            1,
+            2,
             required(
                 distance = 170f,
                 accuracy = 40f,

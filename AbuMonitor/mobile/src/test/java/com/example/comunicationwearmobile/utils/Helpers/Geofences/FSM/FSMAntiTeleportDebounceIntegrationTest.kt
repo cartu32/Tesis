@@ -453,11 +453,11 @@ class FSMAntiTeleportDebounceIntegrationTest {
     // ============================================================
     // 12. SUSPICIOUS + STRONG
     //
-    // Strong tiene prioridad.
+    // Suspicious tiene prioridad sobre Strong.
     // ============================================================
 
     @Test
-    fun suspiciousAndStrong_strongWins_requiresOne() =
+    fun suspiciousAndStrong_suspiciousWins_requiresTwo() =
         runBlocking {
 
             setPreviousDistance(90f)
@@ -471,9 +471,9 @@ class FSMAntiTeleportDebounceIntegrationTest {
             // jump=50 -> suspicious
             // overshoot=20 -> strong
             //
-            // strong debe ganar.
-            assertEquals(1, result.first)
-            assertTrue(result.second)
+            // suspicious debe ganar y exigir una segunda confirmación.
+            assertEquals(2, result.first)
+            assertFalse(result.second)
         }
 
     // ============================================================

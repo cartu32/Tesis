@@ -195,8 +195,23 @@ class GeofenceAntiTeleportTest {
      *
      * Resultado esperado: 1.
      */
+    /**
+     * suspicious + strong simultáneamente.
+     *
+     * accuracy=40 > 35 -> suspicious
+     *
+     * overshoot=50
+     * strong threshold=max(48,12)=48
+     * 50 >= 48 -> strong
+     *
+     * Aunque también sea strong, suspicious tiene prioridad.
+     *
+     * Por lo tanto se requieren dos confirmaciones.
+     *
+     * Resultado esperado: 2.
+     */
     @Test
-    fun strongAndSuspicious_strongHasPriority() = runBlocking {
+    fun strongAndSuspicious_suspiciousHasPriority() = runBlocking {
 
         val result = GeofenceEventFsmDetector.computeRequiredExitConfirmAndLog(
             context = context,
@@ -209,7 +224,7 @@ class GeofenceAntiTeleportTest {
             previousDistance = 169f
         )
 
-        assertEquals(1, result)
+        assertEquals(2, result)
     }
 
     /**
