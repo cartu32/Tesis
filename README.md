@@ -29,6 +29,11 @@ Por otro lado, el directorio APK contiene los archivos APK generados, los cuales
 
 ---
 
+## Entorno de desarrollo utilizado
+* Android Studio Ladybug Feature Drop | 2024.2.2
+
+---
+
 ## Demostración del funcionamiento del Sistema Abumonitor
 
 Se generó una serie de nueve videos, en los cuales se explica detalladamente el funcionamiento de cada una de las funcionalidades del sistema AbuMonitor.
@@ -44,3 +49,6 @@ A continuación, se enumeran los videos que componen la demostración:
   7. [Creación de Cita de Asistencia (ej: asistir a cita)](https://youtu.be/Ri-aVA3Bm5I)
   8. [Creación de Cita de Asistencia (ej: no asistir a cita)](https://youtu.be/2Z__qlds1Kg)
   9. [Validación y Alertas de caídas](https://youtu.be/Hr3wQPGS584) 
+  
+
+
